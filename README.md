@@ -9,3 +9,5 @@ Much simpler and easy Rule Engine not only to use but also maintain 'Rules/Polic
 
 ## 4. How does it work
 
+## 5. License
+
