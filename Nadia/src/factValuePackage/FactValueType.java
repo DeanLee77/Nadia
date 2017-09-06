@@ -1,0 +1,6 @@
+package factValuePackage;
+
+public enum FactValueType {
+	TEXT, STRING, INTEGER, DOUBLE, NUMBER, DATE, DECIMAL, BOOLEAN, LIST, RULE, RULE_SET, OBJECT, UNKNOWN, URL, HASH, UUID, NULL;
+
+}
