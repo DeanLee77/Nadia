@@ -17,7 +17,7 @@ public static void main(String[] args) {
 //		ValueConclusionLine vcl = new ValueConclusionLine(s, token);
 		
 		RuleSetReader ilr = new RuleSetReader();
-		ilr.setFileSource("testingRuleForParser2.txt");
+		ilr.setFileSource("testingRuleFile.txt");
 //
 
 		RuleSetParser isf = new RuleSetParser();		
