@@ -17,15 +17,14 @@ public static void main(String[] args) {
 //		ValueConclusionLine vcl = new ValueConclusionLine(s, token);
 		
 		RuleSetReader ilr = new RuleSetReader();
-		ilr.setFileSource("ActsTriageRules.txt");
-//		ilr.setFileSource("testingRuleForParser2.txt");
+		ilr.setFileSource("testingRuleForParser2.txt");
 //
 
 		RuleSetParser isf = new RuleSetParser();		
 		RuleSetScanner rsc = new RuleSetScanner(ilr,isf);
 		rsc.scanRuleSet();
 		rsc.establishNodeSet();
-		InferenceEngineV3 iev3 = new InferenceEngineV3(isf.getNodeSet());
+		InferenceEngine iev3 = new InferenceEngine(isf.getNodeSet());
 		Assessment ass = new Assessment(isf.getNodeSet(), isf.getNodeSet().getNodeSortedList().get(0).getNodeName());
 		Scanner scan = new Scanner(System.in);
 		

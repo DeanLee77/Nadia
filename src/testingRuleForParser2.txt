@@ -1,0 +1,146 @@
+Do we know the boy's identity
+	AND MANDATORY KNOWN this line is mandatory
+	AND NOT ALL service ITERATE: LIST OF service history 	AND NOT service type for onset date IS IN LIST: Operational service type
+	AND MANDATORY NOT KNOWN this line should be optional
+	AND KNOWN the boy's name
+	AND KNOWN boy's dob  
+		AND year of boy's dob
+		AND month of boy's dob
+		AND date of boy's dob
+	OR we have the boy's passport
+	OR the boy's name IS IN LIST: name list
+
+the boy's name IS Anthony Jones
+	AND KNOWN this line is mandatory
+	AND the boy is a student
+	AND the boy was born in Japan
+
+FIXED the gender-x is accepted IS FALSE
+FIXED the legislation start date IS 1/1/1988
+
+INPUT the boy's name AS TEXT
+INPUT the boy's dob AS DATE
+INPUT the boy's dob AS DATE
+
+INPUT the boy's gender AS TEXT IS Male
+
+INPUT the boy's gender AS LIST IS MALE  
+	ITEM  MALE  
+	ITEM      FEMALE  
+
+
+INPUT the fruit that the client had AS LIST
+	ITEM apple
+	ITEM peach
+	ITEM pear
+	ITEM grapes
+  
+INPUT the boy's gender AS LIST IS MALE
+	ITEM Male
+	ITEM Female  
+  
+
+
+	
+  
+
+the person made it to Las Vegas
+	AND NOT the person missed the flight  
+  
+
+the boy qualifies for the grant
+	AND NOT the boy's name = troy jones
+	AND the boy's dob > 01/01/1990          
+	AND NOT the boy did cross the street
+  
+
+the student passed the exam
+	AND the student missed the school bus  
+  
+
+the student passed the exam
+	AND the student studied for the exam  
+    
+
+the boy's name IS Anthony Jones
+	AND the boy is a student
+	AND the boy was born in Japan
+
+test this
+	AND comparison rule
+ 
+INPUT rule AS NUMBER
+  
+rule IS 50
+	AND the colour is blue  
+  
+the person is eligible for a service A
+	AND the person's drinking habit = frequent drinker
+	AND the person's first name = MALE      
+	AND KNOWN the rectangle area     
+ 
+  
+the boy's name IS Troy Jones
+	AND the boy is a student
+	AND the boy's father's name = 'Bob Jones'
+	AND NOT the boy's country of birth = Thailand
+  
+
+the person's drinking habit IS social drinker
+	AND number of drinks the person consumes a week > 0
+	AND number of drinks the person consumes a week < 3
+
+the person's drinking habit IS frequent drinker  
+	AND number of drinks the person consumes a week > 3
+	AND number of drinks the person consumes a week < 7
+
+the person's drinking habit IS heavy drinker 
+	AND number of drinks the person consumes a week > 7  
+
+number of drinks the person consumes a week IS 5
+	AND Person is Bob  
+  
+  
+the person is eligible for a service B
+	AND the person's drinking habit = heavy drinker
+	AND the person's first name = FEMALE      
+	AND KNOWN the rectangle area   
+  
+  
+the rectangle area IS CALC (the rectangle height * the rectangle width)
+	NEEDS the rectangle height
+	NEEDS the rectangle width
+
+the product savings as a percentage IS CALC (1 - (the product discounted price / the product full price) * 100)
+	NEEDS the product full price
+	NEEDS the product discounted price  
+  
+the client's full name IS CALC ((the client's last name).toUpperCase() + ', ' + the client's first name)
+	NEEDS the client's last name
+	NEEDS the client's first name
+  
+
+the rectangle area IS CALC (the height ? the width * the height : the width * the width)
+	NEEDS the width
+	WANTS the height
+  
+
+the person did cross the street
+	AND NOT the street was busy
+	AND MANDATORY the person is able to walk
+	OR someone saw the person crossing the street
+  
+the client qualifies for the grant 
+	OR the client needs the grant
+	OR MANDATORY the client is an adult 
+
+
+the person is unhealthy
+	AND the person's BMI > 50
+
+the person's BMI IS CALC (weight / height)
+	NEEDS the weight
+	NEEDS the height
+
+
+
