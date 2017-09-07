@@ -34,8 +34,11 @@ Suppose there are following rules:
 
 
 IF B or C is true THEN A is true.
+
 IF D and E are true THEN C is true.
+
 IF F is true THEN D is false.
+
 IF G is false THEN E is true.
 
 #### Backward-chaining:
