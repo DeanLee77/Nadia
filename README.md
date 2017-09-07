@@ -31,10 +31,12 @@ There are a number of key components as follows;
 
 ### How Backward-chaining and Forward-chaining work
 Suppose there are following rules:
-|IF B or C is true THEN A is true|
-|IF D and E are true THEN C is true|
-|IF F is true THEN D is false|
-|IF G is false THEN E is true|
+
+
+IF B or C is true THEN A is true.
+IF D and E are true THEN C is true.
+IF F is true THEN D is false.
+IF G is false THEN E is true.
 
 #### Backward-chaining:
 An inference engine when using backward chaining searches the inference rules until it finds one which has a consequent (Then clause) that matches a desired goal. For instance, if we want to know whether or not the rule statement of 'A is true' is true, an engine finds out which rule has to be checked to conclude. In this case, the engine needs information about the rule statement of 'B is true', or 'F is true' and 'G is false'
