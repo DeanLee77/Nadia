@@ -18,7 +18,7 @@ Add more features as follows;
 
 
 ## 3. Make your own Rules/Policies
-Please have a look at a file of testing rule in the repository
+Please have a look at a file of testing rule in src folder
 
 ## 4. How does it work
 There are a number of key components as follows;
