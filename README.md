@@ -5,7 +5,7 @@ Much simpler and easy Rules Engine not only to use but also maintain 'Rules/Poli
 This project is building a Rules(Policies)/Inference Engine with ease of use and maintain rules/policies. It aims to be:
 
 * A rule author is allowed to write rules or policies in a plain text file for the engine rule parser
-* A rule author or business persion does NOT need to implement the rules/policies separately like other rules engines
+* A rule author or business person does NOT need to implement the rules/policies separately like other rules engines
 * A user of the engine can carry out Foward-chaining and Backward-chaining with a given rule/policy set
 
 ## 2. Roadmap
