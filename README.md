@@ -8,7 +8,17 @@ This project is building a Rules(Policies)/Inference Engine with ease of use and
 * A rule author or business person does NOT need to implement the rules/policies separately like other rules engines
 * A user of the engine can carry out Foward-chaining and Backward-chaining with a given rule/policy set
 
-## 2. Roadmap
+## 2. Adding java library
+Currently this project uses neither Maven nor Gradle hence you will have to add Jackson library into your project.
+You can download following libraries by clicking links.
+
+* [Jackson annotation](https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-annotations/2.9.0)
+* [Jackson core](https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-core/2.9.0)
+* [Jackson databind](https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-databind/2.9.0)
+
+If you use Maven then add them into your pom.xml, or if your project build is Gradle then add them into your build.gradle file, or if your project is plain web application then put them into WEB-INF.lib folder
+
+## 3. Roadmap
 Add more features as follows;
 
 * GUI for Rule IDE (it is just more than editor. working as an development IDE)
@@ -17,10 +27,10 @@ Add more features as follows;
 * Machine Learning type inference mechanism
 
 
-## 3. Make your own Rules/Policies
-Please have a look at a file of testing rule in src folder
+## 4. Make your own Rules/Policies
+Please have a look at a file of testing rule. Within the example file, all indented rules uses 'Tab' key for indentation. The rule scanner considers of an indented rule as a child rule of previous rule in a rule text.
 
-## 4. How does it work
+## 5. How does it work
 There are a number of key components as follows;
 
 * Rule reader     : reads a rule/policy file, stream source, string source
@@ -51,5 +61,5 @@ An inference engine using forward chaining searches the inference rules until it
 * 'B is true' statement is unknown
 * 'A is true' statement is unknown
 
-## 5. License
+## 6. License
 Nadia is open source project and released under AGPL 3.0 License.
