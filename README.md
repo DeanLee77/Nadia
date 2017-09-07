@@ -9,7 +9,7 @@ This project is building a Rules(Policies)/Inference Engine with ease of use and
 * A user of the engine can carry out Foward-chaining and Backward-chaining with a given rule/policy set
 
 ## 2. Adding java library
-Currently this project does NOT use neither Maven nor Gradle hence you will have to add Jackson library into your project.
+Currently this project uses neither Maven nor Gradle hence you will have to add Jackson library into your project.
 You can download following libraries by clicking links.
 
 * [Jackson annotation](https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-annotations/2.9.0)
@@ -28,7 +28,7 @@ Add more features as follows;
 
 
 ## 4. Make your own Rules/Policies
-Please have a look at a file of testing rule in src folder
+Please have a look at a file of testing rule. Within the example file, all indented rules uses 'Tab' key for indentation. The rule scanner considers of an indented rule as a child rule of previous rule in a rule text.
 
 ## 5. How does it work
 There are a number of key components as follows;
