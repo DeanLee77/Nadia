@@ -101,7 +101,7 @@ public class RuleSetParser implements IScanFeeder {
 								 * following lines are to look for any nodes having a its nodeName with 'needs ' word or any operators due to the reason that
 								 * the node could be used to define a node previously used as a child node for other nodes
 								 */
-								List<String> possibleParentNodeKeyList = nodeSet.getNodeMap().keySet().stream().filter(key -> key.matches("(.[^\\(]+)?(\\s[<>=]+\\s?)?(WANTS |NEEDS )?("+variableName+")(\\s[<>=]+)*(.[^\\)]+)*")).collect(Collectors.toList());
+								List<String> possibleParentNodeKeyList = nodeSet.getNodeMap().keySet().stream().filter(key -> key.matches("(.[^\\(]+)?(\\s[<>=]+\\s?)?(WANTS |NEEDS )?("+variableName+")(\\s[<>=]+)*(.[^\\)(IS)]+)*")).collect(Collectors.toList());
 								if(!possibleParentNodeKeyList.isEmpty())
 								{
 									possibleParentNodeKeyList.stream().forEachOrdered(item -> {
@@ -334,7 +334,7 @@ public class RuleSetParser implements IScanFeeder {
 					});
 				}
 				
-				List<String> possibleParentNodeKeyList = nodeSet.getNodeMap().keySet().stream().filter(key -> key.matches("(.+)?(\\\\s[<>=]*)?("+variableName+")(\\s[<>=]*)(.+)")).collect(Collectors.toList());
+				List<String> possibleParentNodeKeyList = nodeSet.getNodeMap().keySet().stream().filter(key -> key.matches("(.+)?(\\\\s[<>=]*)?("+variableName+")(\\s[<>=]*)(.[^(IS)]+)")).collect(Collectors.toList());
 				if(!possibleParentNodeKeyList.isEmpty())
 				{
 					possibleParentNodeKeyList.stream().forEachOrdered(item -> {

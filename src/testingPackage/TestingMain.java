@@ -24,22 +24,22 @@ public static void main(String[] args) {
 		RuleSetScanner rsc = new RuleSetScanner(ilr,isf);
 		rsc.scanRuleSet();
 		rsc.establishNodeSet();
-		InferenceEngine iev3 = new InferenceEngine(isf.getNodeSet());
+		InferenceEngine ie = new InferenceEngine(isf.getNodeSet());
 		Assessment ass = new Assessment(isf.getNodeSet(), isf.getNodeSet().getNodeSortedList().get(0).getNodeName());
 		Scanner scan = new Scanner(System.in);
 		
-		while(iev3.getAssessmentState().getWorkingMemory().get(isf.getNodeSet().getNodeSortedList().get(0))==null)
+		while(ie.getAssessmentState().getWorkingMemory().get(isf.getNodeSet().getNodeSortedList().get(0))==null)
 		{
 			
-			Node nextQuestionNode = iev3.getNextQuestion(ass);
-			System.out.println(iev3.findTypeOfElementToBeAsked(nextQuestionNode));
-			System.out.println("Question: "+nextQuestionNode.getNodeName());
+			Node nextQuestionNode = ie.getNextQuestion(ass);
+			System.out.println(ie.findTypeOfElementToBeAsked(nextQuestionNode));
+			System.out.println("Question: "+nextQuestionNode.getNodeName() +" ?");
 			
-			iev3.getQuestionsfromNodeToBeAsked(nextQuestionNode).stream().forEachOrdered(question -> {
+			ie.getQuestionsfromNodeToBeAsked(nextQuestionNode).stream().forEachOrdered(question -> {
 				System.out.println("Question: " + question);
 				String answer = scan.nextLine();
 				final String finalAnswer = answer;
-				iev3.feedAnswerToNode(nextQuestionNode.getNodeName(), question, finalAnswer);
+				ie.feedAnswerToNode(nextQuestionNode.getNodeName(), question, finalAnswer);
 			});
 
 			

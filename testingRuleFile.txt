@@ -1,7 +1,9 @@
-INPUT person’s name AS TEXT
-INPUT person’s dob AS DATE
-INPUT person’s gender AS TEXT
-INPUT person’s age AS NUMBER
+INPUT person's name AS TEXT
+INPUT person's dob AS DATE
+INPUT person's gender AS TEXT
+INPUT person's age AS NUMBER
+INPUT number of drinks the person consumes an hour AS NUMBER
+INPUT hours of drinks a day AS NUMBER 
 INPUT premium account type AS LIST
 	ITEM HAHAHOHO
 	ITEM HASHBRWON
@@ -14,19 +16,33 @@ INPUT name list AS LIST
 	ITEM Agness Huge
 		
 FIXED service start date IS 1/1/1988
-
+INPUT we have the person's passport AS BOOLEAN
+INPUT one of person's parents is Australian AS BOOLEAN
+INPUT both of person's parents are Australian AS BOOLEAN
+INPUT the person was born in Australia AS BOOLEAN
+INPUT the person missed the flight  AS BOOLEAN
+INPUT person is currently studying AS BOOLEAN
+INPUT person's drinking habit AS TEXT
+INPUT person's account AS TEXT
+INPUT person’s nationality AS TEXT
+INPUT person’s blood sugar level AS NUMBER
+INPUT person’s lowest blood pressure AS NUMBER
+INPUT person’s check-up date AS DATE
+INPUT check-up date AS DATE
 
 
 we have information about a person
-	OR we have person’s name and dob
-		AND KNOWN person’s name
-		AND KNOWN person’s dob  
-	OR we have the person’s passport
-	OR person’s name IS IN LIST: name list
+	OR we have person's name and dob
+		AND KNOWN person's name
+		AND KNOWN person's dob  
+	OR we have the person's passport
+	OR person's name IS IN LIST: name list
 
 	
-person’s nationality IS Australian
-	AND one of the person’s parents is Australian
+person's nationality IS Australian
+	AND citizenship testing of person's parents
+		OR one of person's parents is Australian
+		OR both of person's parents are Australian
 	AND the person was born in Australia
 
   
@@ -37,8 +53,8 @@ person made it to Las Vegas
 
 person qualifies for the grant
 	AND NOT person’s name = troy jones
-	AND the person’s dob > 01/01/1990          
-	AND the person is currently studying
+	AND person’s dob > 01/01/1990          
+	AND person is currently studying
 
   
 person is eligible for a premium service
@@ -59,7 +75,7 @@ person's drinking habit IS frequent drinker
 person's drinking habit IS heavy drinker 
 	AND number of drinks the person consumes a week > 7  
 
-number of drinks the person consumes a week IS CALC ( (number of drinks the person consumes an hour * hours of drinks a day)*5)
+number of drinks the person consumes a week IS CALC ( number of drinks the person consumes an hour * hours of drinks a day * 5)
 	NEEDS number of drinks the person consumes an hour
 	NEEDS hours of drinks a day 
   

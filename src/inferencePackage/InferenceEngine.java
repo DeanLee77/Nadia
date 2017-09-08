@@ -186,14 +186,14 @@ public class InferenceEngine {
     {
     	List<String> questionList = new ArrayList<>();
     	
-    	boolean isVariableInFactMap = nodeSet.getInputMap().get(nodeToBeAsked.getVariableName()) != null? true:false;
-    	boolean isValueInFactMap = nodeSet.getInputMap().get(nodeToBeAsked.getFactValue().getValue().toString()) != null? true:false;
-    	if(isVariableInFactMap)
+    	boolean isVariableInInputMap = nodeSet.getInputMap().get(nodeToBeAsked.getVariableName()) != null? true:false;
+    	boolean isValueInInputMap = nodeSet.getInputMap().get(nodeToBeAsked.getFactValue().getValue().toString()) != null? true:false;
+    	if(isVariableInInputMap)
     	{
     		questionList.add(nodeToBeAsked.getVariableName());
     	}
     	
-    	if(isValueInFactMap)
+    	if(isValueInInputMap)
     	{
     		questionList.add(nodeToBeAsked.getFactValue().getValue().toString());
     	}
