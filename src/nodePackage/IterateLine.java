@@ -293,9 +293,20 @@ public class IterateLine extends Node {
 		{
 			this.numberOfTarget = tokens.tokensList.get(1);
 		}
-		else // target number is set with keyword of only either 'ALL' or 'NONE'
+		else // target number is set with keyword of only either 'ALL', 'SOME' or 'NONE'
 		{
-			this.numberOfTarget = tokens.tokensList.get(0).contains("ALL")?"ALL":"0";
+			switch(tokens.tokensList.get(0))
+			{
+				case "ALL":
+					this.numberOfTarget = "ALL";
+					break;
+				case "NONE":
+					this.numberOfTarget = "0";
+					break;
+				case "SOME":
+					this.numberOfTarget = "SOME";
+					break;
+			}
 		}
 		this.variableName = childText.replaceAll("NOT|KNOWN", "").trim();
 		this.nodeName = childText.trim();
@@ -383,22 +394,19 @@ public class IterateLine extends Node {
 	}
 	
 	@Override
-	public FactValue selfEvaluate(HashMap<String, FactValue> workingMemory, ScriptEngine nashorn, int dependency) {
+	public FactValue selfEvaluate(HashMap<String, FactValue> workingMemory, ScriptEngine nashorn, int nodeOption) {
 		
 		this.givenList = (List<?>) workingMemory.get(this.getFactValue().getValue().toString());
 		int givenListSize = this.givenList.size();
 		this.createIterativeDependencyMatrix();
 		this.iterativeTopoSortedList = TopoSort.bfsTopoSort(iterativeNodeMap, iterativeNodeIdMap, iterativeDependencyMatrix.getDependencyMatrixArray());
-		/*
-		 * this Node/Check needs Inference process hence development of this object is now being hold 
-		 * until InferenceEngine class is completed
-		 */
+
 		for(int i = 0; i < givenListSize; i++)
 		{
-			inferenceIterate(nashorn, this.givenList.get(i), dependency);
+			inferenceIterate(nashorn, this.givenList.get(i), nodeOption);
 		}
 		
-		return null;
+		return this.iterateWorkingMemory.get(this.getNodeName());
 	}
 	
 	private <T> void inferenceIterate(ScriptEngine nashorn, T data, int dependency)
@@ -414,8 +422,8 @@ public class IterateLine extends Node {
   	            {
 					FactValue fv = convertFactValue(Tokenizer.getTokens(dataJsonNode.path(node.getNodeName()).asText()));
 					setFact(node.getVariableName(), fv);
-  	            	setFact(node.getNodeName(),node.selfEvaluate(this.iterateWorkingMemory, nashorn, dependency));
-  	            	forwardChaining(findNodeIndex(node.getNodeName()), nashorn);
+  	            		setFact(node.getNodeName(),node.selfEvaluate(this.iterateWorkingMemory, nashorn, dependency));
+  	            		forwardChaining(findNodeIndex(node.getNodeName()), nashorn);
   	            }
 	            else
 	            {
@@ -434,39 +442,37 @@ public class IterateLine extends Node {
 		
 	}
 
-	private void forwardChaining(int nodeIndex, ScriptEngine nashorn) {
+	private void forwardChaining(int nodeIndex, ScriptEngine nashorn) 
+	{
 		IntStream.range(0, nodeIndex+1).forEach(i -> {
     		
-    		Node node = this.iterativeTopoSortedList.get(nodeIndex-i);
-    		
-    		if(this.iterativeInclusiveList.contains(node.getNodeName()))
-    		{
-    			
-    			backPropagation(nodeIndex-i, nashorn);
-    		}
-    		
-    		
-            if(this.iterateWorkingMemory.containsKey(node.getVariableName()) || this.iterateWorkingMemory.containsKey(node.getNodeName()))
-            {
-            	
-            	addParentIntoInclusiveList(node); // adding all parents rules into the 'inclusiveList' if there is any
-            }
-    		
-    	});		
+	    		Node node = this.iterativeTopoSortedList.get(nodeIndex-i);
+	    		
+	    		if(this.iterativeInclusiveList.contains(node.getNodeName()))
+	    		{
+	    			backPropagation(nodeIndex-i, nashorn);
+	    		}
+	    		
+	    		
+	        if(this.iterateWorkingMemory.containsKey(node.getVariableName()) || this.iterateWorkingMemory.containsKey(node.getNodeName()))
+	        {
+	        		addParentIntoInclusiveList(node); // adding all parents rules into the 'inclusiveList' if there is any
+	        }
+	    		
+		});		
 	}
 
 	private void backPropagation(int i, ScriptEngine nashorn) {
 		Node currentNode = this.iterativeTopoSortedList.get(i);
-    	LineType currentLineType = currentNode.getLineType();
-    	/*
+		LineType currentLineType = currentNode.getLineType();
+		/*
          *following 'if' statement is to double check if the rule has any children or not.
          *it will be already determined by asking a question to a user if it doesn't have any children .
          */
        if (!this.iterateWorkingMemory.containsKey(currentNode.getVariableName()) 
     		   && hasChildren(currentNode) && canDetermine(currentNode, currentLineType, nashorn) )
        {
-//    	   currentRule.setState(RuleState.DETERMINED);
-    	   this.summaryList.add(currentNode); // add currentRule into SummeryList as the rule determined
+    	   	this.summaryList.add(currentNode); // add currentRule into SummeryList as the rule determined
        }		
 	}
 
@@ -490,9 +496,9 @@ public class IterateLine extends Node {
     				canDetermine = true;
     				
     				if(isInStatement)
-					{
+				{
     					setFact(node.getVariableName(), FactValue.parse(true));
-					}
+				}
     				else
     				{
     					setFact(node.getVariableName(), node.getFactValue());
@@ -520,7 +526,7 @@ public class IterateLine extends Node {
     		else if(!nodeAndOutDependencies.isEmpty() && nodeOrOutDependencies.isEmpty())// rule has only 'AND' child rules
     		{
     			if(isAllAndDependencyDetermined(nodeAndOutDependencies) && isAllAndDependencyTrue(node, nodeAndOutDependencies)) // TRUE case
-				{
+			{
     				canDetermine = true;
     				
     				if(isInStatement)
@@ -534,7 +540,7 @@ public class IterateLine extends Node {
     				
     				setFact(node.getNodeName(), node.selfEvaluate(this.iterateWorkingMemory, nashorn, nodeOption));
 
-				}
+			}
     			/*
     			 * 'isAnyAndDependencyFalse()' contains a trimming off dependency method 
     			 * due to the fact that all undetermined 'AND' rules need to be trimmed off when any 'AND' rule is evaluated as 'NO'
@@ -610,22 +616,24 @@ public class IterateLine extends Node {
     	return canDetermine;		
 	}
 
-	private boolean allNeedsChildDetermined(Node parentNode, List<Integer> outDependency) {
+	private boolean allNeedsChildDetermined(Node parentNode, List<Integer> outDependency) 
+	{
 		
 		boolean allNeedsChildDetermined = false;
     	
-    	List<Integer> determinedList = outDependency.stream().filter(i -> (this.iterativeDependencyMatrix.getDependencyMatrixArray()[parentNode.getNodeId()][i] & (DependencyType.getMandatory() | DependencyType.getAnd())) == (DependencyType.getMandatory() | DependencyType.getAnd())
-    										&& this.iterateWorkingMemory.get(this.iterativeNodeMap.get(this.iterativeNodeIdMap.get(i)).getVariableName())!= null).collect(Collectors.toList());
-    	
-    	if(outDependency.size() == determinedList.size())
-    	{
-    		allNeedsChildDetermined = true;
-    	}    	
-    	
-    	return allNeedsChildDetermined;
+	    	List<Integer> determinedList = outDependency.stream().filter(i -> (this.iterativeDependencyMatrix.getDependencyMatrixArray()[parentNode.getNodeId()][i] & (DependencyType.getMandatory() | DependencyType.getAnd())) == (DependencyType.getMandatory() | DependencyType.getAnd())
+	    										&& this.iterateWorkingMemory.get(this.iterativeNodeMap.get(this.iterativeNodeIdMap.get(i)).getVariableName())!= null).collect(Collectors.toList());
+	    	
+	    	if(outDependency.size() == determinedList.size())
+	    	{
+	    		allNeedsChildDetermined = true;
+	    	}    	
+	    	
+	    	return allNeedsChildDetermined;
 	}
 
-	private boolean isAnyAndDependencyFalse(List<Integer> andOutDependencies) {
+	private boolean isAnyAndDependencyFalse(List<Integer> andOutDependencies) 
+	{
 		
 		boolean isAnyAndDependencyFalse = false;
         
@@ -650,39 +658,40 @@ public class IterateLine extends Node {
         return isAnyAndDependencyFalse;
 	}
 
-	private boolean isAllAndDependencyTrue(Node node, List<Integer> andOutDependencies) {
+	private boolean isAllAndDependencyTrue(Node node, List<Integer> andOutDependencies) 
+	{
 		
-			boolean isAllAndTrue = false;
+		boolean isAllAndTrue = false;
 
-	        List<Integer> determinedTrueAndOutDependencies = andOutDependencies.stream().filter(i ->
+        List<Integer> determinedTrueAndOutDependencies = andOutDependencies.stream().filter(i ->
 	    	this.iterateWorkingMemory.get(this.iterativeNodeMap.get(this.iterativeNodeIdMap.get(i))).getValue().toString().equals("true")).collect(Collectors.toList());
 	        
-	        
-	        if(andOutDependencies != null && determinedTrueAndOutDependencies.size() == andOutDependencies.size())
-	        {
+        
+        if(andOutDependencies != null && determinedTrueAndOutDependencies.size() == andOutDependencies.size())
+        {
 	        	isAllAndTrue = true;
-	        } 
+        } 
 
-           return isAllAndTrue;
+       return isAllAndTrue;
 	}
 
 	private boolean isAllAndDependencyDetermined(List<Integer> andOutDependencies) {
 		 
-			boolean isAllAndDependencyDetermined = false;
+		boolean isAllAndDependencyDetermined = false;
 	        
-	        List<Integer> determinedAndOutDependencies = andOutDependencies.stream().filter(i ->
-	    	this.iterateWorkingMemory.get(this.iterativeNodeMap.get(this.iterativeNodeIdMap.get(i))) != null).collect(Collectors.toList());
+        List<Integer> determinedAndOutDependencies = andOutDependencies.stream().filter(i ->
+        		this.iterateWorkingMemory.get(this.iterativeNodeMap.get(this.iterativeNodeIdMap.get(i))) != null).collect(Collectors.toList());
 	        
-	        
-	        if(andOutDependencies != null && determinedAndOutDependencies.size() == andOutDependencies.size())
-	        {
+        if(andOutDependencies != null && determinedAndOutDependencies.size() == andOutDependencies.size())
+        {
 	        	isAllAndDependencyDetermined = true;
-	        }
+        }
 
-	        return isAllAndDependencyDetermined;
+        return isAllAndDependencyDetermined;
 	}
 
-	private boolean isAllOrDependencyDetermined(List<Integer> orOutDependencies) {
+	private boolean isAllOrDependencyDetermined(List<Integer> orOutDependencies) 
+	{
 		
 		boolean isAllOrDependencyDetermined = false;
         
@@ -692,60 +701,64 @@ public class IterateLine extends Node {
         
         if(orOutDependencies != null && determinedOrOutDependencies.size() == orOutDependencies.size())
         {
-        	isAllOrDependencyDetermined = true;
+        		isAllOrDependencyDetermined = true;
         }
 
         return isAllOrDependencyDetermined;
 	}
 
-	private boolean isAnyOrDependencyTrue(Node node, List<Integer> orOutDependencies) {
+	private boolean isAnyOrDependencyTrue(Node node, List<Integer> orOutDependencies) 
+	{
 		boolean isAnyOrDependencyTrue = false;
         if (!orOutDependencies.isEmpty())
         {
-        	List<Integer> trueOrOutNodesList = orOutDependencies.stream().filter(i -> this.iterateWorkingMemory.get(this.iterativeNodeMap.get(this.iterativeNodeIdMap.get(i))).getValue().equals(true))
+        		List<Integer> trueOrOutNodesList = orOutDependencies.stream().filter(i -> this.iterateWorkingMemory.get(this.iterativeNodeMap.get(this.iterativeNodeIdMap.get(i))).getValue().equals(true))
         																 .collect(Collectors.toList());
         	
-        	if(!trueOrOutNodesList.isEmpty())
-        	{
-        		isAnyOrDependencyTrue = true;
-        		orOutDependencies.stream().forEachOrdered(i -> {
-        			trueOrOutNodesList.stream().forEachOrdered(n -> {
-        				if(i != n)
-        				{
-        					trimDependency(node, this.iterativeNodeMap.get(this.iterativeNodeIdMap.get(i)));
-        				}
-        			});
-        		});
-        	}
+	        	if(!trueOrOutNodesList.isEmpty())
+	        	{
+	        		isAnyOrDependencyTrue = true;
+	        		orOutDependencies.stream().forEachOrdered(i -> {
+	        			trueOrOutNodesList.stream().forEachOrdered(n -> {
+	        				if(i != n)
+	        				{
+	        					trimDependency(node, this.iterativeNodeMap.get(this.iterativeNodeIdMap.get(i)));
+	        				}
+	        			});
+	        		});
+	        	}
         }
 
         return isAnyOrDependencyTrue;
 	}
 
-	private void trimDependency(Node parentNode, Node childNode) {
+	private void trimDependency(Node parentNode, Node childNode) 
+	{
 		int dpType = this.iterativeDependencyMatrix.getDependencyMatrixArray()[parentNode.getNodeId()][childNode.getNodeId()];
-    	if((dpType & DependencyType.getMandatory()) != DependencyType.getMandatory())
-    	{
-    		this.iterativeInclusiveList.remove(childNode.getNodeName());
-    	}		
+	    	if((dpType & DependencyType.getMandatory()) != DependencyType.getMandatory())
+	    	{
+	    		this.iterativeInclusiveList.remove(childNode.getNodeName());
+	    	}		
 	}
 
-	private void addParentIntoInclusiveList(Node node) {
+	private void addParentIntoInclusiveList(Node node) 
+	{
 		List<Integer> nodeInDependencyList = this.iterativeDependencyMatrix.getInDependencyList(node.getNodeId());
         if(!nodeInDependencyList.isEmpty()) // if rule has parents
         {
-        	nodeInDependencyList.stream().forEachOrdered(i -> {
-        		Node parentNode = this.iterativeNodeMap.get(this.iterativeNodeIdMap.get(i));
-        		if(!this.iterativeInclusiveList.contains(parentNode.getNodeName()))
-        		{
-        			this.iterativeInclusiveList.add(parentNode.getNodeName());
-        		}
-        	});
+	        	nodeInDependencyList.stream().forEachOrdered(i -> {
+	        		Node parentNode = this.iterativeNodeMap.get(this.iterativeNodeIdMap.get(i));
+	        		if(!this.iterativeInclusiveList.contains(parentNode.getNodeName()))
+	        		{
+	        			this.iterativeInclusiveList.add(parentNode.getNodeName());
+	        		}
+	        	});
           
         }		
 	}
 
-	private FactValue convertFactValue(Tokens tokens) {
+	private FactValue convertFactValue(Tokens tokens) 
+	{
 
 		FactValue fv = null;
 		switch(tokens.tokensString)
@@ -777,17 +790,20 @@ public class IterateLine extends Node {
 		}
 		return fv;
 	}
-	private void addChildRuleIntoInclusiveList(Node node) {
+	private void addChildRuleIntoInclusiveList(Node node) 
+	{
 		
 		List<Integer> childrenListOfNode = this.iterativeDependencyMatrix.getOutDependencyList(node.getNodeId());
-    	childrenListOfNode.stream().forEachOrdered(item -> {
-    		String childNodeName = this.iterativeNodeMap.get(this.iterativeNodeIdMap.get(item)).getNodeName();
-    		if(!this.iterativeInclusiveList.contains(childNodeName))
-    		{
-    			this.iterativeInclusiveList.add(childNodeName);
-    		}
-    	});		
+		childrenListOfNode.stream().forEachOrdered(item -> {
+	    		String childNodeName = this.iterativeNodeMap.get(this.iterativeNodeIdMap.get(item)).getNodeName();
+	    		if(!this.iterativeInclusiveList.contains(childNodeName))
+	    		{
+	    			this.iterativeInclusiveList.add(childNodeName);
+	    		}
+		});		
 	}
+	
+	
 	public boolean hasChildren(Node node)
     {
         boolean hasChildren = false;
@@ -801,29 +817,29 @@ public class IterateLine extends Node {
 	public boolean canEvaluate(Node node, ScriptEngine nashorn)
     {
     	
-    	boolean canEvaluate = false;
-    	LineType lineType = node.getLineType();
-    	/*
-    	 * the reason for checking only VALUE_CONCLUSION, COMPARISON and ITERATE type of node is that they are the only ones can be the most child nodes in rule structure.
-    	 * other type of node must be a parent of other types of node.
-    	 * In addition, the reason being to check only if there is a value for a variableName of the node in the workingMemory is that
-    	 * only a value for variableName of the node is needed to evaluate the node. even if the node is ValueConclusionLine, it wouldn't be matter because
-    	 * variableName and nodeName will have a same value if the node is the most child node, which means that the statement for the node does NOT contain
-    	 * 'IS' keyword. 
-    	 */
-    	if(((lineType.equals(LineType.VALUE_CONCLUSION) || lineType.equals(LineType.COMPARISON)) && this.iterateWorkingMemory.containsKey(node.getVariableName()))
-    			||(lineType.equals(LineType.ITERATE) && this.iterateWorkingMemory.containsKey(node.getNodeName())))
-    	{
-    		canEvaluate = true;
-    		/*
-    		 * the reason why ast.setFact() is used here rather than this.feedAndwerToNode() is that LineType is already known, and target node object is already found. 
-    		 * node.selfEvaluation() returns a value of the node's self-evaluation hence, node.getNodeName() is used to store a value for the node itself into a workingMemory
-    		 */
-    		setFact(node.getNodeName(), node.selfEvaluate(this.iterateWorkingMemory, nashorn, this.iterativeDependencyMatrix.getDependencyType(node.getNodeId(), node.getNodeId())));
-    	}
-    	
-    	
-    	return canEvaluate;
+	    	boolean canEvaluate = false;
+	    	LineType lineType = node.getLineType();
+	    	/*
+	    	 * the reason for checking only VALUE_CONCLUSION, COMPARISON and ITERATE type of node is that they are the only ones can be the most child nodes in rule structure.
+	    	 * other type of node must be a parent of other types of node.
+	    	 * In addition, the reason being to check only if there is a value for a variableName of the node in the workingMemory is that
+	    	 * only a value for variableName of the node is needed to evaluate the node. even if the node is ValueConclusionLine, it wouldn't be matter because
+	    	 * variableName and nodeName will have a same value if the node is the most child node, which means that the statement for the node does NOT contain
+	    	 * 'IS' keyword. 
+	    	 */
+	    	if(((lineType.equals(LineType.VALUE_CONCLUSION) || lineType.equals(LineType.COMPARISON)) && this.iterateWorkingMemory.containsKey(node.getVariableName()))
+	    			||(lineType.equals(LineType.ITERATE) && this.iterateWorkingMemory.containsKey(node.getNodeName())))
+	    	{
+	    		canEvaluate = true;
+	    		/*
+	    		 * the reason why ast.setFact() is used here rather than this.feedAndwerToNode() is that LineType is already known, and target node object is already found. 
+	    		 * node.selfEvaluation() returns a value of the node's self-evaluation hence, node.getNodeName() is used to store a value for the node itself into a workingMemory
+	    		 */
+	    		setFact(node.getNodeName(), node.selfEvaluate(this.iterateWorkingMemory, nashorn, this.iterativeDependencyMatrix.getDependencyType(node.getNodeId(), node.getNodeId())));
+	    	}
+	    	
+	    	
+	    	return canEvaluate;
     }
 	 
 	public int findNodeIndex(String nodeName)
