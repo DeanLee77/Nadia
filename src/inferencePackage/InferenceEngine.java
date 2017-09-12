@@ -2,6 +2,7 @@ package inferencePackage;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -217,46 +218,87 @@ public class InferenceEngine {
     	 */
     	FactValueType fvt = null;
     	
+    	/*
+    	 * In a case of that if type of toBeAsked node is ComparisonLine type with following conditions;
+    	 *    - the type of the node's variable to compare is already set as 
+    	 *      DefiString (eg. 'dean' or "dean"), Integer (eg. 1, or 2), Double (eg. 1.2 or 2.1), Date (eg. 21/3/1299), Hash, UUID, or URL 
+    	 *   then don't need to look into InputMap or FactMap to check the element's type of 'toBeAsked node' 
+    	 *   simply because we can check by looking at type of value variable because two different type CANNOT be compared
+    	 *   
+    	 * If neither type of variable is NOT defined in INPUT/FACT list nor the above case, and value of nodeVariable is same as value of nodeValueString  
+    	 * then the engine will recognise a nodeVariable or/and nodeVlaue as a boolean type 
+    	 * so that the question for a nodeVariable or/and a nodeValue seeks boolean type of answer
+    	 *   
+    	 */
+    	
     	String nodeVariableName = node.getVariableName();
-    	String nodeValue = node.getFactValue().getValue().toString();
-    	FactValue factValueForNodeVariable = this.nodeSet.getFactMap().get(nodeVariableName) == null? this.nodeSet.getInputMap().get(nodeVariableName):this.nodeSet.getFactMap().get(nodeVariableName);
-    	FactValueType factValueTypeForNodeVariable = factValueForNodeVariable != null? factValueForNodeVariable.getType():null;
-    	FactValue factValueForNodeValue = this.nodeSet.getFactMap().get(nodeValue) == null? this.nodeSet.getInputMap().get(nodeValue):this.nodeSet.getFactMap().get(nodeValue);
-    	FactValueType factValueTypeForNodeValue = factValueForNodeValue != null? factValueForNodeValue.getType():null;
-    	if((factValueTypeForNodeVariable != null && factValueTypeForNodeVariable.equals(FactValueType.BOOLEAN)) || (factValueTypeForNodeValue != null && factValueTypeForNodeValue.equals(FactValueType.BOOLEAN)))
+    	String nodeValueString = node.getFactValue().getValue().toString();
+    	boolean hasAlreadySetType = hasAlreadySetType(node.getFactValue());
+    	HashMap<String, FactValue> tempFactMap = this.nodeSet.getFactMap();
+    	HashMap<String, FactValue> tempInputMap = this.nodeSet.getInputMap();
+
+    	if(hasAlreadySetType)
+    	{
+    		fvt = node.getFactValue().getType();
+    	}
+    	else if(!hasAlreadySetType && !(tempFactMap.containsKey(nodeVariableName) || tempFactMap.containsKey(nodeValueString)) && nodeVariableName.equals(nodeValueString))
     	{
     		fvt = FactValueType.BOOLEAN;
     	}
-    	else if((factValueTypeForNodeVariable != null && factValueTypeForNodeVariable.equals(FactValueType.DATE)) || (factValueTypeForNodeValue != null && factValueTypeForNodeValue.equals(FactValueType.DATE)))
+    	else
     	{
-    		fvt = FactValueType.DATE;
+        	FactValue factValueForNodeVariable = tempFactMap.get(nodeVariableName) == null? tempInputMap.get(nodeVariableName):tempFactMap.get(nodeVariableName);
+        	FactValueType factValueTypeForNodeVariable = factValueForNodeVariable != null? factValueForNodeVariable.getType():null;
+        	FactValue factValueForNodeValue = tempFactMap.get(nodeValueString) == null? tempInputMap.get(nodeValueString):tempFactMap.get(nodeValueString);
+        	FactValueType factValueTypeForNodeValue = factValueForNodeValue != null? factValueForNodeValue.getType():null;
+        	if((factValueTypeForNodeVariable != null && factValueTypeForNodeVariable.equals(FactValueType.BOOLEAN)) || (factValueTypeForNodeValue != null && factValueTypeForNodeValue.equals(FactValueType.BOOLEAN)))
+        	{
+        		fvt = FactValueType.BOOLEAN;
+        	}
+        	else if((factValueTypeForNodeVariable != null && factValueTypeForNodeVariable.equals(FactValueType.DATE)) || (factValueTypeForNodeValue != null && factValueTypeForNodeValue.equals(FactValueType.DATE)))
+        	{
+        		fvt = FactValueType.DATE;
+        	}
+        	else if((factValueTypeForNodeVariable != null && (factValueTypeForNodeVariable.equals(FactValueType.DECIMAL) || factValueTypeForNodeVariable.equals(FactValueType.DOUBLE))) || (factValueTypeForNodeValue != null && (factValueTypeForNodeValue.equals(FactValueType.DECIMAL) || factValueTypeForNodeValue.equals(FactValueType.DOUBLE))))
+        	{
+        		fvt = FactValueType.DOUBLE;
+        	}
+        	else if((factValueTypeForNodeVariable != null && factValueTypeForNodeVariable.equals(FactValueType.HASH)) || (factValueTypeForNodeValue != null && factValueTypeForNodeValue.equals(FactValueType.HASH)))
+        	{
+        		fvt = FactValueType.HASH;
+        	}
+        	else if((factValueTypeForNodeVariable != null && factValueTypeForNodeVariable.equals(FactValueType.URL)) || (factValueTypeForNodeValue != null && factValueTypeForNodeValue.equals(FactValueType.URL)))
+        	{
+        		fvt = FactValueType.URL;
+        	}
+        	else if((factValueTypeForNodeVariable != null && factValueTypeForNodeVariable.equals(FactValueType.UUID)) || (factValueTypeForNodeValue != null && factValueTypeForNodeValue.equals(FactValueType.UUID)))
+        	{
+        		fvt = FactValueType.UUID;
+        	}
+        	else if((factValueTypeForNodeVariable != null && (factValueTypeForNodeVariable.equals(FactValueType.INTEGER) || factValueTypeForNodeVariable.equals(FactValueType.NUMBER))) || (factValueTypeForNodeValue != null && (factValueTypeForNodeValue.equals(FactValueType.INTEGER) || factValueTypeForNodeValue.equals(FactValueType.NUMBER))))
+        	{
+        		fvt = FactValueType.INTEGER;
+        	}
+        	else if((factValueTypeForNodeVariable != null && (factValueTypeForNodeVariable.equals(FactValueType.STRING)|| factValueTypeForNodeVariable.equals(FactValueType.TEXT))) || (factValueTypeForNodeValue != null && (factValueTypeForNodeValue.equals(FactValueType.STRING) || factValueTypeForNodeValue.equals(FactValueType.TEXT))))
+        	{
+        		fvt = FactValueType.STRING;
+        	}
     	}
-    	else if((factValueTypeForNodeVariable != null && (factValueTypeForNodeVariable.equals(FactValueType.DECIMAL) || factValueTypeForNodeVariable.equals(FactValueType.DOUBLE))) || (factValueTypeForNodeValue != null && (factValueTypeForNodeValue.equals(FactValueType.DECIMAL) || factValueTypeForNodeValue.equals(FactValueType.DOUBLE))))
-    	{
-    		fvt = FactValueType.DOUBLE;
-    	}
-    	else if((factValueTypeForNodeVariable != null && factValueTypeForNodeVariable.equals(FactValueType.HASH)) || (factValueTypeForNodeValue != null && factValueTypeForNodeValue.equals(FactValueType.HASH)))
-    	{
-    		fvt = FactValueType.HASH;
-    	}
-    	else if((factValueTypeForNodeVariable != null && factValueTypeForNodeVariable.equals(FactValueType.URL)) || (factValueTypeForNodeValue != null && factValueTypeForNodeValue.equals(FactValueType.URL)))
-    	{
-    		fvt = FactValueType.URL;
-    	}
-    	else if((factValueTypeForNodeVariable != null && factValueTypeForNodeVariable.equals(FactValueType.UUID)) || (factValueTypeForNodeValue != null && factValueTypeForNodeValue.equals(FactValueType.UUID)))
-    	{
-    		fvt = FactValueType.UUID;
-    	}
-    	else if((factValueTypeForNodeVariable != null && (factValueTypeForNodeVariable.equals(FactValueType.INTEGER) || factValueTypeForNodeVariable.equals(FactValueType.NUMBER))) || (factValueTypeForNodeValue != null && (factValueTypeForNodeValue.equals(FactValueType.INTEGER) || factValueTypeForNodeValue.equals(FactValueType.NUMBER))))
-    	{
-    		fvt = FactValueType.INTEGER;
-    	}
-    	else if((factValueTypeForNodeVariable != null && (factValueTypeForNodeVariable.equals(FactValueType.STRING)|| factValueTypeForNodeVariable.equals(FactValueType.TEXT))) || (factValueTypeForNodeValue != null && (factValueTypeForNodeValue.equals(FactValueType.STRING) || factValueTypeForNodeValue.equals(FactValueType.TEXT))))
-    	{
-    		fvt = FactValueType.STRING;
-    	}
+
     	
     	return fvt;
+    }
+    
+    public boolean hasAlreadySetType(FactValue value)
+    {
+    		boolean hasAlreadySetType = false;
+    		
+    		FactValueType factValueType = value.getType();
+    		if(!factValueType.equals(FactValueType.NULL) || !factValueType.equals(FactValueType.OBJECT) || !factValueType.equals(FactValueType.STRING) || !factValueType.equals(FactValueType.TEXT) || !factValueType.equals(FactValueType.UNKNOWN))
+		{
+    			hasAlreadySetType = true;
+		}
+    		return hasAlreadySetType;
     }
     /*
      * this is to check whether or not a node can be evaluated with all information in the workingMemory. If there is information for a value of node's value(FactValue), then the node can be evaluated otherwise not.

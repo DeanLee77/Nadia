@@ -3,6 +3,8 @@ package nodePackage;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.script.ScriptEngine;
 
@@ -101,7 +103,17 @@ public abstract class Node {
 				}
 				else
 				{
-					this.value = FactValue.parse(lastToken);
+					Pattern defiStringPattern = Pattern.compile("(^[\'\"])(.*)([\'\"]$)");
+					Matcher matcher = defiStringPattern.matcher(lastToken);
+					if(matcher.find())
+					{
+						String newS = matcher.group(2);
+						this.value = FactValue.parseDefiString(newS);
+					}
+					else
+					{
+						this.value = FactValue.parse(lastToken);
+					}
 				}
 				break;
 		}

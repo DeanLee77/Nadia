@@ -8,6 +8,10 @@ import java.util.List;
 public abstract class FactValue {
 
 
+	public static FactDefiStringValue parseDefiString(String s) {
+		return new FactDefiStringValue(s);
+	}
+	
 	public static FactStringValue parse(String s) {
 		return new FactStringValue(s);
 	}
