@@ -1,0 +1,20 @@
+// this file is to test ‘A IS B’ format, and it involves followings as well;
+// - comparisonLine type (e.g. A <= B)
+// - plain statement type (e.g. A)
+// - negation nodeOption (e.g. NOT A = B)
+// - known nodeOption (e.g. KNOWN A)
+
+Nadia does not have any bugs IS true
+	OR Dean fixed all bugs in Nadia
+	OR someone fixed all bugs in Nadia
+	OR Nadia works with any given rules
+	OR Nadia fixed all bugs itself
+
+Dean fixed all bugs in Nadia
+	AND working hours Dean spent after 10PM >= 100
+	AND Dean is confident about Nadia
+
+Nadia works with any given rules
+	AND KNOWN Nadia run any given rules and passed testing
+	AND NOT Nadia generated any error message during the running
+

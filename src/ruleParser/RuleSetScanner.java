@@ -38,9 +38,14 @@ public class RuleSetScanner {
                // check the line
 
                // is it empty?
-               if(line.isEmpty()) {
- 
-                       parentStack.clear();
+               if(line.isEmpty()) 
+               {
+            	   		parentStack.clear();
+               }
+               else if(line.trim().substring(0, 2).equals("//"))
+               {
+        	   			//this els if statement is to handle commenting in new line only
+            	   		// handling commenting in rule text file needs enhancement later
                }
                
                // does it begin with a white space?
@@ -48,86 +53,86 @@ public class RuleSetScanner {
            	   {
                		currentWhitespace = line.length()-lineTrimed.length(); // calculating indentation level
 
-                	if (lineTrimed.isEmpty()) // is it a blank line? 
-                	{
-                      // blank line - no parent
-                      parent = null;
-                	} 
-                	else 
-                	{
-                		int indentationDifference = previousWhitespace - currentWhitespace;
-	                   	if(indentationDifference == 0 || indentationDifference > 0) //current line is at same level as previous line || current line is in upper level than previous line
-	                   	{
-	                   		parentStack = handlingStackPop(parentStack, indentationDifference);
-	                   		
-	                   	}
-	                   	else if(indentationDifference < -1) // current line is not a direct child of previous line hence the format is invalid
-	                   	{
-	                   		
-	               			//need to handle error
-	               			scanFeeder.handleWarning(lineTrimed);
-	               			break;
-	                   		
-	                   	}
-	                   	
-	                   	parent = parentStack.pop();
-	           			parentStack.push(parent);
-	           			
-	           			String tempLineTrimed = lineTrimed.replaceAll("(OR(?=\\s)|AND(?=\\s)|MANDATORY(?=\\s)|OPTIONAL(?=\\s)|POSSIBLE(?=\\s))", "").trim();
-
-	           			parentStack.push(tempLineTrimed.trim()); // due to lineTrimed string contains keywords such as "AND", "OR", "AND KNOWN" or "OR KNOWN" so that it needs removing those keywords for the 'parentStack'
+	                	if (lineTrimed.isEmpty()) // is it a blank line? 
+	                	{
+	                      // blank line - no parent
+	                      parent = null;
+	                	} 
+	                	else 
+	                	{
+	                		int indentationDifference = previousWhitespace - currentWhitespace;
+		                   	if(indentationDifference == 0 || indentationDifference > 0) //current line is at same level as previous line || current line is in upper level than previous line
+		                   	{
+		                   		parentStack = handlingStackPop(parentStack, indentationDifference);
+		                   		
+		                   	}
+		                   	else if(indentationDifference < -1) // current line is not a direct child of previous line hence the format is invalid
+		                   	{
+		                   		
+		               			//need to handle error
+		               			scanFeeder.handleWarning(lineTrimed);
+		               			break;
+		                   		
+		                   	}
+		                   	
+		                   	parent = parentStack.pop();
+		           			parentStack.push(parent);
+		           			
+		           			String tempLineTrimed = lineTrimed.replaceAll("(OR(?=\\s)|AND(?=\\s)|MANDATORY(?=\\s)|OPTIONAL(?=\\s)|POSSIBLE(?=\\s))", "").trim();
 	
-	           			
-                		if(lineTrimed.contains("ITEM"))
-                		{
-                			if(!parent.contains("LIST"))
-                			{
-                				scanFeeder.handleWarning(lineTrimed);
-                				break;
-                			}
-	                		// is an indented item child
-                			lineTrimed = lineTrimed.replace("ITEM ", "").trim();
-                			scanFeeder.handleListItem(parent, lineTrimed);
-	                         
-	                	}
-                		else if(lineTrimed.contains("CHECK"))
-                		{
-                			if(!(parent.contains("ITERATE") || parent.contains("CHECK")))
-                			{
-                				scanFeeder.handleWarning(lineTrimed);
-                				break;
-                			}
-                			else
-                			{
-                				if(parent.contains("ITERATE"))
-                				{
-                    				iterateParent = parent;
-                				}
-                				scanFeeder.handleIterateCheck(iterateParent, parent, lineTrimed, lineNumber);
-                			}
-                		}
-                		else if(lineTrimed.contains("NEEDS")|| lineTrimed.contains("WANTS"))
-                		{
-                			if(!parent.contains("CALC"))
-                			{
-                				scanFeeder.handleWarning(lineTrimed);
-                				break;
-                			}
-                			
-                			if(lineTrimed.contains("NEEDS"))
-                			{
-                				scanFeeder.handleNeedWant(parent, lineTrimed.replace("NEEDS", "AND MANDATORY NEEDS"), lineNumber);
-                			}
-                			else
-                			{
-                				scanFeeder.handleNeedWant(parent, lineTrimed.replace("WANTS", "OR WANTS"), lineNumber);
-                			}
-                		}
-                		else
-                		{
-                			// is an indented child
-	                       scanFeeder.handleChild(parent, lineTrimed, lineNumber);
-	                	}   
+		           			parentStack.push(tempLineTrimed.trim()); // due to lineTrimed string contains keywords such as "AND", "OR", "AND KNOWN" or "OR KNOWN" so that it needs removing those keywords for the 'parentStack'
+		
+		           			
+	                		if(lineTrimed.contains("ITEM"))
+	                		{
+	                			if(!parent.contains("LIST"))
+	                			{
+	                				scanFeeder.handleWarning(lineTrimed);
+	                				break;
+	                			}
+		                		// is an indented item child
+	                			lineTrimed = lineTrimed.replace("ITEM ", "").trim();
+	                			scanFeeder.handleListItem(parent, lineTrimed);
+		                         
+		                	}
+	                		else if(lineTrimed.contains("CHECK"))
+	                		{
+	                			if(!(parent.contains("ITERATE") || parent.contains("CHECK")))
+	                			{
+	                				scanFeeder.handleWarning(lineTrimed);
+	                				break;
+	                			}
+	                			else
+	                			{
+	                				if(parent.contains("ITERATE"))
+	                				{
+	                    				iterateParent = parent;
+	                				}
+	                				scanFeeder.handleIterateCheck(iterateParent, parent, lineTrimed, lineNumber);
+	                			}
+	                		}
+	                		else if(lineTrimed.contains("NEEDS")|| lineTrimed.contains("WANTS"))
+	                		{
+	                			if(!parent.contains("CALC"))
+	                			{
+	                				scanFeeder.handleWarning(lineTrimed);
+	                				break;
+	                			}
+	                			
+	                			if(lineTrimed.contains("NEEDS"))
+	                			{
+	                				scanFeeder.handleNeedWant(parent, lineTrimed.replace("NEEDS", "AND MANDATORY NEEDS"), lineNumber);
+	                			}
+	                			else
+	                			{
+	                				scanFeeder.handleNeedWant(parent, lineTrimed.replace("WANTS", "OR WANTS"), lineNumber);
+	                			}
+	                		}
+	                		else
+	                		{
+	                			// is an indented child
+		                       scanFeeder.handleChild(parent, lineTrimed, lineNumber);
+		                	}   
                     }
 
                } 
