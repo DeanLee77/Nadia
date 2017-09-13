@@ -5,9 +5,9 @@
 // - known nodeOption (e.g. KNOWN A)
 
 Nadia does not have any bugs IS true
-	OR Dean fixed all bugs in Nadia
-	OR someone fixed all bugs in Nadia
-	OR Nadia works with any given rules
+	OR MANDATORY Dean fixed all bugs in Nadia
+	OR NOT no one fixed all bugs in Nadia
+	OR KNOWN Nadia works with any given rules
 	OR Nadia fixed all bugs itself
 
 Dean fixed all bugs in Nadia

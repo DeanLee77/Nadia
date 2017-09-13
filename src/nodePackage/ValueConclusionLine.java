@@ -1,6 +1,7 @@
 package nodePackage;
 
 import java.util.HashMap;
+import java.util.stream.IntStream;
 
 import javax.script.ScriptEngine;
 
@@ -9,19 +10,20 @@ import ruleParser.Tokens;
 
 public class ValueConclusionLine extends Node{
 
-	private boolean isInStatementFormat;
+	private boolean isPlainStatementFormat;
 
 	/*
 	 * when the inference engine reaches at a ValueConclusionLine and needs to ask a question to a user, 
-	 * then this rule must be in statement format due to the reason that a line containing a keyword, 'IS', cannot be a child.
+	 * then this rule must be in statement format due to the reason that a line containing a keyword, 'IS', (exclude a case of containing 'IS IN LIST') cannot be a child.
 	 * Hence, the question can be from either variableName or ruleName, and a result of the question will be inserted to the workingMemory.
 	 * However, when the engine reaches at the line during forward-chaining then the key for the workingMemory will be a ruleName,
 	 * and value for the workingMemory will be set as a result of propagation.
 	 * 
-	 * ValueConclusionLine format is either 'A-statement IS B-statement' or 'A-statement'(just statement line).
-	 * Hence, any words except first letter should NOT be uppercase other than keywords within a rule statement.
-	 * And therefore, if a tokensString of the rule statement contains 'U' then the rule statement is in a format of
-	 * 'A-statement IS B-statement' otherwise 'A-statement'. 
+	 * ValueConclusionLine format is 'A-statement IS B-statement', 'A-item name IS IN LIST: B-list name', or 'A-statement'(just statement line).
+	 * Hence, any words except first letter should NOT be in uppercase other than keywords within a rule statement.
+	 * And therefore, if a tokensString of the rule statement contains 'U' at the beginning of rule statement then the rule statement is in a format of
+	 * 'A-item name IS IN LIST: B-list name' or 'A-statement' because Parent line cannot have any node options such as 'NOT', 'KNOWN', 'MANDATORY', 'OPTIONAL', and/or 'POSSIBLY'
+	 * 
 	 * If the rule statement is in a format of 'A-statement' then a default value of variable 'value' will be set as 'false'
 	 * 
 	 */
@@ -55,19 +57,53 @@ public class ValueConclusionLine extends Node{
 		 * 
 		 */
 		
-		this.isInStatementFormat = !tokens.tokensList.stream().anyMatch((s) -> s.contains("IS"));
+		this.isPlainStatementFormat = !tokens.tokensList.stream().anyMatch((s) -> s.contains("IS"));
 
 		String lastToken = null;
-		if(!isInStatementFormat) //the line must be a parent line in this case other than a case of the rule contains 'IS IN LIST' as a child
+		if(!isPlainStatementFormat) //the line must be a parent line in this case other than a case of the rule contains 'IS IN LIST' as a child
 		{
-			this.variableName = parentText.substring(0, parentText.indexOf("IS")).replaceFirst("([(NOT(?=\\s))(KNOWN(?=\\s))]*)", "").trim();
+			/*
+			 * Reasons for that RegEx is not being used to extract upper-case letters at the beginning of a given string are as follows;
+			 *  1. it is hard to only extract upper-case letters at the beginning of the string with 'string.replaceFirst(regex)' or 'string.replaceAll(regex)' 
+			 *     because 'replaceFirst()' would NOT do excluding all relevant letters even if argument of the method is multiple, 
+			 *     'replaceAll()' would excluding not only upper-case letters at the beginning but also upper-case letters in the middle of the given string
+			 *  
+			 *  2. RegEx would be difficult to maintain for later when other keywords are added and need being extracted 
+			 */
+			if(tokens.tokensString.charAt(0) == 'U') // this is a case of that the line contains 'IS IN LIST:' because first token is 'U'
+			{
+				String tempTokensStr = tokens.tokensString.substring(1, tokens.tokensString.length()); //exclude first upper-case letters
+				int tempInt = tempTokensStr.substring(0, tempTokensStr.indexOf('U')).length();  // calculate the length of string up until the string of 'IS IN LIST'
+				StringBuilder sb = new StringBuilder();
+				IntStream.range(1, tempInt+1).forEachOrdered(i -> {sb.append(tokens.tokensList.get(i)+" ");}); //building a string with strings between upper-case letters beginning and 'IS IN LIST' 
+				this.variableName = sb.toString().trim();
+				
+			}
+			else //this is a case of that the line is in a 'A-statement IS B-statement' format
+			{
+				this.variableName = parentText.substring(0, parentText.indexOf("IS")).trim();
+			}
+//			this.variableName = parentText.substring(0, parentText.indexOf("IS")).replaceFirst("([(NOT(?=\\s))(KNOWN(?=\\s))]*)", "").trim();
 			lastToken = tokens.tokensList.get(tokensStringListSize-1);
 			this.nodeName = parentText;
 		}
-		else
+		else //this is a case of that the line is in a 'A-statement' format
 		{
+			if(tokens.tokensString.charAt(0) == 'U')  // this is to extract other keywords such as 'NOT' or/and 'KNOWN' and etc.
+			{
+				String tempTokensStr = tokens.tokensString.substring(1, tokens.tokensString.length()); //exclude first upper-case letters
+				int tempInt = tempTokensStr.length();  // calculate the length of string 
+				StringBuilder sb = new StringBuilder();
+				IntStream.range(1, tempInt+1).forEachOrdered(i -> {sb.append(tokens.tokensList.get(i)+" ");}); //building a string with strings between upper-case letters beginning and 'IS IN LIST' 
+				this.variableName = sb.toString().trim();
+				
+			}
+			else 
+			{
+				this.variableName = parentText;
+			}
 			this.nodeName = parentText;
-			this.variableName = tokens.tokensString.charAt(0) == 'U'? parentText.replaceFirst("([(NOT(?=\\s))(KNOWN(?=\\s))(NEEDS(?=\\s))(WANTS(?=\\s))]*)", "").trim(): parentText; // is the line child case? then replace "NOT|KNOWN" if there is otherwise parentText as it is
+//			this.variableName = tokens.tokensString.charAt(0) == 'U'? parentText.replaceFirst("([(NOT(?=\\s))(KNOWN(?=\\s))(NEEDS(?=\\s))(WANTS(?=\\s))]*)", "").trim(): parentText; // is the line child case? then replace "NOT|KNOWN" if there is otherwise parentText as it is
 						
 			lastToken = "false";
 
@@ -79,7 +115,7 @@ public class ValueConclusionLine extends Node{
 	
 	public boolean getIsInStatementFormat()
 	{
-		return this.isInStatementFormat;
+		return this.isPlainStatementFormat;
 	}
 
 	
@@ -112,7 +148,7 @@ public class ValueConclusionLine extends Node{
 		 */
 		
 
-		if(this.isInStatementFormat)
+		if(this.isPlainStatementFormat)
 		{
 			
 			if((nodeOption & DependencyType.getNot()) == DependencyType.getNot() && !((nodeOption & DependencyType.getKnown()) == DependencyType.getKnown()))
