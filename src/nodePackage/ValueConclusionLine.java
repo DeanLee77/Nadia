@@ -165,7 +165,10 @@ public class ValueConclusionLine extends Node{
 			}
 			else
 			{
-				fv = FactValue.parse(Boolean.parseBoolean(workingMemory.get(this.variableName).getValue()));
+				if(workingMemory.get(this.variableName).getType().equals(FactValueType.BOOLEAN))
+				{
+					fv = FactValue.parse(Boolean.parseBoolean(workingMemory.get(this.variableName).getValue()));
+				}
 			}
 		}
 		else if(this.nodeName.contains("IS IN LIST"))

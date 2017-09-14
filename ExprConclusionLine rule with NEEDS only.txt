@@ -1,0 +1,16 @@
+//This rule file is for ExprConclusionLine type rule with only ‘NEEDS’ sub-rules
+
+INPUT fuel AS DECIMAL
+INPUT electricity AS DECIMAL
+INPUT gas AS DECIMAL
+INPUT water AS DECIMAL
+INPUT grocery AS DECIMAL
+INPUT finger food AS DECIMAL
+
+Total expenses this week IS CALC (fuel + electricity + gas + water + grocery + finger food)
+	NEEDS fuel
+	NEEDS electricity
+	NEEDS gas
+	NEEDS water
+	NEEDS grocery
+	NEEDS finger food

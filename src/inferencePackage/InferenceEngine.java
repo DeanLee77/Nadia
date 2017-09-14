@@ -215,7 +215,7 @@ public class InferenceEngine {
 	    	 *  6. HASH;
 	    	 *  7. UUID; and
 	    	 *  8. URL.   
-	    	 * rest of them (LIST, RULE, RULE_SET, OBJECT, UNKNOWN, NULL) can't be handled
+	    	 * rest of them (LIST, RULE, RULE_SET, OBJECT, UNKNOWN, NULL) can't be handled at this stage
 	    	 */
 	    	FactValueType fvt = null;
 	    	
@@ -237,15 +237,24 @@ public class InferenceEngine {
 	    	boolean hasAlreadySetType = hasAlreadySetType(node.getFactValue());
 	    	HashMap<String, FactValue> tempFactMap = this.nodeSet.getFactMap();
 	    	HashMap<String, FactValue> tempInputMap = this.nodeSet.getInputMap();
-	
-	    	if(hasAlreadySetType)
+	    	boolean isComparisonLineType = node.getLineType().equals(LineType.COMPARISON);
+	    	boolean isValueConclusionLineType = node.getLineType().equals(LineType.VALUE_CONCLUSION);
+	    	boolean variableAndValueHasSameContents = nodeVariableName.equals(nodeValueString) && node.getLineType().equals(LineType.VALUE_CONCLUSION);
+	    	boolean nodeValueStringIsInInputList = tempInputMap.containsKey(nodeValueString);
+	    	boolean nodeValueStringIsInFixedList = tempFactMap.containsKey(nodeValueString);
+	    	
+	    	//ComparisonLine type node and type of the node's value is clearly defined  
+	    	if(isComparisonLineType && hasAlreadySetType)
 	    	{
 	    		fvt = node.getFactValue().getType();
 	    	}
-	    	else if(!hasAlreadySetType && !(tempFactMap.containsKey(nodeVariableName) || tempFactMap.containsKey(nodeValueString)) && nodeVariableName.equals(nodeValueString))
+	    	//ComparisonLine type node and type of the node's value is not clearly defined and not defined in INPUT nor FIXED list
+	    	//ValueConclusionLine type node and it is 'A-statement' line, and variableName is not defined neither INPUT nor FIXED 
+	    	else if((isComparisonLineType && !hasAlreadySetType && !nodeValueStringIsInFixedList && !nodeValueStringIsInInputList) 
+	    			|| (isValueConclusionLineType && variableAndValueHasSameContents && !(nodeValueStringIsInInputList || nodeValueStringIsInFixedList)))
 	    	{
 	    		fvt = FactValueType.BOOLEAN;
-	    	}
+	    	}	   
 	    	else
 	    	{
 	        	FactValue factValueForNodeVariable = tempFactMap.get(nodeVariableName) == null? tempInputMap.get(nodeVariableName):tempFactMap.get(nodeVariableName);
@@ -342,52 +351,51 @@ public class InferenceEngine {
      * the reason for taking nodeName instead nodeVariableName is that it will be easier to find an exact node with nodeName
      * rather than nodeVariableName because a certain nodeVariableName could be found in several nodes
      */
-    public <T> void feedAnswerToNode(String NodeName, String questionName, T nodeValue)
+    public <T> void feedAnswerToNode(String NodeName, String questionName, T nodeValue, FactValueType nodeValueType)
     {
 	    	Node targetNode = nodeSet.getNodeMap().get(NodeName);	    	
-	    	FactValueType targetNodeValueType = targetNode.getFactValue().getType();
 	    	FactValue fv = null;
 	    	
-	    	if(targetNodeValueType.equals(FactValueType.BOOLEAN))
+	    	if(nodeValueType.equals(FactValueType.BOOLEAN))
 	    	{
 	    		fv = FactValue.parse(Boolean.parseBoolean((String)nodeValue));
 	    	}
-	    	else if(targetNodeValueType.equals(FactValueType.DATE))
+	    	else if(nodeValueType.equals(FactValueType.DATE))
 	    	{
 	    		String[] dateArray = ((String)nodeValue).split("/");
 	    		LocalDate factValueInDate = LocalDate.of(Integer.parseInt(dateArray[2]), Integer.parseInt(dateArray[1]), Integer.parseInt(dateArray[0]));
 	    		
 	    		fv = FactValue.parse(factValueInDate);
 	    	}
-	    	else if(targetNodeValueType.equals(FactValueType.DOUBLE))
+	    	else if(nodeValueType.equals(FactValueType.DOUBLE))
 	    	{
 	    		fv = FactValue.parse(Double.parseDouble((String)nodeValue));
 	    	}
-	    	else if(targetNodeValueType.equals(FactValueType.INTEGER))
+	    	else if(nodeValueType.equals(FactValueType.INTEGER))
 	    	{
 	    		fv = FactValue.parse(Integer.parseInt((String)nodeValue));
 	    	}
-	    	else if(targetNodeValueType.equals(FactValueType.LIST))
+	    	else if(nodeValueType.equals(FactValueType.LIST))
 	    	{
 	    		fv = FactValue.parse((List<FactValue>)nodeValue);
 	    	}
-	    	else if(targetNodeValueType.equals(FactValueType.STRING))
+	    	else if(nodeValueType.equals(FactValueType.STRING))
 	    {
 	    		fv = FactValue.parse((String) nodeValue);
 	    }
-	    	else if(targetNodeValueType.equals(FactValueType.DEFI_STRING))
+	    	else if(nodeValueType.equals(FactValueType.DEFI_STRING))
 	    	{
 	    		fv = FactValue.parseDefiString((String) nodeValue);
 	    	}
-	    	else if(targetNodeValueType.equals(FactValueType.HASH))
+	    	else if(nodeValueType.equals(FactValueType.HASH))
 	    	{
 	    		fv = FactValue.parseHash((String)nodeValue);
 	    	}
-	    	else if(targetNodeValueType.equals(FactValueType.URL))
+	    	else if(nodeValueType.equals(FactValueType.URL))
 	    	{
 	    		fv = FactValue.parseURL((String)nodeValue);
 	    	}
-	    	else if(targetNodeValueType.equals(FactValueType.UUID))
+	    	else if(nodeValueType.equals(FactValueType.UUID))
 	    	{
 	    		fv = FactValue.parseUUID((String)nodeValue);
 	    	}
@@ -412,20 +420,28 @@ public class InferenceEngine {
 	    	
 	    	if(selfEvalFactValue != null)
 	    	{
-	    		ast.setFact(targetNode.getNodeName(), selfEvalFactValue); // add the value of targetNode itself into the workingMemory
-	        	
-	        	
-	
-	        	/*
-	        	 * Note: in order to get summary view, each rules can be found in summaryList, and 
-	        	 *       actual evaluation value can be found in workingMemory by looking up with each rules' variable
-	        	 */
-	        	ast.getSummaryList().add(targetNode);
-	        	/*
-	        	 * once any rules are set as fact and stored into the workingMemory, forward-chaining(back-propagation) needs to be done
-	        	 */
-	        	forwardChaining(nodeSet.findNodeIndex(targetNode.getNodeName()));
+	    		ast.setFact(targetNode.getNodeName(), selfEvalFactValue); // add the value of targetNode itself into the workingMemory	        		        	
+//	
+//	        	/*
+//	        	 * Note: in order to get summary view, each rules can be found in summaryList, and 
+//	        	 *       actual evaluation value can be found in workingMemory by looking up with each rules' variable
+//	        	 */
+//	        	ast.getSummaryList().add(targetNode);
+//	        	/*
+//	        	 * once any rules are set as fact and stored into the workingMemory, forward-chaining(back-propagation) needs to be done
+//	        	 */
+//	        	forwardChaining(nodeSet.findNodeIndex(targetNode.getNodeName()));
 	    	}
+
+        	/*
+        	 * Note: in order to get summary view, each rules can be found in summaryList, and 
+        	 *       actual evaluation value can be found in workingMemory by looking up with each rules' variable
+        	 */
+        	ast.getSummaryList().add(targetNode);
+        	/*
+        	 * once any rules are set as fact and stored into the workingMemory, forward-chaining(back-propagation) needs to be done
+        	 */
+        	forwardChaining(nodeSet.findNodeIndex(targetNode.getNodeName()));
 	        
 	    	
     	
@@ -475,12 +491,12 @@ public class InferenceEngine {
 	    		
 	            if(ast.getWorkingMemory().containsKey(node.getVariableName()) || ast.getWorkingMemory().containsKey(node.getNodeName()))
 	            {
-	            	/*
-	            	 * background of following method is as listed below
-	            	 * 1. adding child rules into inclusiveList sometimes miss out relevant rules because some rules have more than two parent hence tracking only child rules
-	            	 * would not be enough to find all relevant rules. As result, finding child rule of a certain rule and parent rule of the child rule will cover all relevant rules for an assessment
-	            	 */
-	            	addParentIntoInclusiveList(node); // adding all parents rules into the 'inclusiveList' if there is any
+		            	/*
+		            	 * background of following method is as listed below
+		            	 * 1. adding child rules into inclusiveList sometimes miss out relevant rules because some rules have more than two parent hence tracking only child rules
+		            	 * would not be enough to find all relevant rules. As result, finding child rule of a certain rule and parent rule of the child rule will cover all relevant rules for an assessment
+		            	 */
+		            	addParentIntoInclusiveList(node); // adding all parents rules into the 'inclusiveList' if there is any
 	            }
 	    		
 	    	}); 	

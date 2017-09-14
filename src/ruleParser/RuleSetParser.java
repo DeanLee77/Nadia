@@ -454,7 +454,7 @@ public class RuleSetParser implements IScanFeeder {
 			int or = 0;
 			if(!dpList.isEmpty())
 			{
-				for(Dependency dp: dpList)
+				for(Dependency dp: dpList) //can this for each loop be converted to dpList.stream().forEachOrdered() ?
 				{
 					if(dp.getChildNode().getNodeId() != dp.getParentNode().getNodeId())
 					{

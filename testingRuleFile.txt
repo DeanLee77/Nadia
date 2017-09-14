@@ -1,3 +1,5 @@
+//this rule has been tried for parsing and sorting, and Nadia has successfully done it
+
 INPUT person's name AS TEXT
 INPUT person's dob AS DATE
 INPUT person's gender AS TEXT
@@ -87,7 +89,7 @@ person is eligible for platinum service
 		AND CHECK person’s lowest blood pressure = 120
 		AND CHECK person’s check-up date > service start date
 		AND CHECK year difference between 6/04/1994 and check-up date>= 3
-  		AND CHECK year difference between 6/04/1994 and check-up date IS CALC (check-up date - 6/04/1994)
+		AND CHECK year difference between 6/04/1994 and check-up date IS CALC (check-up date - 6/04/1994)
 			NEEDS CHECK check-up date
 
 
