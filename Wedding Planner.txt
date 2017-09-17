@@ -1,0 +1,42 @@
+INPUT Reception Fruits AS LIST
+	ITEM Apple
+	ITEM Pear
+	ITEM Water melon
+	ITEM Rock melon
+
+INPUT the groom's name AS TEXT
+INPUT the groom's dob AS DATE
+INPUT the groom's age AS NUMBER
+FIXED the groom's homepage IS www.theGroomHomepage.com.au AS URL
+FIXED the wedding booking schedule for the venue AS LIST
+	ITEM 2:00 - 3:00 : someone
+	ITEM 3:00 - 4:00 : somebody
+	ITEM 4:00 - 5:00 : nobody
+
+the wedding took place
+	AND the groom turned up
+	AND the bride turned up
+	AND the celebrant was available
+	AND the cake was avalble
+		OR the baker was able to make the cake
+			AND someone booked the baker
+			AND someone paid the baker
+		OR the best friend made the cake
+	AND the venue was booked
+	AND parents were consulted
+		AND the parents blessed the bride and groom
+		AND the parents liked each other
+		OR the the bride and groom didn't care for the parents blessing
+  
+the celebrant was available
+	OR someone booked the celebrant
+	OR the celebrant randomly turned up
+
+the venue was booked
+	AND the venue was available
+	AND the venue was paid for
+	OR the grooms mate allowed them to use is farm house
+
+
+
+

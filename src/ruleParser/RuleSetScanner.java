@@ -61,28 +61,31 @@ public class RuleSetScanner {
 	                	else 
 	                	{
 	                		int indentationDifference = previousWhitespace - currentWhitespace;
-		                   	if(indentationDifference == 0 || indentationDifference > 0) //current line is at same level as previous line || current line is in upper level than previous line
-		                   	{
-		                   		parentStack = handlingStackPop(parentStack, indentationDifference);
-		                   		
-		                   	}
-		                   	else if(indentationDifference < -1) // current line is not a direct child of previous line hence the format is invalid
-		                   	{
-		                   		
-		               			//need to handle error
-		               			scanFeeder.handleWarning(lineTrimed);
-		               			break;
-		                   		
-		                   	}
-		                   	
-		                   	parent = parentStack.pop();
-		           			parentStack.push(parent);
-		           			
-		           			String tempLineTrimed = lineTrimed.replaceAll("(OR(?=\\s)|AND(?=\\s)|MANDATORY(?=\\s)|OPTIONAL(?=\\s)|POSSIBLE(?=\\s))", "").trim();
-	
-		           			parentStack.push(tempLineTrimed.trim()); // due to lineTrimed string contains keywords such as "AND", "OR", "AND KNOWN" or "OR KNOWN" so that it needs removing those keywords for the 'parentStack'
+	                   	if(indentationDifference == 0 || indentationDifference > 0) //current line is at same level as previous line || current line is in upper level than previous line
+	                   	{
+	                   		parentStack = handlingStackPop(parentStack, indentationDifference);
+	                   		
+	                   	}
+	                   	else if(indentationDifference < -1) // current line is not a direct child of previous line hence the format is invalid
+	                   	{
+	                   		
+	               			//need to handle error
+	               			scanFeeder.handleWarning(lineTrimed);
+	               			break;
+	                   		
+	                   	}
+	                   	
+	                   	parent = parentStack.pop();
+	           			parentStack.push(parent);
+	           			
+	           			String tempLineTrimed = lineTrimed.replaceAll("(OR(?=\\s)|AND(?=\\s)|MANDATORY(?=\\s)|OPTIONAL(?=\\s)|POSSIBLE(?=\\s))", "").trim();
+
+	           			parentStack.push(tempLineTrimed.trim()); // due to lineTrimed string contains keywords such as "AND", "OR", "AND KNOWN" or "OR KNOWN" so that it needs removing those keywords for the 'parentStack'
 		
-		           			
+		           		// is an indented child
+	           			scanFeeder.handleChild(parent, lineTrimed, lineNumber);	
+	           			
+	           			
 	                		if(lineTrimed.contains("ITEM"))
 	                		{
 	                			if(!parent.contains("LIST"))

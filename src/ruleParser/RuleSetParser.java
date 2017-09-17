@@ -175,6 +175,22 @@ public class RuleSetParser implements IScanFeeder {
 		 */
 		Tokens tokens = Tokenizer.getTokens(childText);   
 		
+		// is 'ITEM' child line
+		if(childText.matches("(ITEM)(.*)"))
+		{
+			if(!parentText.matches("(.*)(AS LIST)"))
+			{
+				handleWarning(childText);
+				return;
+			}
+			
+			// is an indented item child
+			childText = childText.replaceFirst("ITEM", "").trim();
+			handleListItem(parentText,childText);
+		}
+
+		// is 'A-statement' child line
+		
 		int dependencyType = 0; 
 		
 		String firstTokenString = tokens.tokensList.get(0);
@@ -186,21 +202,21 @@ public class RuleSetParser implements IScanFeeder {
 		{
 			dependencyType = DependencyType.getOr(); 
 		}
-		childText = childText.replaceFirst("OR(?=\\s)|AND(?=\\s)", "").trim();
-
-		if(firstTokenString.matches("^(AND\\s|OR\\s)(MANDATORY\\s).*")) 
-		{
-			dependencyType |= DependencyType.getMandatory() ; 
-		}
-		else if(firstTokenString.matches("^(AND\\s|OR\\s)(OPTIONAL\\s).*"))
-		{
-			dependencyType |= DependencyType.getOptional(); 
-		}
-		else if(firstTokenString.matches("^(AND\\s|OR\\s)(POSSIBLE\\s).*"))
-		{
-			dependencyType |= DependencyType.getPossible(); 
-		}
-		childText = childText.replaceFirst("MANDATORY|OPTIONAL|POSSIBLE", "").trim();
+//		childText = childText.replaceFirst("OR(?=\\s)|AND(?=\\s)", "").trim();
+//
+//		if(firstTokenString.matches("^(AND\\s|OR\\s)(MANDATORY\\s).*")) 
+//		{
+//			dependencyType |= DependencyType.getMandatory() ; 
+//		}
+//		else if(firstTokenString.matches("^(AND\\s|OR\\s)(OPTIONAL\\s).*"))
+//		{
+//			dependencyType |= DependencyType.getOptional(); 
+//		}
+//		else if(firstTokenString.matches("^(AND\\s|OR\\s)(POSSIBLE\\s).*"))
+//		{
+//			dependencyType |= DependencyType.getPossible(); 
+//		}
+//		childText = childText.replaceFirst("MANDATORY|OPTIONAL|POSSIBLE", "").trim();
 		
 		Node data = nodeSet.getNodeMap().get(childText); // remove dependencyType keywords like 'AND', 'OR', 'AND MANDATORY', and/or 'OR MANDATORY'
 		
