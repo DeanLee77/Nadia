@@ -40,9 +40,11 @@ public static void main(String[] args) {
 //		ValueConclusionLine vcl = new ValueConclusionLine(s, token);
 		
 		RuleSetReader ilr = new RuleSetReader();
-		ilr.setFileSource("ExprConclusionLine rule with NEEDS only.txt");
-//		ilr.setFileSource("ActsTriageRules.txt");
+		
+//		ilr.setFileSource("ExprConclusionLine rule with NEEDS only.txt");
 //		ilr.setFileSource("testingFile_For_A_IS_B_Type_Rule.txt");
+		ilr.setFileSource("Wedding Planner.txt");
+
 
 
 		RuleSetParser isf = new RuleSetParser();		

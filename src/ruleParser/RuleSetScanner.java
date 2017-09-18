@@ -82,58 +82,6 @@ public class RuleSetScanner {
 		
 		           		// is an indented child
 	           			scanFeeder.handleChild(parent, lineTrimed, lineNumber);	
-	           			
-	           			
-	                		if(lineTrimed.contains("ITEM"))
-	                		{
-	                			if(!parent.contains("LIST"))
-	                			{
-	                				scanFeeder.handleWarning(lineTrimed);
-	                				break;
-	                			}
-		                		// is an indented item child
-	                			lineTrimed = lineTrimed.replace("ITEM ", "").trim();
-	                			scanFeeder.handleListItem(parent, lineTrimed);
-		                         
-		                	}
-	                		else if(lineTrimed.contains("CHECK"))
-	                		{
-	                			if(!(parent.contains("ITERATE") || parent.contains("CHECK")))
-	                			{
-	                				scanFeeder.handleWarning(lineTrimed);
-	                				break;
-	                			}
-	                			else
-	                			{
-	                				if(parent.contains("ITERATE"))
-	                				{
-	                    				iterateParent = parent;
-	                				}
-	                				scanFeeder.handleIterateCheck(iterateParent, parent, lineTrimed, lineNumber);
-	                			}
-	                		}
-	                		else if(lineTrimed.contains("NEEDS")|| lineTrimed.contains("WANTS"))
-	                		{
-	                			if(!parent.contains("CALC"))
-	                			{
-	                				scanFeeder.handleWarning(lineTrimed);
-	                				break;
-	                			}
-	                			
-	                			if(lineTrimed.contains("NEEDS"))
-	                			{
-	                				scanFeeder.handleNeedWant(parent, lineTrimed.replace("NEEDS", "AND MANDATORY NEEDS"), lineNumber);
-	                			}
-	                			else
-	                			{
-	                				scanFeeder.handleNeedWant(parent, lineTrimed.replace("WANTS", "OR WANTS"), lineNumber);
-	                			}
-	                		}
-	                		else
-	                		{
-	                			// is an indented child
-		                       scanFeeder.handleChild(parent, lineTrimed, lineNumber);
-		                	}   
                     }
 
                } 
