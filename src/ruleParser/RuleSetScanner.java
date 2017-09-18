@@ -67,12 +67,10 @@ public class RuleSetScanner {
 	                   		
 	                   	}
 	                   	else if(indentationDifference < -1) // current line is not a direct child of previous line hence the format is invalid
-	                   	{
-	                   		
+	                   	{	                   		
 	               			//need to handle error
 	               			scanFeeder.handleWarning(lineTrimed);
-	               			break;
-	                   		
+	               			break;	                   		
 	                   	}
 	                   	
 	                   	parent = parentStack.pop();

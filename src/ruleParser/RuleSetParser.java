@@ -44,11 +44,11 @@ public class RuleSetParser implements IScanFeeder {
 
 //	enum LineType {META, VALUE_CONCLUSION, EXPR_CONCLUSION, COMPARISON, WARNING}
 	
-	final Pattern META_PATTERN_MATCHER = Pattern.compile("(^U)([MLU]*)([NoDaMLDeHaUrlId]*$)");
+	final Pattern META_PATTERN_MATCHER = Pattern.compile("(^U)([MLU]*)([(No)(Da)ML(De)(Ha)(Url)(Id)]*$)");
 	Pattern valueConclusionMatcher; //value of this variable is different in handleParent case and handleChild case
-	final Pattern EXPRESSION_CONCLUSION_MATCHER = Pattern.compile("(^[LMDa]+)(U)(C)");
-	final Pattern COMPARISON_MATCHER = Pattern.compile("(^U)([MLUDa]+)(O)([MLUNoDaDeHaUrlId]*$)");
-	final Pattern ITERATE_MATCHER = Pattern.compile("(^U)([MLUNoDa]+)(I)([MLU]+$)");
+	final Pattern EXPRESSION_CONCLUSION_MATCHER = Pattern.compile("(^[LM(Da)]+)(U)(C)");
+	final Pattern COMPARISON_MATCHER = Pattern.compile("(^U)([MLU(Da)]+)(O)([MLU(No)(Da)(De)(Ha)(Url)(Id)]*$)");
+	final Pattern ITERATE_MATCHER = Pattern.compile("(^U)([MLU(No)(Da)]+)(I)([MLU]+$)");
 	final Pattern WARNING_MATCHER = Pattern.compile("WARNING");
 	LineType matchTypes[] = LineType.values();
 	NodeSet nodeSet = new NodeSet();
@@ -67,7 +67,7 @@ public class RuleSetParser implements IScanFeeder {
 			 * In order to track more than one character within the square bracket of last group '*' needs to be used.
 			 * 
 			 */
-			valueConclusionMatcher = Pattern.compile("(^[LM]+)(U)?([MLNoDaDeHaUrlId]*$)(?!C)"); // parent statement must not have operators in the middle of the statement, hence there is no 'O' of Token.tokenString in the regex.
+			valueConclusionMatcher = Pattern.compile("(^[LM]+)(U)?([ML(No)(Da)(De)(Ha)(Url)(Id)]*$)(?!C)"); // parent statement must not have operators in the middle of the statement, hence there is no 'O' of Token.tokenString in the regex.
 			 
 			 
 			Tokens tokens = Tokenizer.getTokens(parentText);
@@ -188,20 +188,33 @@ public class RuleSetParser implements IScanFeeder {
 			childText = childText.replaceFirst("ITEM", "").trim();
 			handleListItem(parentText,childText);
 		}
+		else  // is 'A-statement' child line
+		{
+			int dependencyType = 0; 
+			
+			String firstTokenString = tokens.tokensList.get(0);
+			if(firstTokenString.matches("^(AND\\s?).*")) 
+			{
+				dependencyType = DependencyType.getAnd();
+			}
+			else if(firstTokenString.matches("^(OR\\s?).*"))
+			{
+				dependencyType = DependencyType.getOr(); 
+			}
+			/*
+			 * the keyword of 'AND' or 'OR' should be removed individually. 
+			 * it should NOT be removed by using firstToken string in Tokens.tokensList.get(0)
+			 * because firstToken string may have something else. 
+			 * (e.g. string: 'AND NOT ALL Males' name should sound Male', then Token string will be 'UMLM', and 'U' contains 'AND NOT ALL'.
+			 * so if we used 'firstToken string' to remove 'AND' in this case as 'string.replace(firstTokenString)' 
+			 * then it will remove 'AND NOT ALL' even we only need to remove 'AND' 
+			 * 
+			 */
+			
+			childText = childText.replaceFirst("OR(?=\\s)|AND(?=\\s)", "").trim();
+		}
 
-		// is 'A-statement' child line
 		
-		int dependencyType = 0; 
-		
-		String firstTokenString = tokens.tokensList.get(0);
-		if(firstTokenString.matches("^(AND\\s?).*")) 
-		{
-			dependencyType = DependencyType.getAnd();
-		}
-		else if(firstTokenString.matches("^(OR\\s?).*"))
-		{
-			dependencyType = DependencyType.getOr(); 
-		}
 //		childText = childText.replaceFirst("OR(?=\\s)|AND(?=\\s)", "").trim();
 //
 //		if(firstTokenString.matches("^(AND\\s|OR\\s)(MANDATORY\\s).*")) 
@@ -222,7 +235,7 @@ public class RuleSetParser implements IScanFeeder {
 		
 		if(data == null)
 		{
-			valueConclusionMatcher =Pattern.compile("(^U)([LMUDa]+$)"); // child statement for ValueConclusionLine starts with AND(OR), AND MANDATORY(OPTIONALLY, POSSIBLY) or AND (MANDATORY) (NOT) KNOWN
+			valueConclusionMatcher =Pattern.compile("(^U)([LMU(Da)(No)(De)(Ha)(Url)(Id)]+$)"); // child statement for ValueConclusionLine starts with AND(OR), AND MANDATORY(OPTIONALLY, POSSIBLY) or AND (MANDATORY) (NOT) KNOWN
 						
 			Pattern matchPatterns[] = { valueConclusionMatcher, COMPARISON_MATCHER, ITERATE_MATCHER, WARNING_MATCHER};
 			
