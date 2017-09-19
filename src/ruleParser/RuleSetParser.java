@@ -167,16 +167,25 @@ public class RuleSetParser implements IScanFeeder {
 			
 			// is an indented item child
 			childText = childText.replaceFirst("ITEM", "").trim();
-			handleListItem(parentText,childText);
+			MetaType metaType = null;
+			if(parentText.matches("^(INPUT)(.*)"))
+			{
+				metaType = MetaType.INPUT;
+			}
+			else if(parentText.matches("^(FIXED)(.*)"))
+			{
+				metaType = MetaType.FIXED;
+			}
+			handleListItem(parentText, childText, metaType);
 		}
 		else  // is 'A-statement' child line
 		{
 			String firstTokenString = tokens.tokensList.get(0);
-			if(firstTokenString.matches("^(AND\\s?).*")) 
+			if(firstTokenString.matches("^(AND\\s?)(.*)")) 
 			{
 				dependencyType = DependencyType.getAnd(); // 8
 			}
-			else if(firstTokenString.matches("^(OR\\s?).*"))
+			else if(firstTokenString.matches("^(OR\\s?)(.*)"))
 			{
 				dependencyType = DependencyType.getOr(); // 4
 			}
@@ -191,56 +200,54 @@ public class RuleSetParser implements IScanFeeder {
 			 */
 			
 			childText = childText.replaceFirst("OR(?=\\s)|AND(?=\\s)", "").trim();
-		}
-		
-		Node data = nodeSet.getNodeMap().get(childText); // remove dependencyType keywords like 'AND', 'OR', 'AND MANDATORY', and/or 'OR MANDATORY'
-		
-		if(data == null)
-		{
-			valueConclusionMatcher =Pattern.compile("(^U)([LMU(Da)(No)(De)(Ha)(Url)(Id)]+$)"); // child statement for ValueConclusionLine starts with AND(OR), AND MANDATORY(OPTIONALLY, POSSIBLY) or AND (MANDATORY) (NOT) KNOWN
-						
-			Pattern matchPatterns[] = { valueConclusionMatcher, WARNING_MATCHER};
 			
+			Node data = nodeSet.getNodeMap().get(childText); // remove dependencyType keywords like 'AND', 'OR', 'AND MANDATORY', and/or 'OR MANDATORY'
 			
-			Pattern p;
-			Matcher matcher;
-			
-			for(int i = 0; i < matchPatterns.length; i++) {
-				p = matchPatterns[i];
-				matcher = p.matcher(tokens.tokensString);
-				
-				if(matcher.find() == true)
-				{
-					switch(i)
-					{
-						case 3:
-							handleWarning(childText);
-							break;
-						case 0:
-							data = new ValueConclusionLine(childText, tokens);
+			if(data == null)
+			{
+				valueConclusionMatcher =Pattern.compile("(^U)([LMU(Da)(No)(De)(Ha)(Url)(Id)]+$)"); // child statement for ValueConclusionLine starts with AND(OR), AND MANDATORY(OPTIONALLY, POSSIBLY) or AND (MANDATORY) (NOT) KNOWN
 							
-							if(data.getFactValue().getValue().equals("WARNING"))
-							{
-								handleWarning(parentText);
-							}
-							break;
+				Pattern matchPatterns[] = { valueConclusionMatcher, WARNING_MATCHER};
+				
+				
+				Pattern p;
+				Matcher matcher;
+				
+				for(int i = 0; i < matchPatterns.length; i++) {
+					p = matchPatterns[i];
+					matcher = p.matcher(tokens.tokensString);
+					
+					if(matcher.find() == true)
+					{
+						switch(i)
+						{
+							case 3:
+								handleWarning(childText);
+								break;
+							case 0:
+								data = new ValueConclusionLine(childText, tokens);
+								
+								if(data.getFactValue().getValue().equals("WARNING"))
+								{
+									handleWarning(parentText);
+								}
+								break;
+						}
+						data.setNodeLine(lineNumber);
+						this.nodeSet.getNodeMap().put(data.getNodeName(), data);
+						this.nodeSet.getNodeIdMap().put(data.getNodeId(), data.getNodeName());
+						break;
 					}
-					data.setNodeLine(lineNumber);
-					this.nodeSet.getNodeMap().put(data.getNodeName(), data);
-					this.nodeSet.getNodeIdMap().put(data.getNodeId(), data.getNodeName());
-					break;
 				}
 			}
+			
+			this.dependencyList.add(new Dependency(this.nodeSet.getNode(parentText),data,dependencyType));
 		}
-		
-		this.dependencyList.add(new Dependency(this.nodeSet.getNode(parentText),data,dependencyType));
-		
-
 	}
 	
 	
 	@Override
-	public void handleListItem(String parentText, String itemText) {
+	public void handleListItem(String parentText, String itemText, MetaType metaType) {
 		Tokens tokens = Tokenizer.getTokens(itemText);
 		FactValue fv;
 		if(tokens.tokensString.equals("Da"))
@@ -278,7 +285,14 @@ public class RuleSetParser implements IScanFeeder {
 			fv = FactValue.parse(itemText);
 		}
 		String stringToGetFactValue = (parentText.substring(5, parentText.indexOf("AS"))).trim();
-		((FactListValue)this.nodeSet.getInputMap().get(stringToGetFactValue)).getListValue().add(fv);
+		if(metaType.equals(MetaType.INPUT))
+		{
+			((FactListValue)this.nodeSet.getInputMap().get(stringToGetFactValue)).getListValue().add(fv);
+		}
+		else if(metaType.equals(MetaType.FIXED))
+		{
+			((FactListValue)this.nodeSet.getFactMap().get(stringToGetFactValue)).getListValue().add(fv);
+		}
 	}
 	
 	

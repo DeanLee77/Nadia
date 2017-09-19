@@ -18,14 +18,14 @@ public static Tokens getTokens(String text)
 	Pattern spaceMatch = Pattern.compile("^\\s+");
 	Pattern iteratePattern = Pattern.compile("^(ITERATE:([\\s]*)LIST OF)(.)");
 	Pattern upperMatch = Pattern.compile("^([:'’\"\\p{Upper}_\\s]+(?!\\p{Lower}))"); 
-	Pattern lowerMatch = Pattern.compile("^((?!(ht|f)tp(s)?:\\/\\/www\\.)([\\p{Lower}-'’\"\\s]+(?!\\d)))");
+	Pattern lowerMatch = Pattern.compile("^((?!((ht|f)tp(s)?:\\/\\/www\\..*(com|au)$))([\\p{Lower}-'\\s]+(?!\\d)))");
 	Pattern mixedMatch = Pattern.compile("^(\\p{Upper}[\\p{Lower}-'’\"\\s]+)+");		
 	Pattern operatorPattern = Pattern.compile("^([<>=]+)");
 	Pattern calculationPattern = Pattern.compile("^(\\()([\\s|([\\d]+)(?!/.)|\\w|\\W]*)(\\))");
 	Pattern numberPattern = Pattern.compile("^(\\d+)(?!/|\\.|\\d)+");
 	Pattern decimalNumberPattern = Pattern.compile("^([\\d]+\\.\\d+)(?!\\d)");
 	Pattern datePattern = Pattern.compile("^([0-2]?[0-9]|3[0-1])/(0?[0-9]|1[0-2])/([0-9][0-9])?[0-9][0-9]|^([0-9][0-9])?[0-9][0-9]/(0?[0-9]|1[0-2])/([0-2]?[0-9]|3[0-1])");
-	Pattern urlPattern = Pattern.compile( "^((ht|f)tp(s?):\\/\\/www\\.)(([\\w\\-]+\\.){1,}?([\\w\\-.~]+\\/?)*[\\p{Alnum}.,%_=?&#\\-+()\\[\\]\\*$~@!:/{};']*)",Pattern.CASE_INSENSITIVE | Pattern.MULTILINE | Pattern.DOTALL);
+	Pattern urlPattern = Pattern.compile( "(^((ht|f)tp(s?):\\/\\/)?www\\.)(([\\w\\-]+\\.){1,}?([\\w\\-.~]+\\/?)*[\\p{Alnum}.,%_=?&#\\-+()\\[\\]\\*$~@!:/{};']*)",Pattern.CASE_INSENSITIVE | Pattern.MULTILINE | Pattern.DOTALL);
 	Pattern uuidPattern = Pattern.compile("[0-9a-f]{8}-([0-9a-f]{4}-){3}[0-9a-f]{12}");
 	Pattern hashPattern = Pattern.compile("^([-]?)([0-9a-f]*$)(?!\\-)*");
 	/*
@@ -55,7 +55,7 @@ public static Tokens getTokens(String text)
 					tokenString += tokenType[i];
 				}
 				
-				text = text.substring(matcher.end());
+				text = text.substring(matcher.end()).trim();
 				textLength = text.length();
 				break;
 			}

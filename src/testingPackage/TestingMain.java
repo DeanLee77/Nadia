@@ -77,6 +77,8 @@ public static void main(String[] args) {
 		keyList.forEach(key -> {
 			System.out.println(key+" : "+ie.getAssessmentState().getWorkingMemory().get(key));
 		});
+		
+		scan.close();
 	
 	}
 

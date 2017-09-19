@@ -7,7 +7,7 @@ INPUT Reception Fruits AS LIST
 INPUT the groom's name AS TEXT
 INPUT the groom's dob AS DATE
 INPUT the groom's age AS NUMBER
-FIXED the groom's homepage IS www.theGroomHomepage.com.au AS URL
+FIXED the groom's homepage IS https:\\www.theGroomHomepage.com.au AS URL
 FIXED the wedding booking schedule for the venue AS LIST
 	ITEM 2:00 - 3:00 : someone
 	ITEM 3:00 - 4:00 : somebody
