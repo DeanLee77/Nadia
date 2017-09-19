@@ -45,7 +45,7 @@ public class RuleSetParser implements IScanFeeder {
 
 //	enum LineType {META, VALUE_CONCLUSION, EXPR_CONCLUSION, COMPARISON, WARNING}
 	
-	final Pattern META_PATTERN_MATCHER = Pattern.compile("(^U)([MLU]*)([(No)(Da)ML(De)(Ha)(Url)(Id)]*$)");
+	final Pattern META_PATTERN_MATCHER = Pattern.compile("(^U)([MLU]*)([(No)(Da)ML(De)(Ha)(U(rl)?)(Id)]*$)");
 	Pattern valueConclusionMatcher; //value of this variable is different in handleParent case and handleChild case
 	final Pattern EXPRESSION_CONCLUSION_MATCHER = Pattern.compile("(^[LM(Da)]+)(U)(C)");
 	final Pattern COMPARISON_MATCHER = Pattern.compile("(^U)([MLU(Da)]+)(O)([MLU(No)(Da)(De)(Ha)(Url)(Id)]*$)");
@@ -137,7 +137,6 @@ public class RuleSetParser implements IScanFeeder {
 					{
 						this.nodeSet.getNodeMap().put(data.getNodeName(), data);
 						this.nodeSet.getNodeIdMap().put(data.getNodeId(), data.getNodeName());
-						this.dependencyList.add(new Dependency(data, data, 0));
 					}
 					break;
 				}
