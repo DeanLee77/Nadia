@@ -19,6 +19,10 @@ public class DeanTest {
 		String testStr4 = "FIXED the groom's homepage IS https://www.theGroomHomepage.com.au AS URL";
 		Tokens tk = Tokenizer.getTokens(testStr4);
 		System.out.println("tk: "+tk.tokensString);
+		
+		String testStr5 = "FIXED the groom's homepage \"lowercase sentence\"";
+		tk = Tokenizer.getTokens(testStr5);
+		System.out.println("tk: "+tk.tokensString);
 	}
 
 }

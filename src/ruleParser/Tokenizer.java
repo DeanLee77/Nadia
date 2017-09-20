@@ -18,7 +18,7 @@ public static Tokens getTokens(String text)
 	Pattern spaceMatch = Pattern.compile("^\\s+");
 	Pattern iteratePattern = Pattern.compile("^(ITERATE:([\\s]*)LIST OF)(.)");
 	Pattern upperMatch = Pattern.compile("^([:'’\"\\p{Upper}_\\s]+(?!\\p{Lower}))"); 
-	Pattern lowerMatch = Pattern.compile("^([\\p{Lower}-'\\s]+(?!\\d))");
+	Pattern lowerMatch = Pattern.compile("^([\\p{Lower}-'’\"\\s]+(?!\\d))");
 	Pattern mixedMatch = Pattern.compile("^(\\p{Upper}[\\p{Lower}-'’\"\\s]+)+");		
 	Pattern operatorPattern = Pattern.compile("^([<>=]+)");
 	Pattern calculationPattern = Pattern.compile("^(\\()([\\s|([\\d]+)(?!/.)|\\w|\\W]*)(\\))");
