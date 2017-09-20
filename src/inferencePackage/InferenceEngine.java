@@ -239,22 +239,45 @@ public class InferenceEngine {
 	    	HashMap<String, FactValue> tempInputMap = this.nodeSet.getInputMap();
 	    	boolean isComparisonLineType = node.getLineType().equals(LineType.COMPARISON);
 	    	boolean isValueConclusionLineType = node.getLineType().equals(LineType.VALUE_CONCLUSION);
-	    	boolean variableAndValueHasSameContents = nodeVariableName.equals(nodeValueString) && node.getLineType().equals(LineType.VALUE_CONCLUSION);
-	    	boolean nodeValueStringIsInInputList = tempInputMap.containsKey(nodeValueString);
-	    	boolean nodeValueStringIsInFixedList = tempFactMap.containsKey(nodeValueString);
+	   
 	    	
-	    	//ComparisonLine type node and type of the node's value is clearly defined  
-	    	if(isComparisonLineType && hasAlreadySetType)
+	    	//ComparisonLine type node and type of the node's value is clearly defined 
+	    	if(isComparisonLineType)
 	    	{
-	    		fvt = node.getFactValue().getType();
+	    		FactValueType nodeRHSType = ((ComparisonLine)node).getRHS().getType();
+	    		if(nodeRHSType.equals(FactValueType.DEFI_STRING))
+	    		{
+	    			fvt = FactValueType.STRING;
+	    		}
+	    		else if(hasAlreadySetType)
+	    		{
+	    			fvt= nodeRHSType;
+	    		}
+	    		else if(nodeRHSType.equals(FactValueType.STRING) || nodeRHSType.equals(FactValueType.TEXT))
+	    		{
+	    			if(tempInputMap.containsKey(((ComparisonLine)node).getLHS()))
+	    			{
+	    				fvt = tempInputMap.get(((ComparisonLine)node).getLHS()).getType();
+	    			}
+	    			else if(tempInputMap.containsKey(((ComparisonLine)node).getRHS().getValue().toString()))
+	    			{
+	    				fvt = tempInputMap.get(((ComparisonLine)node).getRHS().getValue().toString()).getType();
+	    			}
+	    		}
 	    	}
 	    	//ComparisonLine type node and type of the node's value is not clearly defined and not defined in INPUT nor FIXED list
 	    	//ValueConclusionLine type node and it is 'A-statement' line, and variableName is not defined neither INPUT nor FIXED 
-	    	else if((isComparisonLineType && !hasAlreadySetType && !nodeValueStringIsInFixedList && !nodeValueStringIsInInputList) 
-	    			|| (isValueConclusionLineType && variableAndValueHasSameContents && !(nodeValueStringIsInInputList || nodeValueStringIsInFixedList)))
+	    	else if(isValueConclusionLineType)
 	    	{
-	    		fvt = FactValueType.BOOLEAN;
-	    	}	   
+	    		if(((ValueConclusionLine)node).getIsInStatementFormat() && tempInputMap.containsKey(nodeVariableName))
+	    		{
+	    			fvt = tempInputMap.get(nodeVariableName).getType();
+	    		}
+	    		else
+	    		{
+	    			fvt = FactValueType.BOOLEAN;
+	    		}
+	    	}
 	    	else
 	    	{
 	        	FactValue factValueForNodeVariable = tempFactMap.get(nodeVariableName) == null? tempInputMap.get(nodeVariableName):tempFactMap.get(nodeVariableName);
