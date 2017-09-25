@@ -134,7 +134,7 @@ public class InferenceEngine {
     }
     
     /*
-     * this method uses backward-chaining, and it will return node to be asked of a given assessment, which has not been determined and 
+     * this method uses 'BACKWARD-CHAININING', and it will return node to be asked of a given assessment, which has not been determined and 
      * does not have any child nodes if the goal node of the given assessment has still not been determined.
      */
     public Node getNextQuestion(Assessment ass)
@@ -186,19 +186,33 @@ public class InferenceEngine {
     
     public List<String> getQuestionsfromNodeToBeAsked(Node nodeToBeAsked)
     {
-	    	List<String> questionList = new ArrayList<>();
-	    	
-	    	boolean isVariableInInputMap = nodeSet.getInputMap().get(nodeToBeAsked.getVariableName()) != null? true:false;
-	    	boolean isValueInInputMap = nodeSet.getInputMap().get(nodeToBeAsked.getFactValue().getValue().toString()) != null? true:false;
-	    	if(isVariableInInputMap)
-	    	{
-	    		questionList.add(nodeToBeAsked.getVariableName());
-	    	}
-	    	
-	    	if(isValueInInputMap)
-	    	{
-	    		questionList.add(nodeToBeAsked.getFactValue().getValue().toString());
-	    	}
+    		List<String> questionList = new ArrayList<>();
+    		LineType lineTypeOfNodeToBeAsked = nodeToBeAsked.getLineType();
+    		// the most child node line types are as follows
+    		// ValueConclusionLine type
+    		if(lineTypeOfNodeToBeAsked.equals(LineType.VALUE_CONCLUSION))
+    		{
+    			/*
+    			 * if the line format is 'A -statement' then node's name and variableName has same value so that either of them can be asked as a question
+    			 * 
+    			 * if the line format is 'A IS IN LIST B' then the value of node's variableName is 'A' and the value of node's value is 'B' so that only 'A' needs to be asked.
+    			 * list 'B' has to be provided in 'INPUT' or 'FIXED' list
+    			 * 
+    			 * In conclusion, if the line type is 'ValueConclusionLine' then node's variableName should be asked regardless its format
+    			 */
+
+			questionList.add(nodeToBeAsked.getVariableName());
+    		}
+    		// ComparionLine type
+    		else if(lineTypeOfNodeToBeAsked.equals(LineType.COMPARISON))
+    		{
+			questionList.add(nodeToBeAsked.getVariableName());
+			
+    			if(!nodeToBeAsked.getFactValue().getType().equals(FactValueType.DEFI_STRING) || !hasAlreadySetType(nodeToBeAsked.getFactValue()))
+    			{
+    				questionList.add(nodeToBeAsked.getFactValue().getValue().toString());
+    			}
+    		}
 	    	
 	    	return questionList;
     }
@@ -269,7 +283,7 @@ public class InferenceEngine {
 	    	//ValueConclusionLine type node and it is 'A-statement' line, and variableName is not defined neither INPUT nor FIXED 
 	    	else if(isValueConclusionLineType)
 	    	{
-	    		if(((ValueConclusionLine)node).getIsInStatementFormat() && tempInputMap.containsKey(nodeVariableName))
+	    		if(((ValueConclusionLine)node).getIsPlainStatementFormat() && tempInputMap.containsKey(nodeVariableName))
 	    		{
 	    			fvt = tempInputMap.get(nodeVariableName).getType();
 	    		}
@@ -353,6 +367,10 @@ public class InferenceEngine {
 	    	 * variableName and nodeName will have a same value if the node is the most child node, which means that the statement for the node does NOT contain
 	    	 * 'IS' keyword. 
 	    	 */
+	    	if(lineType.equals(LineType.VALUE_CONCLUSION))
+	    	{
+	    		if(((ValueConclusionLine)node).getIsPlainStatementFormat() && ast.getWorkingMemory().containsKey(node.getVariableName()))
+	    	}
 	    	if(((lineType.equals(LineType.VALUE_CONCLUSION) || lineType.equals(LineType.COMPARISON)) && ast.getWorkingMemory().containsKey(node.getVariableName()))
 	    			||(lineType.equals(LineType.ITERATE) && ast.getWorkingMemory().containsKey(node.getNodeName())))
 	    	{
@@ -425,7 +443,8 @@ public class InferenceEngine {
 	    	
 	    	
 	    	/*
-	    	 * once we got an answer from a user we need to do followings;
+	    	 * once an answer is given to the engine, then followings need to be done;
+	    	 *  1. The engine needs to know if the answer is for the value of node's variableName or the value of node's value(FactValue)
 	    	 *  1. set a value of a question, which is a value for a variableName of the node, being asked to a user in a workingMemory
 	    	 *  2. set a value of the node itself in a workingMemory.
 	    	 *     
@@ -669,7 +688,7 @@ public class InferenceEngine {
 	    		 * 	3. the rule is a statement of 'A IS IN LIST: B'
 	    		 * 	4. the rule is a statement of 'needs(wants) A'. this is from a child node of ExprConclusionLine type 
 	    		 */
-	    		boolean isInStatement = ((ValueConclusionLine)node).getIsInStatementFormat();
+	    		boolean isPlainStatementFormat = ((ValueConclusionLine)node).getIsPlainStatementFormat();
 	    		
 	    		/*
 	    		 * isAnyOrDependencyTrue() method contains trimming off method to cut off any 'UNDETERMINED' state 'OR' rules. 
@@ -680,7 +699,7 @@ public class InferenceEngine {
 	    			if(isAnyOrDependencyTrue(node, nodeOrOutDependencies)) //TRUE case
 	    			{
 	    				canDetermine = true;
-	    				if(isInStatement)
+	    				if(isPlainStatementFormat)
 					{
 	    					ast.setFact(node.getVariableName(), FactValue.parse(true));
 					}
@@ -695,7 +714,7 @@ public class InferenceEngine {
 	    			else if(isAllOrDependencyDetermined(nodeOrOutDependencies) && !isAnyOrDependencyTrue(node, nodeOrOutDependencies)) //FALSE case
 	    			{
 	    				canDetermine = true;
-	    				if(isInStatement)
+	    				if(isPlainStatementFormat)
 					{
 	    					ast.setFact(node.getVariableName(), FactValue.parse(false));
 					}
@@ -713,7 +732,7 @@ public class InferenceEngine {
 	    			if(isAllAndDependencyDetermined(nodeAndOutDependencies) && isAllAndDependencyTrue(node, nodeAndOutDependencies)) // TRUE case
 					{
 		    				canDetermine = true;
-		    				if(isInStatement)
+		    				if(isPlainStatementFormat)
 						{
 		    					ast.setFact(node.getVariableName(), FactValue.parse(false));
 						}
@@ -734,7 +753,7 @@ public class InferenceEngine {
 	    			else if(isAllAndDependencyDetermined(nodeAndOutDependencies) && isAnyAndDependencyFalse(nodeAndOutDependencies)) //FALSE case
 	    			{
 	    				canDetermine = true;
-	    				if(isInStatement)
+	    				if(isPlainStatementFormat)
 					{
 	    					ast.setFact(node.getVariableName(), FactValue.parse(false));
 					}

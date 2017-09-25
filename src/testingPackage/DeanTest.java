@@ -16,7 +16,7 @@ public class DeanTest {
 		System.out.println("test3: "+testStr3.matches("(^U)([LMU(Da)]+$)"));
 
 		
-		String testStr4 = "FIXED the groom's homepage IS https://www.theGroomHomepage.com.au AS URL";
+		String testStr4 = "FIXED the groom's homepage IS https://www.theGroomHomepage.com.au";
 		Tokens tk = Tokenizer.getTokens(testStr4);
 		System.out.println("tk: "+tk.tokensString);
 		

@@ -34,7 +34,7 @@ public abstract class Node {
 	
 	public abstract void initialisation(String parentText, Tokens tokens);
 	public abstract LineType getLineType();
-	public abstract FactValue selfEvaluate(HashMap<String, FactValue> workingMemory, ScriptEngine nashorn, int nodeOption );
+	public abstract HashMap<String,FactValue> selfEvaluate(HashMap<String, FactValue> workingMemory, ScriptEngine nashorn, int[][] dependencyMatrix );
 	
 	public void setNodeLine(int nodeLine)
 	{

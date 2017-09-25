@@ -113,7 +113,7 @@ public class ValueConclusionLine extends Node{
 		this.setValue(lastTokenString, lastToken);
 	}
 	
-	public boolean getIsInStatementFormat()
+	public boolean getIsPlainStatementFormat()
 	{
 		return this.isPlainStatementFormat;
 	}
@@ -126,11 +126,9 @@ public class ValueConclusionLine extends Node{
 	}
 	
 	@Override
-	public FactValue selfEvaluate(HashMap<String, FactValue> workingMemory, ScriptEngine nashorn, int nodeOption)
+	public HashMap<String, FactValue> selfEvaluate(HashMap<String, FactValue> workingMemory, ScriptEngine nashorn, int[][] dependencyMatrix)
 	{
 		FactValue fv = null;
-//		String firstWordOfNodeName = this.nodeName.split(" ")[0];
-//		boolean isWantsNeedsItem = firstWordOfNodeName.equals("wants")||firstWordOfNodeName.equals("needs")?true:false;
 		/*
 		 * Negation and Known type can only be used when the line is a child line
 		 * hence, only checking its variableName value against the workingMemory is necessary.
@@ -199,7 +197,7 @@ public class ValueConclusionLine extends Node{
 		
 		
 		
-		return fv;
+		return workingMemory;
 	}
 	
 	

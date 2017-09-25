@@ -486,7 +486,7 @@ public class IterateLine extends Node {
     	if(LineType.VALUE_CONCLUSION.equals(lineType))
     	{
     		
-    		boolean isInStatement = ((ValueConclusionLine)node).getIsInStatementFormat();
+    		boolean isPlainStatementFormat = ((ValueConclusionLine)node).getIsPlainStatementFormat();
     		
     		if(nodeAndOutDependencies.isEmpty() && !nodeOrOutDependencies.isEmpty()) // rule has only 'OR' child rules 
     		{
@@ -495,7 +495,7 @@ public class IterateLine extends Node {
     			{
     				canDetermine = true;
     				
-    				if(isInStatement)
+    				if(isPlainStatementFormat)
 				{
     					setFact(node.getVariableName(), FactValue.parse(true));
 				}
@@ -510,7 +510,7 @@ public class IterateLine extends Node {
     			else if(isAllOrDependencyDetermined(nodeOrOutDependencies) && !isAnyOrDependencyTrue(node, nodeOrOutDependencies)) //FALSE case
     			{
     				canDetermine = true;
-    				if(isInStatement)
+    				if(isPlainStatementFormat)
     				{
     					setFact(node.getVariableName(), FactValue.parse(false));
     				}
@@ -529,7 +529,7 @@ public class IterateLine extends Node {
 			{
     				canDetermine = true;
     				
-    				if(isInStatement)
+    				if(isPlainStatementFormat)
     				{
     					setFact(node.getVariableName(), FactValue.parse(false));
     				}
@@ -551,7 +551,7 @@ public class IterateLine extends Node {
     			{
     				canDetermine = true;
     				
-    				if(isInStatement)
+    				if(isPlainStatementFormat)
     				{
     					setFact(node.getVariableName(), FactValue.parse(false));
     				}
