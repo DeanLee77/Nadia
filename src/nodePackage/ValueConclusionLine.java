@@ -126,55 +126,30 @@ public class ValueConclusionLine extends Node{
 	}
 	
 	@Override
-	public HashMap<String, FactValue> selfEvaluate(HashMap<String, FactValue> workingMemory, ScriptEngine nashorn, int[][] dependencyMatrix)
+	public FactValue selfEvaluate(HashMap<String, FactValue> workingMemory, ScriptEngine nashorn)
 	{
 		FactValue fv = null;
 		/*
-		 * Negation and Known type can only be used when the line is a child line
+		 * Negation and Known type are a part of dependency 
 		 * hence, only checking its variableName value against the workingMemory is necessary.
 		 * type is as follows;
 		 *	1. the rule is a plain statement
-		 *		- evaluate based on outcome of its child nodes
-		 *		  there only will be an outcome of entire rule statement with negation or known type value
-		 *		  , which should be handled within selfEvaluate()
 		 *	2. the rule is a statement of 'A IS B'
-		 *		- evaluate based on outcomes of its child nodes
-		 *		  there will be an outcome for a statement of that is it true for 'A = B'?
-		 *		  , and out
 		 * 	3. the rule is a statement of 'A IS IN LIST: B'
 		 * 	4. the rule is a statement of 'needs(wants) A'. this is from a child node of ExprConclusionLine type 
 		 */
 		
 
-		if(this.isPlainStatementFormat)
+		if(this.isPlainStatementFormat && workingMemory.get(this.variableName).getType().equals(FactValueType.BOOLEAN))
 		{
-			
-			if((nodeOption & DependencyType.getNot()) == DependencyType.getNot() && !((nodeOption & DependencyType.getKnown()) == DependencyType.getKnown()))
-			{
-				fv = FactValue.parse(!Boolean.parseBoolean(workingMemory.get(this.variableName).getValue()));
-			}
-			else if(!((nodeOption & DependencyType.getNot()) == DependencyType.getNot()) && (nodeOption & DependencyType.getKnown()) == DependencyType.getKnown())
-			{
-				fv = FactValue.parse(workingMemory.get(this.variableName)!=null?true:false);
-			}
-			else if((nodeOption & DependencyType.getNot()) == DependencyType.getNot() && (nodeOption & DependencyType.getKnown()) == DependencyType.getKnown())
-			{
-				fv = FactValue.parse(workingMemory.get(this.variableName) != null?false:true);
-			}
-			else
-			{
-				if(workingMemory.get(this.variableName).getType().equals(FactValueType.BOOLEAN))
-				{
-					fv = FactValue.parse(Boolean.parseBoolean(workingMemory.get(this.variableName).getValue()));
-				}
-			}
+			fv = FactValue.parse(Boolean.parseBoolean(workingMemory.get(this.variableName).getValue()));
 		}
 		else if(this.nodeName.contains("IS IN LIST"))
 		{
+			@SuppressWarnings("rawtypes")
 			FactListValue tempFactValue = (FactListValue)workingMemory.get(this.value.getValue());
 			
-			fv = (nodeOption & DependencyType.getNot()) == DependencyType.getNot()?FactValue.parse(!tempFactValue.getListValue().contains(this.variableName)):
-								FactValue.parse(tempFactValue.getListValue().contains(this.variableName));
+			fv = FactValue.parse(tempFactValue.getListValue().contains(this.variableName));
 			
 		}
 		else if(this.nodeName.contains("IS") && !this.nodeName.contains("IN LIST"))
@@ -185,21 +160,11 @@ public class ValueConclusionLine extends Node{
 				lineValue = workingMemory.get(this.variableName).getValue().equals(this.getFactValue().getValue());
 			}
 			
-			if((nodeOption & DependencyType.getNot()) == DependencyType.getNot())
-			{
-				fv = FactValue.parse(!lineValue);
-			}
-			else
-			{
-				fv = FactValue.parse(lineValue);
-			}
+			fv = FactValue.parse(lineValue);
 		}
 		
 		
 		
-		return workingMemory;
+		return fv;
 	}
-	
-	
-
 }

@@ -42,7 +42,7 @@ public class ExprConclusionLine extends Node{
 	}
 	
 	@Override
-	public FactValue selfEvaluate(HashMap<String, FactValue> workingMemory, ScriptEngine nashorn, int nodeOption)
+	public FactValue selfEvaluate(HashMap<String, FactValue> workingMemory, ScriptEngine nashorn)
 	{
 		/*
 		 * calculation can only handle int, double(long) and difference in years between two dates at the moment.

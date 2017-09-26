@@ -1,0 +1,80 @@
+INPUT person’s name AS TEXT
+INPUT person’s dob AS DATE
+INPUT person’s gender AS TEXT
+INPUT person’s age AS NUMBER
+INPUT premium account type AS LIST
+	ITEM HAHAHOHO
+	ITEM HASHBRWON
+	ITEM GITHUB
+	ITEM ENGINE
+
+INPUT name list AS LIST
+	ITEM John Smith
+	ITEM Dean Tudir
+	ITEM Agness Huge
+		
+FIXED service start date IS 1/1/1988
+
+
+
+we have information about a person
+	OR we have person’s name and dob
+		AND KNOWN person’s name
+		AND KNOWN person’s dob  
+	OR we have the person’s passport
+	OR person’s name IS IN LIST: name list
+
+	
+person’s nationality IS Australian
+	AND one of the person’s parents is Australian
+	AND the person was born in Australia
+
+  
+
+person made it to Las Vegas
+	AND NOT the person missed the flight  
+  
+
+person qualifies for the grant
+	AND NOT person’s name = “troy jones”
+	AND the person’s dob > 01/01/1990          
+	AND the person is currently studying
+
+  
+person is eligible for a premium service
+	AND person's drinking habit = frequent drinker
+	AND person's account IS IN LIST: premium account type     
+	AND person’s nationality = Australian    
+ 
+  
+
+person's drinking habit IS social drinker
+	AND number of drinks the person consumes a week > 0
+	AND number of drinks the person consumes a week < 3
+
+person's drinking habit IS frequent drinker  
+	AND number of drinks the person consumes a week > 3
+	AND number of drinks the person consumes a week < 7
+
+person's drinking habit IS heavy drinker 
+	AND number of drinks the person consumes a week > 7  
+
+number of drinks the person consumes a week IS CALC ( (number of drinks the person consumes an hour * hours of drinks a day)*5)
+	NEEDS number of drinks the person consumes an hour
+	NEEDS hours of drinks a day 
+  
+  
+person is eligible for platinum service
+	AND person's drinking habit = heavy drinker
+	AND NONE person's health condition ITERATE: LIST OF person’s health check-up history
+		AND CHECK NOT person’s blood sugar level > 30
+		AND CHECK person’s lowest blood pressure = 120
+		AND CHECK person’s check-up date > service start date
+		AND CHECK year difference between 6/04/1994 and check-up date>= 3
+  		AND CHECK year difference between 6/04/1994 and check-up date IS CALC (check-up date - 6/04/1994)
+			NEEDS CHECK check-up date
+
+
+this is for quoted match, “this is double quoted” sentence.
+the person’s age IS around 50
+FIXED the groom's homepage IS https://www.theGroomHomepage.com.au

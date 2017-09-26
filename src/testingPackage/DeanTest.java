@@ -18,11 +18,12 @@ public class DeanTest {
 		
 		String testStr4 = "FIXED the groom's homepage IS https://www.theGroomHomepage.com.au";
 		Tokens tk = Tokenizer.getTokens(testStr4);
-		System.out.println("tk: "+tk.tokensString);
+		System.out.println("tk4: "+tk.tokensString);
 		
-		String testStr5 = "FIXED the groom's homepage \"lowercase sentence\"";
+		String testStr5 = "FIXED the groom's homepage \'lowercase sentence\'. this contains Q in tokensString";
 		tk = Tokenizer.getTokens(testStr5);
-		System.out.println("tk: "+tk.tokensString);
+		System.out.println("tk5: "+tk.tokensString);
+		
 	}
 
 }
