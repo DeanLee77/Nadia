@@ -1,80 +1,90 @@
 INPUT person’s name AS TEXT
-INPUT person’s dob AS DATE
-INPUT person’s gender AS TEXT
-INPUT person’s age AS NUMBER
-INPUT premium account type AS LIST
-	ITEM HAHAHOHO
-	ITEM HASHBRWON
-	ITEM GITHUB
-	ITEM ENGINE
+ULU
 
-INPUT name list AS LIST
-	ITEM John Smith
-	ITEM Dean Tudir
-	ITEM Agness Huge
+this line is for UUID ffa4788a-a33f-11e7-abc4-cec278b6b50a
+LUId
 		
 FIXED service start date IS 1/1/1988
-
-
+ULUDa
 
 we have information about a person
-	OR we have person’s name and dob
-		AND KNOWN person’s name
-		AND KNOWN person’s dob  
-	OR we have the person’s passport
-	OR person’s name IS IN LIST: name list
+L
 
+OR we have person’s name and dob
+UL
+
+AND KNOWN person’s name
+UL
+
+OR person’s name IS IN LIST: name list
+ULUL
 	
 person’s nationality IS Australian
-	AND one of the person’s parents is Australian
-	AND the person was born in Australia
-
-  
+LUM
 
 person made it to Las Vegas
-	AND NOT the person missed the flight  
-  
+LM  
 
-person qualifies for the grant
-	AND NOT person’s name = “troy jones”
-	AND the person’s dob > 01/01/1990          
-	AND the person is currently studying
+AND NOT person’s name = “troy jones”
+ULOQ
 
+AND the person’s dob > 01/01/1990
+ULODa
+          
+AND the person is currently studying
+UL
   
 person is eligible for a premium service
-	AND person's drinking habit = frequent drinker
-	AND person's account IS IN LIST: premium account type     
-	AND person’s nationality = Australian    
+L
+
+AND person's drinking habit = frequent drinker
+ULOL
+
+AND person's account IS IN LIST: premium account type
+ULUL     
+	
+AND person’s nationality = "Australian"
+ULOQ    
  
-  
-
 person's drinking habit IS social drinker
-	AND number of drinks the person consumes a week > 0
-	AND number of drinks the person consumes a week < 3
+LUL
 
-person's drinking habit IS frequent drinker  
-	AND number of drinks the person consumes a week > 3
-	AND number of drinks the person consumes a week < 7
+AND number of drinks the person consumes a week > 0
+ULONo
 
-person's drinking habit IS heavy drinker 
-	AND number of drinks the person consumes a week > 7  
+AND number of drinks the person consumes a week < ffa4788a-a33f-11e7-abc4-cec278b6b50a
+ULOId
+
+AND number of drinks the person consumes a week > https://www.theGroomHomepage.com.au
+ULOUrl
+	
+AND number of drinks the person consumes a week < 093059d79d009662a0a7f70c74cec934a73c1becc8ac813cdcc4995f2aeb882c
+ULOHa
+
 
 number of drinks the person consumes a week IS CALC ( (number of drinks the person consumes an hour * hours of drinks a day)*5)
-	NEEDS number of drinks the person consumes an hour
-	NEEDS hours of drinks a day 
-  
-  
+LUC
+ 
+year difference between 6/04/1994 and check-up date>= 3
+LDaLONo 
+ 
+year difference between 6/04/1994 and check-up date IS CALC (check-up date - 6/04/1994)
+LDaLUC
+ 
 person is eligible for platinum service
-	AND person's drinking habit = heavy drinker
-	AND NONE person's health condition ITERATE: LIST OF person’s health check-up history
-		AND CHECK NOT person’s blood sugar level > 30
-		AND CHECK person’s lowest blood pressure = 120
-		AND CHECK person’s check-up date > service start date
-		AND CHECK year difference between 6/04/1994 and check-up date>= 3
-  		AND CHECK year difference between 6/04/1994 and check-up date IS CALC (check-up date - 6/04/1994)
-			NEEDS CHECK check-up date
-
+L	
 
 this is for quoted match, “this is double quoted” sentence.
-the person’s age IS around 50
+LQL
+
+the person’s age IS around "50"
+LULQ
+
 FIXED the groom's homepage IS https://www.theGroomHomepage.com.au
+ULUUrl
+
+the price of a good is 12.35
+LDe
+
+Australian law was initiated date IS 19/11/1900
+MUDa
