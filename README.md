@@ -1,3 +1,4 @@
+
 # **Nadia** Rule/Inference Engine
 Much simpler and easy Rules Engine not only to use but also maintain 'Rules/Policy' for businesses
 
@@ -26,11 +27,13 @@ Add more features as follows;
 * Workflow engine with GUI based diagram editor 
 * Machine Learning type inference mechanism
 
+## 4. Contribution
+If you would like to contribute to this project, then please create your own branch and name the branch clearly. Once the work is done in the branch then do 'pull request' and send an email to 'suho2k12@icloud.com'.
 
-## 4. Make your own Rules/Policies
+## 5. Make your own Rules/Policies
 Please have a look at a file of testing rule. Within the example file, all indented rules uses 'Tab' key for indentation. The rule scanner considers of an indented rule as a child rule of previous rule in a rule text.
 
-## 5. How does it work
+## 6. How does it work
 There are a number of key components as follows;
 
 * Rule reader     : reads a rule/policy file, stream source, string source
@@ -61,5 +64,5 @@ An inference engine using forward chaining searches the inference rules until it
 * 'B is true' statement is unknown
 * 'A is true' statement is unknown
 
-## 6. License
+## 7. License
 Nadia is open source project and released under AGPL 3.0 License.
