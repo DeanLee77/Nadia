@@ -106,7 +106,7 @@ public class RuleSetParser implements IScanFeeder {
 								if(!possibleParentNodeKeyList.isEmpty())
 								{
 									possibleParentNodeKeyList.stream().forEachOrdered(item -> {
-										this.dependencyList.add(new Dependency(nodeSet.getNodeMap().get(item), tempNode, DependencyType.getOr())); //Dependency Type :OR
+										this.dependencyList.add(new Dependency(nodeSet.getNodeMap().get(item), tempNode, DependencyType.getOr()|DependencyType.getMandatory())); //Dependency Type :MANDATORY OR 
 									});
 								}
 							}					

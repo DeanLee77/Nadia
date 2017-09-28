@@ -1,3 +1,5 @@
+//this file has been tested with TokenizerTesting.java in testingPackage, and passed the testing.
+
 INPUT person’s name AS TEXT
 ULU
 

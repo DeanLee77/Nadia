@@ -83,9 +83,10 @@ public class InferenceEngine {
     {
 	    	nodeSet.getNodeMap().values().stream()
 	    								 .forEachOrdered((node) -> {
-	    									 if(node.getVariableName().equals(nodeVariableName))
+	    									 if(node.getVariableName().equals(nodeVariableName)||
+	    										node.getFactValue().getValue().toString().equals(nodeVariableName))
 											 {
-	    										 nodeFactList.add(node);
+	    										 	nodeFactList.add(node);
 											 }
 	    								});  
 		ast.getWorkingMemory().put(nodeVariableName, fv);
@@ -184,7 +185,7 @@ public class InferenceEngine {
 	    	return ass.getNodeToBeAsked();
     }
     
-    public List<String> getQuestionsfromNodeToBeAsked(Node nodeToBeAsked)
+    public List<String> getQuestionsFromNodeToBeAsked(Node nodeToBeAsked)
     {
     		List<String> questionList = new ArrayList<>();
     		LineType lineTypeOfNodeToBeAsked = nodeToBeAsked.getLineType();
@@ -380,6 +381,18 @@ public class InferenceEngine {
 		    		ast.setFact(node.getNodeName(), node.selfEvaluate(ast.getWorkingMemory(), this.scriptEngine));
 	    		}
 	    	}
+	    	else if(lineType.equals(LineType.COMPARISON))
+	    	{
+	    		
+	    	}
+	    	else if(lineType.equals(LineType.EXPR_CONCLUSION))
+	    	{
+	    		
+	    	}
+	    	else if(lineType.equals(LineType.ITERATE))
+	    	{
+	    		
+	    	}
 	    	return canEvaluate;
     }
 
@@ -389,7 +402,8 @@ public class InferenceEngine {
      * the reason for taking nodeName instead nodeVariableName is that it will be easier to find an exact node with nodeName
      * rather than nodeVariableName because a certain nodeVariableName could be found in several nodes
      */
-    public <T> void feedAnswerToNode(String NodeName, String questionName, T nodeValue, FactValueType nodeValueType)
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+	public <T> void feedAnswerToNode(String NodeName, String questionName, T nodeValue, FactValueType nodeValueType)
     {
 	    	Node targetNode = nodeSet.getNodeMap().get(NodeName);	    	
 	    	FactValue fv = null;
@@ -444,8 +458,8 @@ public class InferenceEngine {
 	    	
 	    	/*
 	    	 * once an answer is given to the engine, then followings need to be done;
-	    	 *  1. The engine needs to know if the answer is for the value of node's variableName or the value of node's value(FactValue)
-	    	 *  2. set a value of a question, which is a value for a variableName of the node, being asked to a user in a workingMemory
+	    	 *  1. The engine needs to know if the answer is for the node's variableName or the node's value(FactValue)
+	    	 *  2. set a value of a question, which is a value for a variableName or value of the node, being asked to a user in a workingMemory
 	    	 *  3. set a value of the node itself in a workingMemory.
 	    	 *     
 	    	 */
@@ -462,7 +476,35 @@ public class InferenceEngine {
 	    	
 	    	if(selfEvalFactValue != null)
 	    	{
-	    		ast.setFact(targetNode.getNodeName(), selfEvalFactValue); // add the value of targetNode itself into the workingMemory	        		        	
+	    		ast.setFact(targetNode.getNodeName(), selfEvalFactValue); // add the value of targetNode itself into the workingMemory	
+    			LineType lineType = targetNode.getLineType();
+	    		Boolean canHaveNot = (lineType.equals(LineType.VALUE_CONCLUSION) || lineType.equals(LineType.COMPARISON)|| lineType.equals(LineType.ITERATE))?true:false;
+	    		Boolean canHaveKnown = lineType.equals(LineType.VALUE_CONCLUSION);
+	    		IntStream.range(0, nodeSet.getDependencyMatrix().getDependencyMatrixArray()[0].length).forEach(i -> {
+	    			int dependencyType = nodeSet.getDependencyMatrix().getDependencyMatrixArray()[i][targetNode.getNodeId()]; 
+	    			
+	    			if(dependencyType!= 0)
+	    			{
+	    				if(canHaveKnown && ((dependencyType&(DependencyType.getNot()|DependencyType.getKnown())) == (DependencyType.getNot()|DependencyType.getKnown())))
+	    				{
+	    					ast.setFact("NOT KNOWN"+targetNode.getNodeName(), ((FactBooleanValue)selfEvalFactValue).negatingValue());
+	    				}
+	    				/*
+	    				 * ValueConclusionLine, ComparisonLine and IterateLine can have 'NOT'
+	    				 */
+	    				else if((dependencyType & DependencyType.getNot()) == DependencyType.getNot() && canHaveNot && !ast.getWorkingMemory().containsKey("NOT "+targetNode.getNodeName()))
+	    				{
+	    					ast.setFact("NOT "+targetNode.getNodeName(), ((FactBooleanValue)selfEvalFactValue).negatingValue());
+	    				}
+	    				/*
+	    				 * ValueConclusionLine can have 'KNOWN' 
+	    				 */
+	    				else if((dependencyType & DependencyType.getKnown()) == DependencyType.getKnown() && canHaveKnown)
+	    				{
+	    					ast.setFact("NOT "+targetNode.getNodeName(), FactValue.parse(true));
+	    				}
+	    			}
+	    		});
 	
 	        	/*
 	        	 * Note: in order to get summary view, each rules can be found in summaryList, and 
@@ -585,7 +627,7 @@ public class InferenceEngine {
 	    	 * 
 	    	 * -----ValueConclusion Type
 	    	 * there will be two cases for this type
-	    	 *    V.1 'TRUE' or "FALSE' value outcome case
+	    	 *    V.1 the format of node is 'A -statement' so that 'TRUE' or "FALSE' value outcome case
 	    	 *    	   V.1.1 if it has 'OR' child nodes
 	    	 *    			 V.1.1.1 TRUE case
 	    	 *    					 if there is any of child node is 'true'
@@ -617,45 +659,44 @@ public class InferenceEngine {
 	    	 *                     	 , and there is no need to trim off 'UNDETERMINED' child nodes other than 'MANDATORY' child nodes
 	    	 *                       because since 'virtual node' is introduced, any parent nodes won't have 'OR' and 'AND' dependency at the same time
 	    	 *         
-	    	 *         V.2.3 other than above scenario it can't be determined in 'V.1' case
+	    	 *         V.2.3 other than above scenario it can't be determined in 'V.2' case
 	    	 *              
 	    	 * -----ExprConclusion Type
 	    	 *    within rule text file, this node has two types of child node, 'NEEDS' and 'WANTS'.
 	    	 *    'NEEDS' child rule will be translated as 'MANDATORY_AND', and 'WANTS' child node will be 'OR' in the rule structure.
-	    	 *    In addition, back-propagation(evaluation) part will be done within the rule itself,
-	    	 *    Due to the case of this node type having 'NEEDS' and 'WANTS' child nodes at the same time, 
-	    	 *    the node type can have either only 'MANDATORY_AND's, or 'MANDATORY_AND' and 'OR' child rules
-	    	 *    As a result, followings needs checking
+	    	 *    In addition, back-propagation(evaluation) part will be done within checking dependency type,
+	    	 *    due to the case of the node having 'NEEDS' and 'WANTS' type to different parent nodes at the same time.
+	    	 *    the child node type can be either only 'MANDATORY_AND's, or 'MANDATORY_AND' and 'OR'.
+	    	 *    As a result, followings need checking
 	    	 *    E.1. if it has 'OR' child nodes
 	    	 *         E.1.1 the node CAN BE EVALUATED case
 	    	 *               if 'MANDATORY_OR' child node is determined, which means 'MANDATORY_AND' child node is determined
 	    	 *               then trim off 'UNDETERMINED' child nodes
-	    	 *         E.1.2 the rule CAN'T BE EVALUATED case
+	    	 *         E.1.2 the node CAN'T BE EVALUATED case
 	    	 *               if 'MANDATORY_OR' child node is not determined yet, which means 'MANDATORY_AND' child is not determined yet.
 	    	 *               
-	    	 *    E.2 if it has 'AND' child rules
+	    	 *    E.2 if it has 'AND' child nodes
 	    	 *        E.2.1 the rule CAN BE EVALUATED case
 	    	 *              if all 'MANDATORY_AND' rules are determined.
 	    	 * 
 	    	 * -----Comparison Type
 	    	 *    within rule text file, this node must not have any child nodes. 
-	    	 *    However, in the rule structure of NodeSet class, the rule which contains '=' operator' can have only 'OR' child node of ValueConclusionLine Type or ExprConclusionLine Type if there is a corresponded node(s).
+	    	 *    However, in the rule structure of NodeSet class, the node which contains '=' operator' can have only 'MANDATORY_OR' child node of ValueConclusionLine Type or ExprConclusionLine Type if there is. 
+	    	 *    The reason for having 'MANDATORY_OR' is that the node could have multiple ValueConclusion type or ExprConclusion type so that we must check all result of each child nodes to make decision on the node.
+	    	 *    
 	    	 *    In addition, the value of node type must exist among its child nodes' value.
 	    	 *    As a result, in order to confirm that whether or not the node type can be determined, there must be a value of its variableName in the workingMemory. 
 	    	 *    Back-propagation(evaluation) part will be done within the node itself by executing selfEvaluate().
 	    	 *
 	    	 *    
 	    	 * Note: the reason why only ResultType and ExpressionType are evaluated with selfEvaluation() is as follows;
-	    	 *       1. ResultType is only evaluated by comparing a value of rule's variable in workingMemory with the value in the rule
-	    	 *       2. ExpressionType is only evaluated by retrieving a value(s) of needed child rule(s)   
-	    	 *       3. BooleanConclusionType and ValueConclusionType is evaluated under same combination of various condition, and trimming dependency is involved.
-	    	 *          As a result, if selfEvaluate() is used in both rule type then each rule will have source code. 
-	    	 *        
+	    	 *       1. ComparisonType is only evaluated by comparing a value of rule's variable in workingMemory with the value in the node
+	    	 *       2. ExpressionType is only evaluated by retrieving a value(s) of needed child node(s)   
+	    	 *       3. ValueConclusionType is evaluated under same combination of various condition, and trimming dependency is involved.	    	 *        
 	    	 *       
 	    	 */
 	    	List<Integer> nodeOrOutDependencies = nodeSet.getDependencyMatrix().getOROutDependencyList(node.getNodeId());
 	    	List<Integer> nodeAndOutDependencies = nodeSet.getDependencyMatrix().getAndOutDependencyList(node.getNodeId());
-	    	int nodeOption = this.getNodeSet().getDependencyMatrix().getDependencyType(node.getNodeId(), node.getNodeId());
 	    	
 	    	if(LineType.VALUE_CONCLUSION.equals(lineType))
 	    	{
@@ -674,7 +715,7 @@ public class InferenceEngine {
 	    		boolean isPlainStatementFormat = ((ValueConclusionLine)node).getIsPlainStatementFormat();
 	    		
 	    		/*
-	    		 * isAnyOrDependencyTrue() method contains trimming off method to cut off any 'UNDETERMINED' state 'OR' rules. 
+	    		 * isAnyOrDependencyTrue() method contains trimming off method to cut off any 'UNDETERMINED' state 'OR' child nodes. 
 	    		 */
 	    		if(nodeAndOutDependencies.isEmpty() && !nodeOrOutDependencies.isEmpty()) // rule has only 'OR' child rules 
 	    		{
@@ -811,7 +852,10 @@ public class InferenceEngine {
 	}
     
 
-   
+   public  void evaluateAllDependenciesFromChildToParent(Node node, List<Integer> incomingDependencyList)
+   {
+	   
+   }
     
     public String getDefaultGoalRuleQuestion() 
     {

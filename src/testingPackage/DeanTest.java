@@ -1,28 +1,31 @@
 package testingPackage;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import factValuePackage.FactBooleanValue;
+import factValuePackage.FactValue;
+import nodePackage.DependencyType;
 import ruleParser.Tokenizer;
 import ruleParser.Tokens;
 
 public class DeanTest {
 
 	public static void main(String[] args) {
-		String testStr = "INPUT Reception Fruits AS LIST";
-		System.out.println(testStr.matches("(.*)(AS LIST)"));
-		
-		String testStr2 = "ITEM Rock ITEMmelon";
-		System.out.println("test2: "+testStr2.replace("ITEM","").trim());
-		
-		String testStr3 = "UMLDa";
-		System.out.println("test3: "+testStr3.matches("(^U)([LMU(Da)]+$)"));
+		FactBooleanValue fbv = FactValue.parse(true);
+		System.out.println("fbv: "+fbv.getValue());
+	
+		System.out.println("fbv negation: "+fbv.negatingValue());
+		System.out.println("fbv: "+fbv.getValue());
 
+		int dp = 3;
+		System.out.println((dp&(DependencyType.getNot()|DependencyType.getKnown())) == (DependencyType.getNot()|DependencyType.getKnown()));
 		
-		String testStr4 = "FIXED the groom's homepage IS https://www.theGroomHomepage.com.au";
-		Tokens tk = Tokenizer.getTokens(testStr4);
-		System.out.println("tk4: "+tk.tokensString);
-		
-		String testStr5 = "FIXED the groom's homepage \'lowercase sentence\'. this contains Q in tokensString";
-		tk = Tokenizer.getTokens(testStr5);
-		System.out.println("tk5: "+tk.tokensString);
+		String str = "\"double quoted\"";
+		Pattern p = Pattern.compile("(\")(.*)(\")");
+		Matcher m = p.matcher(str);
+		m.find();
+		System.out.println(m.group(2));
 		
 	}
 
