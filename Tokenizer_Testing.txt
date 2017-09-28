@@ -1,4 +1,5 @@
 //this file has been tested with TokenizerTesting.java in testingPackage, and passed the testing.
+// as you may see, the testing set consists of two lines. First line is for a rule string, and second line is an outcome of Tokenizer.
 
 INPUT person’s name AS TEXT
 ULU
