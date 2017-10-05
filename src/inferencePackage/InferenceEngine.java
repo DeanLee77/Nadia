@@ -103,7 +103,7 @@ public class InferenceEngine {
 	    	if(!nodeFactList.isEmpty())
 	    	{
 	    		nodeFactList.stream().forEachOrdered(node -> {
-	    			if(!nodeSet.getDependencyMatrix().getInDependencyList(node.getNodeId()).isEmpty())
+	    			if(!nodeSet.getDependencyMatrix().getFromParentDependencyList(node.getNodeId()).isEmpty())
 	    			{
 	    				Node relevantNode = auxFindRelevantFactors(node);
 	    				relevantFactorList.add(relevantNode);
@@ -116,13 +116,13 @@ public class InferenceEngine {
     public Node auxFindRelevantFactors(Node node)
     {
 	    	Node relevantFactorNode = null;
-	    	List<Integer> incomingDependencyList = nodeSet.getDependencyMatrix().getInDependencyList(node.getNodeId()); // it contains all id of parent node where dependency come from
+	    	List<Integer> incomingDependencyList = nodeSet.getDependencyMatrix().getFromParentDependencyList(node.getNodeId()); // it contains all id of parent node where dependency come from
 	    	if(!incomingDependencyList.isEmpty())
 	    	{
 	    		for(int i = 0; i < incomingDependencyList.size(); i++)
 	    		{
 	    			Node parentNode = nodeSet.getNodeMap().get(nodeSet.getNodeIdMap().get(incomingDependencyList.get(i)));
-	    			if(!nodeSet.getDependencyMatrix().getInDependencyList(parentNode.getNodeId()).isEmpty() 
+	    			if(!nodeSet.getDependencyMatrix().getFromParentDependencyList(parentNode.getNodeId()).isEmpty() 
 	    					&& !parentNode.getNodeName().equals(nodeSet.getNodeSortedList().get(0).getNodeName()))
 	    			{
 	    				relevantFactorNode = auxFindRelevantFactors(parentNode);
@@ -351,27 +351,27 @@ public class InferenceEngine {
     
     
     /*
-     * this is to check whether or not a node can be evaluated with all information in the workingMemory. If there is information for a value of node's value(FactValue), then the node can be evaluated otherwise not.
+     * this is to check whether or not a node can be evaluated with all information in the workingMemory. If there is information for a value of node's value(FactValue) or variableName, then the node can be evaluated otherwise not.
      * In order to do it, AssessmentState.workingMemory must contain a value for variable of the rule, 
-     * and rule type must be either COMPARISON, ITERATE or VALUE_CONCLUSION because they are the ones only can be the most child nodes.		
+     * and rule type must be either COMPARISON, ITERATE or VALUE_CONCLUSION because they are the ones only can be the most child nodes, 
+     * and other type of node must be a parent of other types of node.	
      */
     public boolean canEvaluate(Node node)
     {
     	
 	    	boolean canEvaluate = false;
 	    	LineType lineType = node.getLineType();
-	    	/*
-	    	 * the reason for checking only VALUE_CONCLUSION, COMPARISON and ITERATE type of node is that they are the only ones can be the most child nodes in rule structure.
-	    	 * other type of node must be a parent of other types of node.
-	    	 * In addition, the reason being to check only if there is a value for a variableName of the node in the workingMemory is that
-	    	 * only a value for variableName of the node is needed to evaluate the node. even if the node is ValueConclusionLine, it wouldn't be matter because
-	    	 * variableName and nodeName will have a same value if the node is the most child node, which means that the statement for the node does NOT contain
-	    	 * 'IS' keyword. 
-	    	 */
+
 	    	if(lineType.equals(LineType.VALUE_CONCLUSION))
 	    	{
 	    		if(((ValueConclusionLine)node).getIsPlainStatementFormat() && ast.getWorkingMemory().containsKey(node.getVariableName()))
 	    		{
+		    	    	/*
+		    	    	 * The reason being to check only if there is a value for a variableName of the node in the workingMemory is that
+		    	    	 * only a value for variableName of the node is needed to evaluate the node in this case of ValueConclusionLine because
+		    	    	 * variableName and nodeName will have a same value if the node is the most child node, which means that the statement for the node does NOT contain
+		    	    	 * 'IS' keyword. 
+		    	    	 */
 	    			canEvaluate = true;
 	    			
 	    			/*
@@ -573,7 +573,7 @@ public class InferenceEngine {
      */
     public void addParentIntoInclusiveList(Node node)
     {
-    		List<Integer> nodeInDependencyList = nodeSet.getDependencyMatrix().getInDependencyList(node.getNodeId());
+    		List<Integer> nodeInDependencyList = nodeSet.getDependencyMatrix().getFromParentDependencyList(node.getNodeId());
         if(!nodeInDependencyList.isEmpty()) // if rule has parents
         {
 	        	nodeInDependencyList.stream().forEachOrdered(i -> {
@@ -622,7 +622,7 @@ public class InferenceEngine {
 	    	 * Any type of node/line can have either 'OR' or 'AND' child nodes
 	    	 * do following logic to check whether or not the node is determinable
 	    	 * 1. check the node/line type
-	    	 * 2. within the node/line type, check if it has 'OR' child nodes or 'AND' child nodes ( nodeSet.getDependencyMatrix.gete.getOrOutDependency().isEmpty() or rule.getAndOutDependency().isEmpty()).
+	    	 * 2. within the node/line type, check if it has 'OR' child nodes or 'AND' child nodes ( nodeSet.getDependencyMatrix.getOrOutDependency(node.getNodeId()).isEmpty() or .getAndOutDependency(node.getNodeId()).isEmpty()).
 	    	 *    Apparently, dependencyType contains information of 'NOT', 'KNOWN', 'MANDATORY', 'OPTIONAL', and/or 'POSSIBLE' so that dependencyType must be checked to propagate.
 	    	 * 
 	    	 * -----ValueConclusion Type
@@ -644,7 +644,7 @@ public class InferenceEngine {
 	    	 *              
 	    	 *         V.1.3 other than above scenario it can't be determined in 'V.1' case
 	    	 *    
-	    	 *    V.2 a case of that the value in the node text can be used as a value of its node's variable
+	    	 *    V.2 a case of that the value in the node text can be used as a value of its node's variable (e.g. A IS B, B can be used as a value for variable, 'A' in this case if all its child nodes or one of its child node is true)
 	    	 *    	   V.2.1 if it has 'OR' child nodes
 	    	 *    			 V.2.1.1 the value CAN BE USED case
 	    	 *    					 if its any of child node is 'true'
@@ -695,8 +695,9 @@ public class InferenceEngine {
 	    	 *       3. ValueConclusionType is evaluated under same combination of various condition, and trimming dependency is involved.	    	 *        
 	    	 *       
 	    	 */
-	    	List<Integer> nodeOrOutDependencies = nodeSet.getDependencyMatrix().getOROutDependencyList(node.getNodeId());
-	    	List<Integer> nodeAndOutDependencies = nodeSet.getDependencyMatrix().getAndOutDependencyList(node.getNodeId());
+	    	List<Integer> orToChildDependencies = nodeSet.getDependencyMatrix().getOrToChildDependencyList(node.getNodeId());
+	    	List<Integer> andToChildDependencies = nodeSet.getDependencyMatrix().getAndToChildDependencyList(node.getNodeId());
+	    	List<Integer> allFromParentDependencyList = nodeSet.getDependencyMatrix().getFromParentDependencyList(node.getNodeId());
 	    	
 	    	if(LineType.VALUE_CONCLUSION.equals(lineType))
 	    	{
@@ -704,11 +705,9 @@ public class InferenceEngine {
 	    		 *	1. the rule is a plain statement
 	    		 *		- evaluate based on outcome of its child nodes
 	    		 *		  there only will be an outcome of entire rule statement with negation or known type value
-	    		 *		  , which should be handled within selfEvaluate()
 	    		 *	2. the rule is a statement of 'A IS B'
 	    		 *		- evaluate based on outcomes of its child nodes
 	    		 *		  there will be an outcome for a statement of that is it true for 'A = B'?
-	    		 *		  , and out
 	    		 * 	3. the rule is a statement of 'A IS IN LIST: B'
 	    		 * 	4. the rule is a statement of 'needs(wants) A'. this is from a child node of ExprConclusionLine type 
 	    		 */
@@ -717,10 +716,10 @@ public class InferenceEngine {
 	    		/*
 	    		 * isAnyOrDependencyTrue() method contains trimming off method to cut off any 'UNDETERMINED' state 'OR' child nodes. 
 	    		 */
-	    		if(nodeAndOutDependencies.isEmpty() && !nodeOrOutDependencies.isEmpty()) // rule has only 'OR' child rules 
+	    		if(andToChildDependencies.isEmpty() && !orToChildDependencies.isEmpty()) // rule has only 'OR' child rules 
 	    		{
 	    			
-	    			if(isAnyOrDependencyTrue(node, nodeOrOutDependencies)) //TRUE case
+	    			if(isAnyOrDependencyTrue(node, orToChildDependencies)) //TRUE case
 	    			{
 	    				canDetermine = true;
 	    				if(isPlainStatementFormat)
@@ -735,7 +734,7 @@ public class InferenceEngine {
 	    				
 	    				ast.setFact(node.getNodeName(), node.selfEvaluate(ast.getWorkingMemory(), this.scriptEngine, nodeOption));
 	    			}
-	    			else if(isAllOrDependencyDetermined(nodeOrOutDependencies) && !isAnyOrDependencyTrue(node, nodeOrOutDependencies)) //FALSE case
+	    			else if(isAllOrDependencyDetermined(orToChildDependencies) && !isAnyOrDependencyTrue(node, orToChildDependencies)) //FALSE case
 	    			{
 	    				canDetermine = true;
 	    				if(isPlainStatementFormat)

@@ -41,25 +41,25 @@ public class DependencyMatrix {
 	{
 		return this.dependencyMatrix[parentRuleId][childRuleId];
 	}
-	public List<Integer> getOutDependencyList(int nodeId)
+	public List<Integer> getToChildDependencyList(int nodeId)
 	{		
 		return IntStream.range(0, this.dependencyMatrixSize).filter(i -> i != nodeId && this.dependencyMatrix[nodeId][i] != 0 ).boxed().collect(Collectors.toList());
 	}
 	
-	public List<Integer> getOROutDependencyList(int nodeId)
+	public List<Integer> getOrToChildDependencyList(int nodeId)
 	{
 		int orDependency = DependencyType.getOr();
 		return IntStream.range(0, this.dependencyMatrixSize).filter(i -> i != nodeId && (this.dependencyMatrix[nodeId][i] & orDependency) == orDependency)
 															.boxed().collect(Collectors.toList());
 	}
-	public List<Integer> getAndOutDependencyList(int nodeId)
+	public List<Integer> getAndToChildDependencyList(int nodeId)
 	{
 		int andDependency = DependencyType.getAnd();
 
 		return IntStream.range(0, this.dependencyMatrixSize).filter(i -> i != nodeId && (this.dependencyMatrix[nodeId][i] & andDependency) == andDependency)
 															.boxed().collect(Collectors.toList());
 	}
-	public List<Integer> getMandatoryOutDependencyList(int nodeId)
+	public List<Integer> getMandatoryToChildDependencyList(int nodeId)
 	{
 		int mandatoryDependency = DependencyType.getMandatory();
 		return IntStream.range(0, this.dependencyMatrixSize).filter(i -> i != nodeId && (this.dependencyMatrix[nodeId][i] & mandatoryDependency) == mandatoryDependency)
@@ -67,24 +67,9 @@ public class DependencyMatrix {
 	}
 	
 	
-	public List<Integer> getInDependencyList(int nodeId)
+	public List<Integer> getFromParentDependencyList(int nodeId)
 	{
 		return IntStream.range(0, this.dependencyMatrixSize).filter(i -> i != nodeId && this.dependencyMatrix[i][nodeId] != 0)
 															.boxed().collect(Collectors.toList());
-	}
-
-	public boolean nodeIsMandatory(int nodeId)
-	{
-		return this.dependencyMatrix[nodeId][nodeId] == DependencyType.getMandatory();
-	}
-	
-	public boolean nodeIsOptional(int nodeId)
-	{
-		return this.dependencyMatrix[nodeId][nodeId] == DependencyType.getOptional();
-	}
-	
-	public boolean nodeIsPossible(int nodeId)
-	{
-		return this.dependencyMatrix[nodeId][nodeId] == DependencyType.getPossible();
 	}
 }
