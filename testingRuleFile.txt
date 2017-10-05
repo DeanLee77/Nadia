@@ -1,5 +1,3 @@
-//this rule has been tried for parsing and sorting, and Nadia has successfully done it
-
 INPUT person's name AS TEXT
 INPUT person's dob AS DATE
 INPUT person's gender AS TEXT
@@ -31,6 +29,7 @@ INPUT person’s blood sugar level AS NUMBER
 INPUT person’s lowest blood pressure AS NUMBER
 INPUT person’s check-up date AS DATE
 INPUT check-up date AS DATE
+
 
 
 we have information about a person
@@ -89,8 +88,30 @@ person is eligible for platinum service
 		AND CHECK person’s lowest blood pressure = 120
 		AND CHECK person’s check-up date > service start date
 		AND CHECK year difference between 6/04/1994 and check-up date>= 3
-		AND CHECK year difference between 6/04/1994 and check-up date IS CALC (check-up date - 6/04/1994)
-			NEEDS CHECK check-up date
+  			AND CHECK year difference between 6/04/1994 and check-up date IS CALC (check-up date - 6/04/1994)
+				NEEDS CHECK check-up date
 
+———————————————————————————————
+
+INPUT the person AS CONTEXT
+
+years past since checkup IS CALC years(check-up date, today) 
+       NEEDS check-up date
+
+
+year difference is not too much
+	AND years past since checkup < 3
+
+
+person's health condition
+	AND NOT person’s blood sugar level > 30
+	AND person’s lowest blood pressure = 120
+	AND person’s check-up date > service start date
+	AND year difference between 6/04/1994 and check-up date>= 3
+	AND year difference is not too much
+
+person is eligible for platinum service
+	AND person's drinking habit = heavy drinker
+	AND the person CHECK person's health condition
 
 
