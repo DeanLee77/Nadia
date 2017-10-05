@@ -63,7 +63,7 @@ public static void main(String[] args) {
 			System.out.println("questionFvt :"+questionFvt);
 			System.out.println("Question: "+nextQuestionNode.getNodeName() +" ?");
 			FactValueType fvt = null;
-			for(String question: ie.getQuestionsfromNodeToBeAsked(nextQuestionNode))
+			for(String question: ie.getQuestionsFromNodeToBeAsked(nextQuestionNode))
 			{
 				System.out.println("Question: " + question);
 				String answer = scan.nextLine();			

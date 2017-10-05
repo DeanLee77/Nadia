@@ -69,10 +69,18 @@ public class InferenceEngine {
      * this method is to extract all variableName of Nodes, and put them into a List<String>
      * it may be useful to display and ask a user to select which information they do have even before starting Inference process
      */
-    public List<String> getListOfVariableNameOfNodes()
+    public List<String> getListOfVariableNameAndValueOfNodes()
     {
 	    	List<String> variableNameList = null;
-	    	nodeSet.getNodeMap().values().stream().forEachOrdered(node -> variableNameList.add(node.getVariableName()));
+	    	nodeSet.getNodeMap().values().stream().forEachOrdered(node -> {
+	    		variableNameList.add(node.getVariableName());
+	    		FactValueType nodeFactValueType = node.getFactValue().getType();
+	    		if(nodeFactValueType.equals(FactValueType.BOOLEAN) || nodeFactValueType.equals(FactValueType.STRING))
+	    		{
+	    			variableNameList.add(node.getFactValue().getValue().toString());
+	    		}
+    		});
+	    	
 	    	
 	    	return variableNameList;
     }
@@ -461,6 +469,7 @@ public class InferenceEngine {
 	    	 *  1. The engine needs to know if the answer is for the node's variableName or the node's value(FactValue)
 	    	 *  2. set a value of a question, which is a value for a variableName or value of the node, being asked to a user in a workingMemory
 	    	 *  3. set a value of the node itself in a workingMemory.
+	    	 *  4. back propagate up until no longer forward chaining possible.
 	    	 *     
 	    	 */
 	    	if(questionName.equals(targetNode.getVariableName()))
@@ -477,39 +486,6 @@ public class InferenceEngine {
 	    	if(selfEvalFactValue != null)
 	    	{
 	    		ast.setFact(targetNode.getNodeName(), selfEvalFactValue); // add the value of targetNode itself into the workingMemory	
-    			LineType lineType = targetNode.getLineType();
-	    		Boolean canHaveNot = (lineType.equals(LineType.VALUE_CONCLUSION) || lineType.equals(LineType.COMPARISON)|| lineType.equals(LineType.ITERATE))?true:false;
-	    		Boolean canHaveKnown = lineType.equals(LineType.VALUE_CONCLUSION);
-	    		IntStream.range(0, nodeSet.getDependencyMatrix().getDependencyMatrixArray()[0].length).forEach(i -> {
-	    			int dependencyType = nodeSet.getDependencyMatrix().getDependencyMatrixArray()[i][targetNode.getNodeId()]; 
-	    			
-	    			if(dependencyType!= 0)
-	    			{
-	    				if(canHaveKnown && ((dependencyType&(DependencyType.getNot()|DependencyType.getKnown())) == (DependencyType.getNot()|DependencyType.getKnown())))
-	    				{
-	    					ast.setFact("NOT KNOWN"+targetNode.getNodeName(), ((FactBooleanValue)selfEvalFactValue).negatingValue());
-	    				}
-	    				/*
-	    				 * ValueConclusionLine, ComparisonLine and IterateLine can have 'NOT'
-	    				 */
-	    				else if((dependencyType & DependencyType.getNot()) == DependencyType.getNot() && canHaveNot && !ast.getWorkingMemory().containsKey("NOT "+targetNode.getNodeName()))
-	    				{
-	    					ast.setFact("NOT "+targetNode.getNodeName(), ((FactBooleanValue)selfEvalFactValue).negatingValue());
-	    				}
-	    				/*
-	    				 * ValueConclusionLine can have 'KNOWN' 
-	    				 */
-	    				else if((dependencyType & DependencyType.getKnown()) == DependencyType.getKnown() && canHaveKnown)
-	    				{
-	    					ast.setFact("NOT "+targetNode.getNodeName(), FactValue.parse(true));
-	    				}
-	    			}
-	    		});
-	
-	        	/*
-	        	 * Note: in order to get summary view, each rules can be found in summaryList, and 
-	        	 *       actual evaluation value can be found in workingMemory by looking up with each node's variable
-	        	 */
 	        	ast.getSummaryList().add(targetNode);
 	        	/*
 	        	 * once any rules are set as fact and stored into the workingMemory, forward-chaining(back-propagation) needs to be done
@@ -731,8 +707,13 @@ public class InferenceEngine {
 	    					ast.setFact(node.getVariableName(), node.getFactValue());
 	    				}
 	    				
+	    				allFromParentDependencyList.stream().forEach(i -> {
+	    					if((i & DependencyType.getKnown()) == DependencyType.getKnown())
+	    					{
+	    						
+	    					}
+	    				});
 	    				
-	    				ast.setFact(node.getNodeName(), node.selfEvaluate(ast.getWorkingMemory(), this.scriptEngine, nodeOption));
 	    			}
 	    			else if(isAllOrDependencyDetermined(orToChildDependencies) && !isAnyOrDependencyTrue(node, orToChildDependencies)) //FALSE case
 	    			{
