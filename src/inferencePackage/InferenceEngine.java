@@ -595,7 +595,7 @@ public class InferenceEngine {
 	{
 	    	boolean canDetermine = false;
 	    	/*
-	    	 * Any type of node/line can have either 'OR' or 'AND' child nodes
+	    	 * Any type of node/line can have either 'OR' or 'AND' type of child nodes
 	    	 * do following logic to check whether or not the node is determinable
 	    	 * 1. check the node/line type
 	    	 * 2. within the node/line type, check if it has 'OR' child nodes or 'AND' child nodes ( nodeSet.getDependencyMatrix.getOrOutDependency(node.getNodeId()).isEmpty() or .getAndOutDependency(node.getNodeId()).isEmpty()).
@@ -734,61 +734,6 @@ public class InferenceEngine {
 	    				
 	    			}
 			
-	    		}
-	    	}
-	    	else if(LineType.EXPR_CONCLUSION.equals(lineType))
-	    	{
-	
-	    		if(!nodeAndOutDependencies.isEmpty() && nodeOrOutDependencies.isEmpty()) // rule has 'MANDATORY_OR' and 'OR' child rules 
-	    		{
-	    			for(int i=0; i < nodeOrOutDependencies.size(); i++)
-	    			{
-	    				int mandatoryOrDependencyType = DependencyType.getMandatory() | DependencyType.getOr();
-	    				if((nodeSet.getDependencyMatrix().getDependencyMatrixArray()[node.getNodeId()][nodeOrOutDependencies.get(i)] & mandatoryOrDependencyType) == mandatoryOrDependencyType)
-	    				{
-	    					if(ast.getWorkingMemory().get(nodeSet.getNodeMap().get(nodeSet.getNodeIdMap().get(nodeOrOutDependencies.get(i))).getVariableName()) != null)
-	    					{
-	    						canDetermine = true;
-	    						ast.setFact(node.getVariableName(), node.selfEvaluate(ast.getWorkingMemory(), this.scriptEngine, nodeOption)); // add currentRule into the workingMemory
-	    					}
-	    				}
-	    				else
-	    				{
-	    					ast.getInclusiveList().remove(nodeSet.getNodeMap().get(nodeSet.getNodeIdMap().get(i)).getNodeName());
-	    				}
-	    			}    			
-	    		}
-	    		else if(nodeAndOutDependencies.isEmpty() &&!nodeOrOutDependencies.isEmpty())// rule has only 'MANDATORY_AND' child rules
-	    		{
-	    			if(allNeedsChildDetermined(node, nodeAndOutDependencies)) // TRUE case
-					{
-		    				canDetermine = true;
-		    				/*  
-	 	                 * The reason why ast.setFact() is used here rather than this.addFactToRule() is that ruleType is already known, and target rule object is already found. 
-	 	                 */
-	 	                ast.setFact(node.getVariableName(), node.selfEvaluate(ast.getWorkingMemory(), this.scriptEngine, nodeOption)); // add currentRule into the workingMemory
-					}
-			
-	    		}
-	    	}
-	    	else if(LineType.COMPARISON.equals(lineType))
-	    	{
-	    		
-	    		if(ast.getWorkingMemory().get(node.getVariableName()) != null)
-	    		{
-	    			canDetermine = true;
-	    			/*  
-	    			 * The reason why ast.setFact() is used here rather than this.addFactToRule() is that ruleType is already known, and target rule object is already found. 
-	    			 */
-	     		   ast.setFact(node.getNodeName(), node.selfEvaluate(ast.getWorkingMemory(), this.scriptEngine, nodeOption)); // add currentRule into the workingMemory
-	    		}
-	    	}
-	    	else if(LineType.ITERATE.equals(lineType))
-	    	{
-	    		if(ast.getWorkingMemory().get(node.getFactValue().getValue().toString()) != null )
-	    		{
-	    			canDetermine = true;
-	    			ast.setFact(node.getNodeName(), node.selfEvaluate(ast.getWorkingMemory(), this.scriptEngine, nodeOption));
 	    		}
 	    	}
 	    	
