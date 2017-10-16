@@ -68,7 +68,7 @@ public class RuleSetParser implements IScanFeeder {
 			 * In order to track more than one character within the square bracket of last group '*' needs to be used.
 			 * 
 			 */
-			valueConclusionMatcher = Pattern.compile("(^[LM]+)(U)?([ML(No)(Da)(De)(Ha)(Url)(Id)]*$)(?!C)"); // parent statement must not have operators in the middle of the statement, hence there is no 'O' of Token.tokenString in the regex.
+			valueConclusionMatcher = Pattern.compile("(^[LM]+)(U)?([MLQ(No)(Da)(De)(Ha)(Url)(Id)]*$)(?!C)"); // parent statement must not have operators in the middle of the statement, hence there is no 'O' of Token.tokenString in the regex.
 			 
 			 
 			Tokens tokens = Tokenizer.getTokens(parentText);

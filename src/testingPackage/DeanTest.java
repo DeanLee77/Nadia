@@ -2,6 +2,7 @@ package testingPackage;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.*;
 
 import factValuePackage.FactBooleanValue;
 import factValuePackage.FactValue;
@@ -26,6 +27,13 @@ public class DeanTest {
 		Matcher m = p.matcher(str);
 		m.find();
 		System.out.println(m.group(2));
+		
+		Pattern pt = Pattern.compile("^[\\d\\-()\\s\\+\\\\]*$");
+		String phone = "(+23)423\\12312";
+		Matcher ma= pt.matcher(phone);
+		String test = "^[\\d\\-()\\s\\+]*$";
+		System.out.println(ma.find());
+		System.out.println(phone.replaceAll("[\\-\\(\\)\\s\\+\\\\]", ""));
 		
 	}
 

@@ -637,33 +637,6 @@ public class InferenceEngine {
 	    	 *         
 	    	 *         V.2.3 other than above scenario it can't be determined in 'V.2' case
 	    	 *              
-	    	 * -----ExprConclusion Type
-	    	 *    within rule text file, this node has two types of child node, 'NEEDS' and 'WANTS'.
-	    	 *    'NEEDS' child rule will be translated as 'MANDATORY_AND', and 'WANTS' child node will be 'OR' in the rule structure.
-	    	 *    In addition, back-propagation(evaluation) part will be done within checking dependency type,
-	    	 *    due to the case of the node having 'NEEDS' and 'WANTS' type to different parent nodes at the same time.
-	    	 *    the child node type can be either only 'MANDATORY_AND's, or 'MANDATORY_AND' and 'OR'.
-	    	 *    As a result, followings need checking
-	    	 *    E.1. if it has 'OR' child nodes
-	    	 *         E.1.1 the node CAN BE EVALUATED case
-	    	 *               if 'MANDATORY_OR' child node is determined, which means 'MANDATORY_AND' child node is determined
-	    	 *               then trim off 'UNDETERMINED' child nodes
-	    	 *         E.1.2 the node CAN'T BE EVALUATED case
-	    	 *               if 'MANDATORY_OR' child node is not determined yet, which means 'MANDATORY_AND' child is not determined yet.
-	    	 *               
-	    	 *    E.2 if it has 'AND' child nodes
-	    	 *        E.2.1 the rule CAN BE EVALUATED case
-	    	 *              if all 'MANDATORY_AND' rules are determined.
-	    	 * 
-	    	 * -----Comparison Type
-	    	 *    within rule text file, this node must not have any child nodes. 
-	    	 *    However, in the rule structure of NodeSet class, the node which contains '=' operator' can have only 'MANDATORY_OR' child node of ValueConclusionLine Type or ExprConclusionLine Type if there is. 
-	    	 *    The reason for having 'MANDATORY_OR' is that the node could have multiple ValueConclusion type or ExprConclusion type so that we must check all result of each child nodes to make decision on the node.
-	    	 *    
-	    	 *    In addition, the value of node type must exist among its child nodes' value.
-	    	 *    As a result, in order to confirm that whether or not the node type can be determined, there must be a value of its variableName in the workingMemory. 
-	    	 *    Back-propagation(evaluation) part will be done within the node itself by executing selfEvaluate().
-	    	 *
 	    	 *    
 	    	 * Note: the reason why only ResultType and ExpressionType are evaluated with selfEvaluation() is as follows;
 	    	 *       1. ComparisonType is only evaluated by comparing a value of rule's variable in workingMemory with the value in the node
@@ -677,16 +650,7 @@ public class InferenceEngine {
 	    	
 	    	if(LineType.VALUE_CONCLUSION.equals(lineType))
 	    	{
-	    		/*
-	    		 *	1. the rule is a plain statement
-	    		 *		- evaluate based on outcome of its child nodes
-	    		 *		  there only will be an outcome of entire rule statement with negation or known type value
-	    		 *	2. the rule is a statement of 'A IS B'
-	    		 *		- evaluate based on outcomes of its child nodes
-	    		 *		  there will be an outcome for a statement of that is it true for 'A = B'?
-	    		 * 	3. the rule is a statement of 'A IS IN LIST: B'
-	    		 * 	4. the rule is a statement of 'needs(wants) A'. this is from a child node of ExprConclusionLine type 
-	    		 */
+	    		
 	    		boolean isPlainStatementFormat = ((ValueConclusionLine)node).getIsPlainStatementFormat();
 	    		
 	    		/*
