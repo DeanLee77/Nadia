@@ -142,7 +142,7 @@ public class ValueConclusionLine extends Node{
 
 		if(this.isPlainStatementFormat && workingMemory.get(this.variableName).getType().equals(FactValueType.BOOLEAN))
 		{
-			fv = FactValue.parse(Boolean.parseBoolean(workingMemory.get(this.variableName).getValue()));
+			fv = FactValue.parse(Boolean.parseBoolean(workingMemory.get(this.variableName).getValue().toString()));
 		}
 		else if(this.nodeName.contains("IS IN LIST"))
 		{
