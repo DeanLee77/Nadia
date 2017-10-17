@@ -691,13 +691,13 @@ public class InferenceEngine {
 	    					ast.setFact(node.getVariableName(), FactValue.parse(node.getVariableName()));
 	    				}
 	    				    				
-	    				ast.setFact(node.getNodeName(), node.selfEvaluate(ast.getWorkingMemory(), this.scriptEngine, nodeOption));
+	    				ast.setFact(node.getNodeName(), node.selfEvaluate(ast.getWorkingMemory(), this.scriptEngine));
 	
 	    			}
 	    		}
-	    		else if(!nodeAndOutDependencies.isEmpty() && nodeOrOutDependencies.isEmpty())// rule has only 'AND' child rules
+	    		else if(!andToChildDependencies.isEmpty() && orToChildDependencies.isEmpty())// rule has only 'AND' child rules
 	    		{
-	    			if(isAllAndDependencyDetermined(nodeAndOutDependencies) && isAllAndDependencyTrue(node, nodeAndOutDependencies)) // TRUE case
+	    			if(isAllAndDependencyDetermined(andToChildDependencies) && isAllAndDependencyTrue(node, andToChildDependencies)) // TRUE case
 					{
 		    				canDetermine = true;
 		    				if(isPlainStatementFormat)
@@ -709,7 +709,7 @@ public class InferenceEngine {
 		    					ast.setFact(node.getVariableName(), FactValue.parse(node.getVariableName()));
 		    				}
 		    				    				
-		    				ast.setFact(node.getNodeName(), node.selfEvaluate(ast.getWorkingMemory(), this.scriptEngine, nodeOption));
+		    				ast.setFact(node.getNodeName(), node.selfEvaluate(ast.getWorkingMemory(), this.scriptEngine));
 	
 					}
 	    			/*
@@ -718,7 +718,7 @@ public class InferenceEngine {
 	               	 * , which does not influence on determining a parent rule's evaluation.
 	               	 * 
 	    			 */
-	    			else if(isAllAndDependencyDetermined(nodeAndOutDependencies) && isAnyAndDependencyFalse(nodeAndOutDependencies)) //FALSE case
+	    			else if(isAllAndDependencyDetermined(andToChildDependencies) && isAnyAndDependencyFalse(andToChildDependencies)) //FALSE case
 	    			{
 	    				canDetermine = true;
 	    				if(isPlainStatementFormat)
@@ -730,7 +730,7 @@ public class InferenceEngine {
 	    					ast.setFact(node.getVariableName(), FactValue.parse(node.getVariableName()));
 	    				}
 	    				
-	    				ast.setFact(node.getNodeName(), node.selfEvaluate(ast.getWorkingMemory(), this.scriptEngine, nodeOption));
+	    				ast.setFact(node.getNodeName(), node.selfEvaluate(ast.getWorkingMemory(), this.scriptEngine));
 	    				
 	    			}
 			
@@ -773,7 +773,7 @@ public class InferenceEngine {
     public boolean hasChildren(Node node)
     {
         boolean hasChildren = false;
-        if (!nodeSet.getDependencyMatrix().getOutDependencyList(node.getNodeId()).isEmpty())
+        if (!nodeSet.getDependencyMatrix().getToChildDependencyList(node.getNodeId()).isEmpty())
         {
             hasChildren = true;
         }
@@ -785,7 +785,7 @@ public class InferenceEngine {
     */
     public void addChildRuleIntoInclusiveList(Node node)
     {
-	    	List<Integer> childrenListOfNode = nodeSet.getDependencyMatrix().getOutDependencyList(node.getNodeId());
+	    	List<Integer> childrenListOfNode = nodeSet.getDependencyMatrix().getToChildDependencyList(node.getNodeId());
 	    	childrenListOfNode.stream().forEachOrdered(item -> {
 	    		String childNodeName = nodeSet.getNodeMap().get(nodeSet.getNodeIdMap().get(item)).getNodeName();
 	    		if(!ast.getInclusiveList().contains(childNodeName))
@@ -1055,7 +1055,7 @@ public class InferenceEngine {
     	List<String> questionList = new ArrayList<>(initialSize);
     	for(Node node: nodeSet.getNodeSortedList())
     	{
-    		if(nodeSet.getDependencyMatrix().getOutDependencyList(node.getNodeId()).isEmpty())
+    		if(nodeSet.getDependencyMatrix().getToChildDependencyList(node.getNodeId()).isEmpty())
     		{
     			questionList.add(node.getNodeName());
     		}
