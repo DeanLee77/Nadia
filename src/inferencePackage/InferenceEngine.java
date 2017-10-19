@@ -472,20 +472,20 @@ public class InferenceEngine {
 	    	 *  4. back propagate up until no longer forward chaining possible.
 	    	 *     
 	    	 */
-	    	if(questionName.equals(targetNode.getVariableName()))
-	    	{
-	        	ast.setFact(targetNode.getVariableName(), fv);
-	    	}
-	    	else if(questionName.equals(targetNode.getFactValue().getValue().toString()))
-	    	{
-	        	ast.setFact(targetNode.getFactValue().getValue().toString(), fv);
-	    	}
+//	    	if(questionName.equals(targetNode.getVariableName()))
+//	    	{
+//	        	ast.setFact(targetNode.getVariableName(), fv);
+//	    	}
+//	    	else if(questionName.equals(targetNode.getFactValue().getValue().toString()))
+//	    	{
+//	        	ast.setFact(targetNode.getFactValue().getValue().toString(), fv);
+//	    	}
 	    	
-	    	FactValue selfEvalFactValue = targetNode.selfEvaluate(ast.getWorkingMemory(), this.scriptEngine);
+//	    	FactValue selfEvalFactValue = targetNode.selfEvaluate(ast.getWorkingMemory(), this.scriptEngine);
 	    	
-	    	if(selfEvalFactValue != null)
+	    	if(fv != null)
 	    	{
-	    		ast.setFact(targetNode.getNodeName(), selfEvalFactValue); // add the value of targetNode itself into the workingMemory	
+	    		ast.setFact(targetNode.getNodeName(), fv); // add the value of targetNode itself into the workingMemory	
 	        	ast.getSummaryList().add(targetNode);
 	        	/*
 	        	 * once any rules are set as fact and stored into the workingMemory, forward-chaining(back-propagation) needs to be done
@@ -695,7 +695,7 @@ public class InferenceEngine {
 	
 	    			}
 	    		}
-	    		else if(!andToChildDependencies.isEmpty() && orToChildDependencies.isEmpty())// rule has only 'AND' child rules
+	    		else if(!andToChildDependencies.isEmpty() && orToChildDependencies.isEmpty())// node has only 'AND' child nodes
 	    		{
 	    			if(isAllAndDependencyDetermined(andToChildDependencies) && isAllAndDependencyTrue(node, andToChildDependencies)) // TRUE case
 					{
@@ -714,11 +714,11 @@ public class InferenceEngine {
 					}
 	    			/*
 	    			 * 'isAnyAndDependencyFalse()' contains a trimming off dependency method 
-	    			 * due to the fact that all undetermined 'AND' rules need to be trimmed off when any 'AND' rule is evaluated as 'NO'
-	               	 * , which does not influence on determining a parent rule's evaluation.
-	               	 * 
+	    			 * due to the fact that all undetermined 'AND' child nodes need to be trimmed off when any 'AND' node is evaluated as 'NO'
+               	 * , which does not influence on determining a parent rule's evaluation.
+               	 * 
 	    			 */
-	    			else if(isAllAndDependencyDetermined(andToChildDependencies) && isAnyAndDependencyFalse(andToChildDependencies)) //FALSE case
+	    			else if(isAnyAndDependencyFalse(andToChildDependencies)) //FALSE case
 	    			{
 	    				canDetermine = true;
 	    				if(isPlainStatementFormat)
@@ -835,8 +835,11 @@ public class InferenceEngine {
     public boolean isAnyAndDependencyFalse(List<Integer> andOutDependencies)
     {
         boolean isAnyAndDependencyFalse = false;
-        
-        List<Integer> falseAndList = andOutDependencies.stream().filter(i -> ast.getWorkingMemory().get(nodeSet.getNodeMap().get(nodeSet.getNodeIdMap().get(i))).getValue().toString().equals("false")).collect(Collectors.toList());
+        List<Integer> falseAndList = andOutDependencies.stream().filter(i -> 
+        																		ast.getWorkingMemory().get(nodeSet.getNodeIdMap().get(i)) != null &&
+        																		"false".equals(ast.getWorkingMemory().get(nodeSet.getNodeIdMap().get(i)).getValue().toString())
+        																  )
+        														   .	collect(Collectors.toList());
 
         if(falseAndList.size() > 0)
         {
