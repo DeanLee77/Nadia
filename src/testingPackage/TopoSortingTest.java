@@ -16,12 +16,11 @@ import ruleParser.RuleSetScanner;
 public class TopoSortingTest {
 
 	public static void main(String[] args) throws IOException {
+		//this testing is to check if topological sorting is done correctly or not by comparing a sorted list of 'Wedding Planner.txt' file in RuleSetParser with 'ToposortedNodeName.txt' file
+		
 		// TODO Auto-generated method stub
 		RuleSetReader ilr = new RuleSetReader();
 		ilr.setFileSource("Wedding Planner.txt");
-
-
-
 		RuleSetParser isf = new RuleSetParser();		
 		RuleSetScanner rsc = new RuleSetScanner(ilr,isf);
 		rsc.scanRuleSet();
@@ -33,19 +32,27 @@ public class TopoSortingTest {
 		{
 			nameList.add(line);
 		}
-		
+		List<String[]> filteredList = new ArrayList<>();
 		IntStream.range(0, nameList.size()).forEach(i->{
 			if(!isf.getNodeSet().getNodeSortedList().get(i).getNodeName().equals(nameList.get(i)))
 			{
-				System.out.println("not correctly sorted");
-				System.out.println("node set: "+isf.getNodeSet().getNodeSortedList().get(i).getNodeName());
-				System.out.println("nameList: "+nameList.get(i));
-				return ;
+				filteredList.add(new String[]{Integer.toString(i), nameList.get(i)});
 			}
-			return;
 		});
 		
-		System.out.println("Yep!!! it's been finished correctly");
+		if(filteredList.size() >0)
+		{
+			IntStream.range(0, filteredList.size()).forEach(i->{
+				System.out.println("node set: "+isf.getNodeSet().getNodeSortedList().get(Integer.parseInt(filteredList.get(i)[0])).getNodeName());
+				System.out.println("nameList: "+nameList.get(Integer.parseInt(filteredList.get(i)[0])));
+				
+			});
+		}
+		else
+		{
+			System.out.println("Yep!!! it's been finished correctly");
+		}
+		
 	}
 
 }

@@ -11,8 +11,8 @@ the baker was able to make the cake
 the best friend made the cake
 the grooms mate allowed them to use is farm house
 VirtualNode-the venue was booked
-VirtualNode-parents were consulted
 the the bride and groom didn't care for the parents blessing
+VirtualNode-parents were consulted
 someone booked the baker
 someone paid the baker
 the venue was available
