@@ -29,7 +29,7 @@ public class OrdinaryValueConclusionTesting {
 		Assessment ass = new Assessment(isf.getNodeSet(), isf.getNodeSet().getNodeSortedList().get(0).getNodeName());
 		Scanner scan = new Scanner(System.in);
 		
-		while(ie.getAssessmentState().getWorkingMemory().get(isf.getNodeSet().getNodeSortedList().get(0))==null)
+		while(ie.getAssessmentState().getWorkingMemory().get(isf.getNodeSet().getNodeSortedList().get(0).getNodeName())==null)
 		{
 			
 			Node nextQuestionNode = ie.getNextQuestion(ass);
@@ -48,7 +48,7 @@ public class OrdinaryValueConclusionTesting {
 		}
 		Stream<String> keyList = ie.getAssessmentState().getWorkingMemory().keySet().stream();
 		keyList.forEach(key -> {
-			System.out.println(key+" : "+ie.getAssessmentState().getWorkingMemory().get(key));
+			System.out.println(key+" : "+ie.getAssessmentState().getWorkingMemory().get(key).getValue().toString());
 		});
 		
 		scan.close();

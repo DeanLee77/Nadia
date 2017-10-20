@@ -17,7 +17,7 @@ the wedding took place
 	AND the groom turned up
 	AND the bride turned up
 	AND the celebrant was available
-	AND the cake was avalble
+	AND the cake was availble
 		OR the baker was able to make the cake
 			AND someone booked the baker
 			AND someone paid the baker

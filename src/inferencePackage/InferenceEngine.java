@@ -702,7 +702,7 @@ public class InferenceEngine {
 		    				canDetermine = true;
 		    				if(isPlainStatementFormat)
 						{
-		    					ast.setFact(node.getVariableName(), FactValue.parse(false));
+		    					ast.setFact(node.getVariableName(), FactValue.parse(true));
 						}
 		    				else
 		    				{
@@ -848,7 +848,7 @@ public class InferenceEngine {
 	        		falseAndList.stream().forEachOrdered(f -> {
 	        			if(i != f)
 	        			{
-	        				ast.getInclusiveList().remove(nodeSet.getNodeMap().get(nodeSet.getNodeIdMap().get(i)).getNodeName());
+	        				ast.getInclusiveList().remove(nodeSet.getNodeIdMap().get(i));
 	        			}
 	        		});
 	        	});
@@ -866,7 +866,8 @@ public class InferenceEngine {
         boolean isAllAndTrue = false;
 
         List<Integer> determinedTrueAndOutDependencies = andOutDependencies.stream().filter(i ->
-        													ast.getWorkingMemory().get(nodeSet.getNodeMap().get(nodeSet.getNodeIdMap().get(i))).getValue().toString().equals("true")).collect(Collectors.toList());
+        																						ast.getWorkingMemory().get(nodeSet.getNodeIdMap().get(i)).getValue().toString().equals("true"))
+        																			  .collect(Collectors.toList());
         
         
         if(andOutDependencies != null && determinedTrueAndOutDependencies.size() == andOutDependencies.size())
@@ -899,7 +900,7 @@ public class InferenceEngine {
         boolean isAllOrDependencyDetermined = false;
         
         List<Integer> determinedOrOutDependencies = orOutDependencies.stream().filter(i ->
-        					ast.getWorkingMemory().get(nodeSet.getNodeMap().get(nodeSet.getNodeIdMap().get(i))) != null
+        					ast.getWorkingMemory().get(nodeSet.getNodeIdMap().get(i)) != null
         				).collect(Collectors.toList());
         
         if(orOutDependencies != null && determinedOrOutDependencies.size() == orOutDependencies.size())

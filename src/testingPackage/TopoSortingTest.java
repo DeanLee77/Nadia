@@ -18,7 +18,6 @@ public class TopoSortingTest {
 	public static void main(String[] args) throws IOException {
 		//this testing is to check if topological sorting is done correctly or not by comparing a sorted list of 'Wedding Planner.txt' file in RuleSetParser with 'ToposortedNodeName.txt' file
 		
-		// TODO Auto-generated method stub
 		RuleSetReader ilr = new RuleSetReader();
 		ilr.setFileSource("Wedding Planner.txt");
 		RuleSetParser isf = new RuleSetParser();		
