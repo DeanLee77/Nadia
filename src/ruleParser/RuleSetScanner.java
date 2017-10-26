@@ -76,7 +76,7 @@ public class RuleSetScanner {
 	                   	parent = parentStack.pop();
 	           			parentStack.push(parent);
 	           			
-	           			String tempLineTrimed = lineTrimed.replaceAll("(OR(?=\\s)|AND(?=\\s))", "").trim();
+	           			String tempLineTrimed = lineTrimed.trim().replaceAll("^(OR\\s?|AND\\s?)(MANDATORY|OPTIONALLY|POSSIBLY)?(\\sNOT|\\sKNOWN)*", "").trim();
 
 	           			parentStack.push(tempLineTrimed.trim()); // due to lineTrimed string contains keywords such as "AND", "OR", "AND KNOWN" or "OR KNOWN" so that it needs removing those keywords for the 'parentStack'
 		

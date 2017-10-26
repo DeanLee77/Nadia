@@ -3,6 +3,7 @@ package testingPackage;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -24,7 +25,7 @@ public class WeddingPlanner_Inference_Test {
 	public static void main(String[] args) throws IOException {
 		
 		HashMap<String, NodeObject_For_Inference_Test> nameMap = new HashMap<>();
-		BufferedReader br = new BufferedReader(new FileReader("Wedding_Planner Inference Test.txt"));
+		BufferedReader br = new BufferedReader(new InputStreamReader(WeddingPlanner_Inference_Test.class.getResourceAsStream("Wedding_Planner Inference Test.txt")));
 		String line;
 		while((line = br.readLine()) != null)
 		{
@@ -33,10 +34,10 @@ public class WeddingPlanner_Inference_Test {
 			NodeObject_For_Inference_Test nfit = new NodeObject_For_Inference_Test(lineArray[0],lineArraySecondLevel);
 			nameMap.put(lineArray[0], nfit);
 		}
-		
+		br.close();
 		
 		RuleSetReader ilr = new RuleSetReader();
-		ilr.setFileSource("Wedding Planner.txt");
+		ilr.setStreamSource(WeddingPlanner_Inference_Test.class.getResourceAsStream("Wedding Planner.txt"));
 		RuleSetParser isf = new RuleSetParser();		
 		RuleSetScanner rsc = new RuleSetScanner(ilr,isf);
 		rsc.scanRuleSet();

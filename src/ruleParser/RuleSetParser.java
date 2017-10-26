@@ -182,11 +182,11 @@ public class RuleSetParser implements IScanFeeder {
 			String firstTokenString = tokens.tokensList.get(0);
 			if(firstTokenString.matches("^(AND\\s?)(.*)")) 
 			{
-				dependencyType = DependencyType.getAnd(); // 8
+				dependencyType = handleNotKnownManOptPos(firstTokenString, DependencyType.getAnd()); // 8-AND | 1-KNOWN? 2-NOT?
 			}
 			else if(firstTokenString.matches("^(OR\\s?)(.*)"))
 			{
-				dependencyType = DependencyType.getOr(); // 4
+				dependencyType = handleNotKnownManOptPos(firstTokenString,DependencyType.getOr()); // 4-OR | 1-KNOWN? 2-NOT?
 			}
 			/*
 			 * the keyword of 'AND' or 'OR' should be removed individually. 
@@ -198,9 +198,9 @@ public class RuleSetParser implements IScanFeeder {
 			 * 
 			 */
 			
-			childText = childText.replaceFirst("OR(?=\\s)|AND(?=\\s)", "").trim();
+			childText = childText.trim().replaceAll("^(OR\\s?|AND\\s?)(MANDATORY|OPTIONALLY|POSSIBLY)?(\\sNOT|\\sKNOWN)*", "").trim();
 			
-			Node data = nodeSet.getNodeMap().get(childText); // remove dependencyType keywords like 'AND', 'OR', 'AND MANDATORY', and/or 'OR MANDATORY'
+			Node data = nodeSet.getNodeMap().get(childText); // remove dependencyType keywords like 'AND(MANDATORY|OPTIONALLY|POSSIBLY)?(NOT|KNOWN)?', and/or 'OR(MANDATORY|OPTIONALLY|POSSIBLY)?(NOT|KNOWN)?' 
 			
 			if(data == null)
 			{
@@ -393,6 +393,35 @@ public class RuleSetParser implements IScanFeeder {
 	public void setNodeSet(NodeSet ns)
 	{
 		this.nodeSet = ns;
+	}
+	
+	private int handleNotKnownManOptPos(String firstTokenString, int dependencyType)
+	{
+		if(dependencyType != 0)
+		{
+			if(firstTokenString.contains("NOT"))
+			{
+				dependencyType |= DependencyType.getNot();
+			}
+			if(firstTokenString.contains("KNOWN"))
+			{
+				dependencyType |= DependencyType.getKnown();
+			}
+			if(firstTokenString.contains("MANDATORY"))
+			{
+				dependencyType |= DependencyType.getMandatory();
+			}
+			if(firstTokenString.contains("OPTIONALLY"))
+			{
+				dependencyType |= DependencyType.getOptional();
+			}
+			if(firstTokenString.contains("POSSIBLY"))
+			{
+				dependencyType |= DependencyType.getPossible();
+			}
+		}
+		
+		return dependencyType;
 	}
 
 }

@@ -7,6 +7,9 @@ import java.util.*;
 import factValuePackage.FactBooleanValue;
 import factValuePackage.FactValue;
 import nodePackage.DependencyType;
+import ruleParser.RuleSetParser;
+import ruleParser.RuleSetReader;
+import ruleParser.RuleSetScanner;
 import ruleParser.Tokenizer;
 import ruleParser.Tokens;
 
@@ -34,6 +37,16 @@ public class DeanTest {
 		String test = "^[\\d\\-()\\s\\+]*$";
 		System.out.println(ma.find());
 		System.out.println(phone.replaceAll("[\\-\\(\\)\\s\\+\\\\]", ""));
+		
+		String s = "OR OPTIONALLY NOT KNOWN we have the person's passport";
+		System.out.println(s.trim().replaceAll("^(OR\\s?|AND\\s?)(MANDATORY|OPTIONALLY|POSSIBLY)?(\\sNOT|\\sKNOWN)*", ""));
+				
+		System.out.println(4|2);
+//		RuleSetReader ilr = new RuleSetReader();
+//		ilr.setStreamSource(TopoSortingTest.class.getResourceAsStream("testing NOT and KNOWN.txt"));
+//		RuleSetParser isf = new RuleSetParser();		
+//		RuleSetScanner rsc = new RuleSetScanner(ilr,isf);
+//		rsc.scanRuleSet();
 		
 	}
 

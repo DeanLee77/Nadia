@@ -14,7 +14,7 @@ public class ValueConclusionLine extends Node{
 
 	/*
 	 * when the inference engine reaches at a ValueConclusionLine and needs to ask a question to a user, 
-	 * then this rule must be in statement format due to the reason that a line containing a keyword, 'IS', (exclude a case of containing 'IS IN LIST') cannot be a child.
+	 * then this rule must be in statement format due to the reason that a line containing a keyword, 'IS', (exclude a case of containing 'IS IN LIST') also cannot be a child.
 	 * Hence, the question can be from either variableName or ruleName, and a result of the question will be inserted to the workingMemory.
 	 * However, when the engine reaches at the line during forward-chaining then the key for the workingMemory will be a ruleName,
 	 * and value for the workingMemory will be set as a result of propagation.
@@ -27,14 +27,14 @@ public class ValueConclusionLine extends Node{
 	 * If the rule statement is in a format of 'A-statement' then a default value of variable 'value' will be set as 'false'
 	 * 
 	 */
-	public ValueConclusionLine(String parentText, Tokens tokens)
+	public ValueConclusionLine(String nodeText, Tokens tokens)
 	{
-		super(parentText, tokens);
+		super(nodeText, tokens);
 		
 	}
 	
 	@Override
-	public void initialisation(String parentText, Tokens tokens)
+	public void initialisation(String nodeText, Tokens tokens)
 	{
 		int tokensStringListSize = tokens.tokensStringList.size(); //tokens.tokensStringList.size is same as tokens.tokensList.size
 		
@@ -81,11 +81,11 @@ public class ValueConclusionLine extends Node{
 			}
 			else //this is a case of that the line is in a 'A-statement IS B-statement' format
 			{
-				this.variableName = parentText.substring(0, parentText.indexOf("IS")).trim();
+				this.variableName = nodeText.substring(0, nodeText.indexOf("IS")).trim();
 			}
-//			this.variableName = parentText.substring(0, parentText.indexOf("IS")).replaceFirst("([(NOT(?=\\s))(KNOWN(?=\\s))]*)", "").trim();
+//			this.variableName = nodeText.substring(0, nodeText.indexOf("IS")).replaceFirst("([(NOT(?=\\s))(KNOWN(?=\\s))]*)", "").trim();
 			lastToken = tokens.tokensList.get(tokensStringListSize-1);
-			this.nodeName = parentText;
+			this.nodeName = nodeText;
 		}
 		else //this is a case of that the line is in a 'A-statement' format
 		{
@@ -100,10 +100,10 @@ public class ValueConclusionLine extends Node{
 			}
 			else 
 			{
-				this.variableName = parentText;
+				this.variableName = nodeText;
 			}
-			this.nodeName = parentText;
-//			this.variableName = tokens.tokensString.charAt(0) == 'U'? parentText.replaceFirst("([(NOT(?=\\s))(KNOWN(?=\\s))(NEEDS(?=\\s))(WANTS(?=\\s))]*)", "").trim(): parentText; // is the line child case? then replace "NOT|KNOWN" if there is otherwise parentText as it is
+			this.nodeName = nodeText;
+//			this.variableName = tokens.tokensString.charAt(0) == 'U'? nodeText.replaceFirst("([(NOT(?=\\s))(KNOWN(?=\\s))(NEEDS(?=\\s))(WANTS(?=\\s))]*)", "").trim(): nodeText; // is the line child case? then replace "NOT|KNOWN" if there is otherwise nodeText as it is
 						
 			lastToken = "false";
 

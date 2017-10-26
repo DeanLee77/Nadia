@@ -4,6 +4,8 @@ import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.IntStream;
@@ -19,18 +21,19 @@ public class TopoSortingTest {
 		//this testing is to check if topological sorting is done correctly or not by comparing a sorted list of 'Wedding Planner.txt' file in RuleSetParser with 'ToposortedNodeName.txt' file
 		
 		RuleSetReader ilr = new RuleSetReader();
-		ilr.setFileSource("Wedding Planner.txt");
+		ilr.setStreamSource(TopoSortingTest.class.getResourceAsStream("Wedding Planner.txt"));
 		RuleSetParser isf = new RuleSetParser();		
 		RuleSetScanner rsc = new RuleSetScanner(ilr,isf);
 		rsc.scanRuleSet();
 		rsc.establishNodeSet();
 		List<String> nameList = new ArrayList<>();
-		BufferedReader br = new BufferedReader(new FileReader("ToposortedNodeName.txt"));
+		BufferedReader br = new BufferedReader(new InputStreamReader(TopoSortingTest.class.getResourceAsStream("ToposortedNodeName.txt")));
 		String line;
 		while((line = br.readLine()) != null)
 		{
 			nameList.add(line);
 		}
+		br.close();
 		List<String[]> filteredList = new ArrayList<>();
 		IntStream.range(0, nameList.size()).forEach(i->{
 			if(!isf.getNodeSet().getNodeSortedList().get(i).getNodeName().equals(nameList.get(i)))
