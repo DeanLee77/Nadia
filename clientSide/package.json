@@ -1,7 +1,7 @@
 {
-  "name": "inferenceEngineGradle",
+  "name": "Nadia",
   "version": "0.0.1",
-  "description": "Example project using webpack, gradle, and spring boot",
+  "description": "Nadia project using webpack, gradle, and spring boot",
   "main": "server.js",
   "scripts": {
     "start": "cross-env NODE_ENV=dev node server",
