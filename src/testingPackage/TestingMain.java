@@ -68,7 +68,7 @@ public static void main(String[] args) {
 				System.out.println("Question: " + question);
 				String answer = scan.nextLine();			
 				
-				ie.feedAnswerToNode(nextQuestionNode.getNodeName(), question, answer, questionFvt);
+				ie.feedAnswerToNode(nextQuestionNode, question, answer, questionFvt);
 			}
 
 			

@@ -16,7 +16,6 @@ public class NodeSet {
 	private HashMap<String, FactValue> inputMap;
 	private HashMap<String, FactValue> factMap;
 	private Node defaultGoalNode;
-//	private DependencyType[][] dependencyMatix;
 	private DependencyMatrix dependencyMatrix;
 	
 	public NodeSet()

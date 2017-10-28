@@ -29,7 +29,13 @@ public class InferenceEngine {
     {
 	    	this.nodeSet = nodeSet;
 	    	ast = newAssessmentState();
+	    	HashMap<String, FactValue> tempFactMap = nodeSet.getFactMap();
+	    	HashMap<String, FactValue> tempWorkingMemory = ast.getWorkingMemory();
 	    	
+	    if(!tempFactMap.isEmpty())
+	    	{
+	    	tempFactMap.keySet().stream().forEach(key-> tempWorkingMemory.put(key, tempFactMap.get(key))); 	
+	    	}
 	    	nodeFactList = new ArrayList<>(nodeSet.getNodeSortedList().size()*2); // contains all rules set as a fact given by a user from a ruleList
     	
     }
@@ -202,10 +208,10 @@ public class InferenceEngine {
     		if(lineTypeOfNodeToBeAsked.equals(LineType.VALUE_CONCLUSION))
     		{
     			/*
-    			 * if the line format is 'A -statement' then node's name and variableName has same value so that either of them can be asked as a question
+    			 * if the line format is 'A -statement' then node's nodeName and variableName has same value so that either of them can be asked as a question
     			 * 
     			 * if the line format is 'A IS IN LIST B' then the value of node's variableName is 'A' and the value of node's value is 'B' so that only 'A' needs to be asked.
-    			 * list 'B' has to be provided in 'INPUT' or 'FIXED' list
+    			 * list 'B' has to be provided in 'FIXED' list
     			 * 
     			 * In conclusion, if the line type is 'ValueConclusionLine' then node's variableName should be asked regardless its format
     			 */
@@ -292,7 +298,7 @@ public class InferenceEngine {
 	    	//ValueConclusionLine type node and it is 'A-statement' line, and variableName is not defined neither INPUT nor FIXED 
 	    	else if(isValueConclusionLineType)
 	    	{
-	    		if(((ValueConclusionLine)node).getIsPlainStatementFormat() && tempInputMap.containsKey(nodeVariableName))
+	    		if(tempInputMap.containsKey(nodeVariableName))
 	    		{
 	    			fvt = tempInputMap.get(nodeVariableName).getType();
 	    		}
@@ -375,19 +381,23 @@ public class InferenceEngine {
 	    		if(((ValueConclusionLine)node).getIsPlainStatementFormat() && ast.getWorkingMemory().containsKey(node.getVariableName()))
 	    		{
 		    	    	/*
-		    	    	 * The reason being to check only if there is a value for a variableName of the node in the workingMemory is that
-		    	    	 * only a value for variableName of the node is needed to evaluate the node in this case of ValueConclusionLine because
-		    	    	 * variableName and nodeName will have a same value if the node is the most child node, which means that the statement for the node does NOT contain
-		    	    	 * 'IS' keyword. 
+		    	    	 * If the node is in plain statement format then varibaleName has same value as nodeName,
+		    	    	 * and if a value for either variableName or nodeName of the node is in workingMemory then it means the node has already been evaluated.
+		    	    	 * Hence, 'canEvaluate' needs to be 'true' in this case.
 		    	    	 */
 	    			canEvaluate = true;
-	    			
+	    		}
+	    		else if(node.getTokens().tokensList.stream().anyMatch((s) -> s.equals("IS IN LIST:")) && ast.getWorkingMemory().containsKey(node.getFactValue().getValue().toString()))
+			{
+	    			canEvaluate = true;
+	    			FactValue fv = node.selfEvaluate(ast.getWorkingMemory(), this.scriptEngine);
+
 	    			/*
 		    		 * the reason why ast.setFact() is used here rather than this.feedAndwerToNode() is that LineType is already known, and target node object is already found. 
 		    		 * node.selfEvaluation() returns a value of the node's self-evaluation hence, node.getNodeName() is used to store a value for the node itself into a workingMemory
 		    		 */
-		    		ast.setFact(node.getNodeName(), node.selfEvaluate(ast.getWorkingMemory(), this.scriptEngine));
-	    		}
+		    		ast.setFact(node.getNodeName(), fv);
+			}
 	    	}
 	    	else if(lineType.equals(LineType.COMPARISON))
 	    	{
@@ -411,9 +421,8 @@ public class InferenceEngine {
      * rather than nodeVariableName because a certain nodeVariableName could be found in several nodes
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
-	public <T> void feedAnswerToNode(String NodeName, String questionName, T nodeValue, FactValueType nodeValueType)
+	public <T> void feedAnswerToNode(Node targetNode, String questionName, T nodeValue, FactValueType nodeValueType)
     {
-	    	Node targetNode = nodeSet.getNodeMap().get(NodeName);	    	
 	    	FactValue fv = null;
 	    	
 	    	if(nodeValueType.equals(FactValueType.BOOLEAN))
