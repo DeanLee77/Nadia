@@ -140,14 +140,13 @@ public class RuleSetParser implements IScanFeeder {
 	}
 
 	@Override
-	public void handleChild(String parentText, String childText, int lineNumber) {
+	public void handleChild(String parentText, String childText, String firstKeywordsGroup, int lineNumber) {
 		/*
 		 * the reason for using '*' at the last group of pattern within comparison is that 
 		 * the last group contains No, Da, De, Ha, Url, Id. 
 		 * In order to track more than one character within the square bracket of last group '*'(Matches 0 or more occurrences of the preceding expression) needs to be used.
 		 * 
 		 */
-		Tokens tokens = Tokenizer.getTokens(childText);   
 		int dependencyType = 0; 
 		
 		// is 'ITEM' child line
@@ -174,15 +173,16 @@ public class RuleSetParser implements IScanFeeder {
 		}
 		else  // is 'A-statement' child line
 		{
-			String firstTokenString = tokens.tokensList.get(0);
-			if(firstTokenString.matches("^(AND\\s?)(.*)")) 
+			if(firstKeywordsGroup.matches("^(AND\\s?)(.*)")) 
 			{
-				dependencyType = handleNotKnownManOptPos(firstTokenString, DependencyType.getAnd()); // 8-AND | 1-KNOWN? 2-NOT?
+				dependencyType = handleNotKnownManOptPos(firstKeywordsGroup, DependencyType.getAnd()); // 8-AND | 1-KNOWN? 2-NOT? 64-MANDATORY? 32-OPTIONALLY? 16-POSSIBLY? 
 			}
-			else if(firstTokenString.matches("^(OR\\s?)(.*)"))
+			else if(firstKeywordsGroup.matches("^(OR\\s?)(.*)"))
 			{
-				dependencyType = handleNotKnownManOptPos(firstTokenString,DependencyType.getOr()); // 4-OR | 1-KNOWN? 2-NOT?
+				dependencyType = handleNotKnownManOptPos(firstKeywordsGroup, DependencyType.getOr()); // 4-OR | 1-KNOWN? 2-NOT? 64-MANDATORY? 32-OPTIONALLY? 16-POSSIBLY? 
 			}
+			
+			
 			/*
 			 * the keyword of 'AND' or 'OR' should be removed individually. 
 			 * it should NOT be removed by using firstToken string in Tokens.tokensList.get(0)
@@ -193,10 +193,9 @@ public class RuleSetParser implements IScanFeeder {
 			 * 
 			 */
 			
-			childText = childText.trim().replaceAll("^(OR\\s?|AND\\s?)(MANDATORY|OPTIONALLY|POSSIBLY)?(\\sNOT|\\sKNOWN)*", "").trim();
 			
-			Node data = nodeSet.getNodeMap().get(childText); // remove dependencyType keywords like 'AND(MANDATORY|OPTIONALLY|POSSIBLY)?(NOT|KNOWN)?', and/or 'OR(MANDATORY|OPTIONALLY|POSSIBLY)?(NOT|KNOWN)?' 
-			
+			Node data = nodeSet.getNodeMap().get(childText);  
+			Tokens tokens = Tokenizer.getTokens(childText);
 			if(data == null)
 			{
 //				valueConclusionMatcher =Pattern.compile("(^U)([LMU(Da)(No)(De)(Ha)(Url)(Id)]+$)"); // child statement for ValueConclusionLine starts with AND(OR), AND MANDATORY(OPTIONALLY, POSSIBLY) or AND (MANDATORY) (NOT) KNOWN
@@ -329,28 +328,18 @@ public class RuleSetParser implements IScanFeeder {
 			{
 				for(Dependency dp: dpList) //can this for each loop be converted to dpList.stream().forEachOrdered() ?
 				{
-					if(dp.getChildNode().getNodeId() != dp.getParentNode().getNodeId())
+					if((dp.getDependencyType() & DependencyType.getAnd()) == DependencyType.getAnd())
 					{
-						if(dp.getDependencyType() == DependencyType.getAnd() 
-								|| dp.getDependencyType() == (DependencyType.getMandatory() | DependencyType.getAnd()) 
-								|| dp.getDependencyType() == (DependencyType.getOptional() | DependencyType.getAnd())
-								|| dp.getDependencyType() == (DependencyType.getPossible() | DependencyType.getAnd()))
-							{
-								and++;
-								if(dp.getDependencyType() == (DependencyType.getMandatory() | DependencyType.getAnd()))
-								{
-									mandatoryAnd++;
-								}
-							}
-							else if(dp.getDependencyType() == DependencyType.getOr()
-									|| dp.getDependencyType() == (DependencyType.getMandatory() | DependencyType.getOr()) 
-									|| dp.getDependencyType() == (DependencyType.getOptional() | DependencyType.getOr())
-									|| dp.getDependencyType() == (DependencyType.getPossible() | DependencyType.getOr()))
-							{
-								or++;
-							}
+						and++;
+						if(dp.getDependencyType() == (DependencyType.getMandatory() | DependencyType.getAnd()))
+						{
+							mandatoryAnd++;
+						}
 					}
-					
+					else if((dp.getDependencyType() & DependencyType.getOr()) == DependencyType.getOr())
+					{
+						or++;
+					}
 				}
 				boolean hasAndOr = (and>0 && or>0)? true:false;  
 				if(hasAndOr)

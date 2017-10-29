@@ -39,8 +39,10 @@ public class DeanTest {
 		System.out.println(ma.find());
 		System.out.println(phone.replaceAll("[\\-\\(\\)\\s\\+\\\\]", ""));
 		
-		String s = "OR OPTIONALLY NOT KNOWN we have the person's passport";
-		System.out.println(s.trim().replaceAll("^(OR\\s?|AND\\s?)(MANDATORY|OPTIONALLY|POSSIBLY)?(\\sNOT|\\sKNOWN)*", ""));
+		String s = "OR NOT we have person's name and dob";
+		System.out.println(s.trim().replaceAll("^(OR\\s?|AND\\s?)(MANDATORY|OPTIONALLY|POSSIBLY)?(\\s?NOT|\\s?KNOWN)*", ""));
+		String sDiff = s.replace(s.trim().replaceAll("^(OR\\s?|AND\\s?)(MANDATORY|OPTIONALLY|POSSIBLY)?(\\s?NOT|\\s?KNOWN)*", "").trim(), "").trim();
+		System.out.println("sDiff: "+sDiff);
 		
 		String ss = "person's number is 12312213213123124";
 		Tokens st = Tokenizer.getTokens(ss);

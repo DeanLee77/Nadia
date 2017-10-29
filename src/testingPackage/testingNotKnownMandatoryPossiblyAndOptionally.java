@@ -19,7 +19,7 @@ public class testingNotKnownMandatoryPossiblyAndOptionally {
 		
 		isf.getNodeSet().getNodeSortedList().stream().forEachOrdered(node ->{
 			System.out.println("nodeName: "+node.getNodeName());
-			isf.getNodeSet().getDependencyMatrix().getToChildDependencyList(node.getNodeId()).stream().forEach(dep ->System.out.println("dependency: "+isf.getNodeSet().getNodeIdMap().get(dep))); 
+			isf.getNodeSet().getDependencyMatrix().getToChildDependencyList(node.getNodeId()).stream().forEach(dep ->{System.out.println("dependency type: "+isf.getNodeSet().getDependencyMatrix().getDependencyType(node.getNodeId(), isf.getNodeSet().getNodeMap().get(isf.getNodeSet().getNodeIdMap().get(dep)).getNodeId()));System.out.println("dependency: "+isf.getNodeSet().getNodeIdMap().get(dep));}); 
 			
 		});
 
