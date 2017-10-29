@@ -5,7 +5,7 @@ we have information about a person
 	OR OPTIONALLY NOT KNOWN we have the person's passport
 
 	
-person's nationality IS Australian
+person's nationality is Australian
 	AND MANDATORY citizenship testing of person's parents
 		OR one of person's parents is Australian
 		OR both of person's parents are Australian
