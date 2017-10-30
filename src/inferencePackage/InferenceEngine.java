@@ -723,8 +723,10 @@ public class InferenceEngine {
 	    					ast.setFact(node.getVariableName(), FactValue.parse(node.getVariableName()));
 	    				}
 	    				    				
-	    				ast.setFact(node.getNodeName(), node.selfEvaluate(ast.getWorkingMemory(), this.scriptEngine));
-	
+	    				if(node.getLineType()==LineType.VALUE_CONCLUSION && !((ValueConclusionLine)node).getIsPlainStatementFormat())
+	    				{
+		    				ast.setFact(node.getNodeName(), node.selfEvaluate(ast.getWorkingMemory(), this.scriptEngine));
+	    				}	
 	    			}
 	    		}
 	    		else if(!andToChildDependencies.isEmpty() && orToChildDependencies.isEmpty())// node has only 'AND' child nodes
@@ -741,8 +743,10 @@ public class InferenceEngine {
 		    					ast.setFact(node.getVariableName(), FactValue.parse(node.getVariableName()));
 		    				}
 		    				    				
-		    				ast.setFact(node.getNodeName(), node.selfEvaluate(ast.getWorkingMemory(), this.scriptEngine));
-	
+		    				if(node.getLineType()==LineType.VALUE_CONCLUSION && !((ValueConclusionLine)node).getIsPlainStatementFormat())
+		    				{
+			    				ast.setFact(node.getNodeName(), node.selfEvaluate(ast.getWorkingMemory(), this.scriptEngine));
+		    				}	
 					}
 	    			/*
 	    			 * 'isAnyAndDependencyFalse()' contains a trimming off dependency method 
@@ -761,7 +765,7 @@ public class InferenceEngine {
 	    				{
 	    					ast.setFact(node.getVariableName(), FactValue.parse(node.getVariableName()));
 	    				}
-	    				if(node.getLineType()==LineType.VALUE_CONCLUSION && ((ValueConclusionLine)node).getIsPlainStatementFormat())
+	    				if(node.getLineType()==LineType.VALUE_CONCLUSION && !((ValueConclusionLine)node).getIsPlainStatementFormat())
 	    				{
 		    				ast.setFact(node.getNodeName(), node.selfEvaluate(ast.getWorkingMemory(), this.scriptEngine));
 	    				}
@@ -769,6 +773,7 @@ public class InferenceEngine {
 	    			}
 			
 	    		}
+	    		
 	    	}
 	    	
 	    	return canDetermine;
