@@ -55,6 +55,7 @@ public class TestingInferenceForNotKnownManOpPo {
 			for(String question: ie.getQuestionsFromNodeToBeAsked(nextQuestionNode))
 			{
 				System.out.println("Question: " + question+"?");
+				ie.getAssessmentState().getQuestionedList().add(question);
 				if(i < 3)
 				{
 					answer = "true";

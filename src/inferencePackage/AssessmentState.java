@@ -22,13 +22,13 @@ import nodePackage.*;
 public class AssessmentState {
 	private HashMap<String, FactValue> workingMemory;
 	private List<String> inclusiveList;
-	private List<String> exclusiveList; //may not be needed
+	private List<String> questionedList; //may not be needed
 	private List<Node> summaryList;
 	public AssessmentState()
 	{
 		this.workingMemory = new HashMap<>();
 		this.inclusiveList = new ArrayList<>();  // this is to capture all relevant rules 
-		this.exclusiveList = new ArrayList<>();  // this is to capture all irrelevant rules, and may not be needed
+		this.questionedList = new ArrayList<>();  // this is to capture all irrelevant rules, and may not be needed
 		this.summaryList = new ArrayList<>(); // this is to store all determined rules within assessment in order.
 	}
 	/*
@@ -86,18 +86,18 @@ public class AssessmentState {
 		return isInTheList;
 	}
 	
-	public List<String> getExclusiveList()
+	public List<String> getQuestionedList()
 	{
-		return this.exclusiveList;
+		return this.questionedList;
 	}
-	public void setExclusiveList(List<String> exclusiveList)
+	public void setQuestionedList(List<String> questionedList)
 	{
-		this.exclusiveList = exclusiveList;
+		this.questionedList = questionedList;
 	}
-	public boolean lookupExclusiveList(String name)
+	public boolean lookupQuestionedList(String name)
 	{
 		boolean isInTheList = false;
-		if(this.exclusiveList.contains(name))
+		if(this.questionedList.contains(name))
 		{
 			isInTheList = true;
 		}

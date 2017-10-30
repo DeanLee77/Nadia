@@ -1,0 +1,14 @@
+we have information about a person-true:false
+we have person's name and dob-true:false
+person's name-true:false
+person's dob-true:false
+we have the person's passport-true:false
+person's nationality is Australian-true:false
+citizenship testing of person's parents-true:false
+one of person's parents is Australian-true:false
+both of person's parents are Australian-true:false
+the person was born in Australia-true:false
+person made it to Las Vegas-true:false
+the person missed the flight-true:false  
+person qualifies for the grant-true:false 
+person is currently studying-true:false
