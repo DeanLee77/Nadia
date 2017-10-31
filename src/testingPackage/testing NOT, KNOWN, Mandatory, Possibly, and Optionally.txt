@@ -1,8 +1,8 @@
 we have information about a person
 	AND NOT we have person's name and dob
 		AND POSSIBLY KNOWN person's name
-		AND KNOWN person's dob  
-	AND OPTIONALLY NOT KNOWN we have the person's passport
+		AND person's dob  
+	AND OPTIONALLY NOT we have the person's passport
 	AND person's nationality is Australian
 	AND person made it to Las Vegas
 	AND person qualifies for the grant

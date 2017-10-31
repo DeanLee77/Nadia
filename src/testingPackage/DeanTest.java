@@ -3,6 +3,7 @@ package testingPackage;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.*;
 
 import factValuePackage.FactBooleanValue;
@@ -58,6 +59,11 @@ public class DeanTest {
 		HashMap<String, String> hm2 = hm;
 		hm2.put("h6", "h6");
 		System.out.println("hm size: "+hm.size());
+		
+		List<Integer> list = new ArrayList<>(3);
+		list.add(1);
+		System.out.println("list size:"+list.size());
+		IntStream.range(0, list.size()).forEach(i -> System.out.println("haha"+i));
 //		RuleSetReader ilr = new RuleSetReader();
 //		ilr.setStreamSource(TopoSortingTest.class.getResourceAsStream("testing NOT and KNOWN.txt"));
 //		RuleSetParser isf = new RuleSetParser();		

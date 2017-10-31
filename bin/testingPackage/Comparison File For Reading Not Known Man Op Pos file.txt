@@ -1,7 +1,7 @@
 nodeName: we have information about a person
 dependency type: 10
 dependency: we have person's name and dob
-dependency type: 43
+dependency type: 42
 dependency: we have the person's passport
 dependency type: 8
 dependency: person's nationality is Australian
@@ -12,7 +12,7 @@ dependency: person qualifies for the grant
 nodeName: we have person's name and dob
 dependency type: 25
 dependency: person's name
-dependency type: 9
+dependency type: 8
 dependency: person's dob
 nodeName: we have the person's passport
 nodeName: person's nationality is Australian

@@ -22,13 +22,11 @@ import nodePackage.*;
 public class AssessmentState {
 	private HashMap<String, FactValue> workingMemory;
 	private List<String> inclusiveList;
-	private List<String> questionedList; //may not be needed
 	private List<Node> summaryList;
 	public AssessmentState()
 	{
 		this.workingMemory = new HashMap<>();
 		this.inclusiveList = new ArrayList<>();  // this is to capture all relevant rules 
-		this.questionedList = new ArrayList<>();  // this is to capture all irrelevant rules, and may not be needed
 		this.summaryList = new ArrayList<>(); // this is to store all determined rules within assessment in order.
 	}
 	/*
@@ -86,25 +84,6 @@ public class AssessmentState {
 		return isInTheList;
 	}
 	
-	public List<String> getQuestionedList()
-	{
-		return this.questionedList;
-	}
-	public void setQuestionedList(List<String> questionedList)
-	{
-		this.questionedList = questionedList;
-	}
-	public boolean lookupQuestionedList(String name)
-	{
-		boolean isInTheList = false;
-		if(this.questionedList.contains(name))
-		{
-			isInTheList = true;
-		}
-		return isInTheList;
-	}
-	
-
 	
 	/*
 	 * this method is to set a rule as a fact in the workingMemory 
