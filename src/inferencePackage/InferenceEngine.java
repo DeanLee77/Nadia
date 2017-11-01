@@ -801,37 +801,33 @@ public class InferenceEngine {
         targetNode = node;
         if (!orChildDependencies.isEmpty())
         {
-	        	List<Integer> trueOrChildList = new ArrayList<>();
-	        	IntStream.range(0, orChildDependencies.size()).forEach(i -> {
-	        		String nodeName = nodeSet.getNodeIdMap().get(orChildDependencies.get(i));
-	        		if(ast.isInclusiveList(nodeName) && ast.getWorkingMemory().containsKey(nodeName))
-	        		{
-	        			if((nodeSet.getDependencyMatrix().getDependencyType(targetNode.getNodeId(), i) & (DependencyType.getNot()|DependencyType.getKnown())) != (DependencyType.getNot()|DependencyType.getKnown()))
-	        			{
-	        				trueOrChildList.add(i);
-	        			}
-	        		}
-	        	}); orOutDependencies.stream().filter(i -> 	
+	        	List<Integer> trueOrChildList = orChildDependencies.stream().filter(i -> 	
 	        																		  ast.isInclusiveList(nodeSet.getNodeIdMap().get(i))
 	        																		  && ast.getWorkingMemory().containsKey(nodeSet.getNodeIdMap().get(i)) 
 	        																		  && 
 	        																		  (
-        																				  ((nodeSet.getDependencyMatrix().getDependencyType(targetNode.getNodeId(), i) & (DependencyType.getNot()|DependencyType.getKnown())) != (DependencyType.getNot()|DependencyType.getKnown()))
-																					  ||
-        																				  ((nodeSet.getDependencyMatrix().getDependencyType(targetNode.getNodeId(), i)&DependencyType.getKnown()) == DependencyType.getKnown())
+        																				  (
+    																						  (nodeSet.getDependencyMatrix().getDependencyType(targetNode.getNodeId(), i)&DependencyType.getKnown()) == DependencyType.getKnown()
+																						  &&((nodeSet.getDependencyMatrix().getDependencyType(targetNode.getNodeId(), i)&DependencyType.getNot()) != DependencyType.getNot())
+																					  )
 	        																			  ||  
-        																				  !(
-    																						  ast.getWorkingMemory().get(nodeSet.getNodeIdMap().get(i)).getValue().equals(false)
+        																				  (
+    																						  ast.getWorkingMemory().get(nodeSet.getNodeIdMap().get(i)).getValue().equals(true)
     																						  &&((nodeSet.getDependencyMatrix().getDependencyType(targetNode.getNodeId(), i)&DependencyType.getNot()) != DependencyType.getNot())
 	        																			  )
+        																				  ||
+        																				  (
+    																						  ast.getWorkingMemory().get(nodeSet.getNodeIdMap().get(i)).getValue().equals(false)
+    																						  &&((nodeSet.getDependencyMatrix().getDependencyType(targetNode.getNodeId(), i)&DependencyType.getNot()) == DependencyType.getNot())
+    	        																			  )
     																				  )
-        																		   )
+        																		 )
 	        															    .collect(Collectors.toList());
 	        	
 	        	if(!trueOrChildList.isEmpty())
 	        	{
 	        		isAnyOrDependencyTrue = true;
-	        		orOutDependencies.stream().forEachOrdered(i -> {
+	        		orChildDependencies.stream().forEachOrdered(i -> {
 	        			trueOrChildList.stream().forEachOrdered(n -> {
 	        				if(i != n)
 	        				{
@@ -844,7 +840,7 @@ public class InferenceEngine {
         return isAnyOrDependencyTrue;
     }
 
-    public void trimDependency(Node parentNode, Node childNode)
+	public void trimDependency(Node parentNode, Node childNode)
     {
 	    	int dpType = nodeSet.getDependencyMatrix().getDependencyMatrixArray()[parentNode.getNodeId()][childNode.getNodeId()];
 	    	int mandatoryDependencyType = DependencyType.getMandatory();
@@ -876,8 +872,7 @@ public class InferenceEngine {
 																					)
 																				)
     																				||
-    																				(((nodeSet.getDependencyMatrix().getDependencyType(targetNode.getNodeId(), i) & DependencyType.getKnown()) == DependencyType.getKnown()))
-    																				&&((nodeSet.getDependencyMatrix().getDependencyType(targetNode.getNodeId(), i)&DependencyType.getNot()) == DependencyType.getNot())
+    																				((nodeSet.getDependencyMatrix().getDependencyType(targetNode.getNodeId(), i) & (DependencyType.getNot()|DependencyType.getKnown())) == (DependencyType.getNot()|DependencyType.getKnown()))
 																			)
         																		
         																  )
@@ -912,14 +907,20 @@ public class InferenceEngine {
 																							        ast.isInclusiveList(nodeSet.getNodeIdMap().get(i))
 																							        && ast.getWorkingMemory().containsKey(nodeSet.getNodeIdMap().get(i)) 
 																									&& 
-																									!(
-					        																				  ((nodeSet.getDependencyMatrix().getDependencyType(targetNode.getNodeId(), i) & (DependencyType.getNot()|DependencyType.getKnown())) == (DependencyType.getNot()|DependencyType.getKnown()))
+																									(
+																										  (
+																											  ast.getWorkingMemory().get(nodeSet.getNodeIdMap().get(i)).getValue().equals(true)
+					    																						  &&((nodeSet.getDependencyMatrix().getDependencyType(targetNode.getNodeId(), i)&DependencyType.getNot()) != DependencyType.getNot())
+																										  )
 																										  ||
-					        																				  ((nodeSet.getDependencyMatrix().getDependencyType(targetNode.getNodeId(), i)&DependencyType.getKnown()) != DependencyType.getKnown())
+					        																				  (
+				        																						  (nodeSet.getDependencyMatrix().getDependencyType(targetNode.getNodeId(), i)&DependencyType.getKnown()) == DependencyType.getKnown()
+				        																						  &&((nodeSet.getDependencyMatrix().getDependencyType(targetNode.getNodeId(), i)&DependencyType.getNot()) != DependencyType.getNot())
+				        																					  )
 						        																			  ||  
 					        																				  (
 					    																						  ast.getWorkingMemory().get(nodeSet.getNodeIdMap().get(i)).getValue().equals(false)
-					    																						  &&((nodeSet.getDependencyMatrix().getDependencyType(targetNode.getNodeId(), i)&DependencyType.getNot()) != DependencyType.getNot())
+					    																						  &&((nodeSet.getDependencyMatrix().getDependencyType(targetNode.getNodeId(), i)&DependencyType.getNot()) == DependencyType.getNot())
 						        																			  )
 					    																				 )
 																						      )
