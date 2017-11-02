@@ -22,7 +22,7 @@ import nodePackage.*;
 public class AssessmentState {
 	private HashMap<String, FactValue> workingMemory;
 	private List<String> inclusiveList;
-	private List<Node> summaryList;
+	private List<String> summaryList;
 	public AssessmentState()
 	{
 		this.workingMemory = new HashMap<>();
@@ -109,15 +109,15 @@ public class AssessmentState {
 	
 	//Below lines are all SummaryList related
 	
-	public void addItemToSummaryList(Node node)
+	public void addItemToSummaryList(String node)
 	{
 		this.summaryList.add(node);
 	}
-	public List<Node> getSummaryList()
+	public List<String> getSummaryList()
 	{
 		return this.summaryList;
 	}
-	public void setSummaryList(List<Node> summaryList)
+	public void setSummaryList(List<String> summaryList)
 	{
 		this.summaryList = summaryList;
 	}
