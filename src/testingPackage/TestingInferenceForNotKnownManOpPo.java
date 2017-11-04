@@ -63,6 +63,10 @@ public class TestingInferenceForNotKnownManOpPo {
 				{
 					answer = "false";
 				}
+				else if(question.equals("the person was born in Australia"))
+				{
+					answer = "false";
+				}
 				else if(i < 3)
 				{
 					answer = "true";
