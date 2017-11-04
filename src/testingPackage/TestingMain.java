@@ -40,9 +40,11 @@ public static void main(String[] args) {
 //		ValueConclusionLine vcl = new ValueConclusionLine(s, token);
 		
 		RuleSetReader ilr = new RuleSetReader();
-		ilr.setFileSource("ExprConclusionLine rule with NEEDS only.txt");
-//		ilr.setFileSource("ActsTriageRules.txt");
+		
+//		ilr.setFileSource("ExprConclusionLine rule with NEEDS only.txt");
 //		ilr.setFileSource("testingFile_For_A_IS_B_Type_Rule.txt");
+		ilr.setFileSource("Wedding Planner.txt");
+
 
 
 		RuleSetParser isf = new RuleSetParser();		
@@ -61,12 +63,12 @@ public static void main(String[] args) {
 			System.out.println("questionFvt :"+questionFvt);
 			System.out.println("Question: "+nextQuestionNode.getNodeName() +" ?");
 			FactValueType fvt = null;
-			for(String question: ie.getQuestionsfromNodeToBeAsked(nextQuestionNode))
+			for(String question: ie.getQuestionsFromNodeToBeAsked(nextQuestionNode))
 			{
 				System.out.println("Question: " + question);
 				String answer = scan.nextLine();			
 				
-				ie.feedAnswerToNode(nextQuestionNode.getNodeName(), question, answer, questionFvt);
+				ie.feedAnswerToNode(nextQuestionNode, question, answer, questionFvt);
 			}
 
 			
@@ -75,6 +77,8 @@ public static void main(String[] args) {
 		keyList.forEach(key -> {
 			System.out.println(key+" : "+ie.getAssessmentState().getWorkingMemory().get(key));
 		});
+		
+		scan.close();
 	
 	}
 

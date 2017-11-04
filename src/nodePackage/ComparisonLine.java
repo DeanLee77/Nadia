@@ -13,6 +13,8 @@ import ruleParser.Tokens;
 public class ComparisonLine extends Node{
 	
 	private String operator;
+	private String lhs;
+	private FactValue rhs;
 	
 	public ComparisonLine(String childText, Tokens tokens)
 	{
@@ -34,6 +36,7 @@ public class ComparisonLine extends Node{
 		sb.setLength(0);
 		tokens.tokensList.subList(1, operatorIndex).stream().forEachOrdered((s)-> sb.append(s+" "));
 		this.variableName = sb.toString().trim();	
+		this.lhs = variableName;
 		/*
 		 * In javascript engine '=' operator means assigning a value, hence if the operator is '=' then it needs to be replaced with '=='. 
 		 */
@@ -44,6 +47,7 @@ public class ComparisonLine extends Node{
 		String lastToken = tokens.tokensList.get(tokensStringListSize-1);
 		String lastTokenString = tokens.tokensStringList.get(tokensStringListSize-1);
 		this.setValue(lastTokenString, lastToken);
+		this.rhs = this.value;
 		
 		
 	}
@@ -55,6 +59,16 @@ public class ComparisonLine extends Node{
 		return this.nodeName;
 	}
 	
+	public String getLHS()
+	{
+		return this.lhs;
+	}
+	
+	public FactValue getRHS()
+	{
+		return this.rhs;
+	}
+	
 	@Override
 	public LineType getLineType()
 	{
@@ -62,7 +76,7 @@ public class ComparisonLine extends Node{
 	}
 	
 	@Override
-	public FactValue selfEvaluate(HashMap<String, FactValue> workingMemory, ScriptEngine nashorn, int nodeOption)
+	public FactValue selfEvaluate(HashMap<String, FactValue> workingMemory, ScriptEngine nashorn)
 	{
 		
 		/*

@@ -322,7 +322,7 @@ public class MetadataLine extends Node{
 	}
 	
 	@Override
-	public FactValue selfEvaluate(HashMap<String, FactValue> workingMemory, ScriptEngine nashorn, int nodeOption)
+	public FactValue selfEvaluate(HashMap<String, FactValue> workingMemory, ScriptEngine nashorn)
 	{
 		FactValue fv = null;
 		return fv;

@@ -1,0 +1,13 @@
+the groom turned up-true:false
+the bride turned up-true:false
+someone booked the celebrant-true:false
+the celebrant randomly turned up-true:false
+the best friend made the cake-true:false
+the grooms mate allowed them to use is farm house-true:false
+the the bride and groom didn't care for the parents blessing-true:false
+someone booked the baker-true:false
+someone paid the baker-true:false
+the venue was available-true:false
+the venue was paid for-true:false
+the parents blessed the bride and groom-true:false
+the parents liked each other-true:false

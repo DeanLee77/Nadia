@@ -15,7 +15,10 @@ public class FactBooleanValue<T> extends FactValue{
 		this.value = booleanValue;
 	}
 	
-
+	public FactValue negatingValue()
+	{
+		return FactValue.parse(!this.value);
+	}
 	
 	@Override
 	public FactValueType getType() {

@@ -16,6 +16,7 @@ import nodePackage.*;
 
 public class InferenceEngine {
 	private NodeSet nodeSet;
+	private Node targetNode;
     private AssessmentState ast;
     private List<Node> nodeFactList;
     private ScriptEngine scriptEngine = new ScriptEngineManager().getEngineByName("nashorn");
@@ -29,7 +30,13 @@ public class InferenceEngine {
     {
 	    	this.nodeSet = nodeSet;
 	    	ast = newAssessmentState();
+	    	HashMap<String, FactValue> tempFactMap = nodeSet.getFactMap();
+	    	HashMap<String, FactValue> tempWorkingMemory = ast.getWorkingMemory();
 	    	
+	    if(!tempFactMap.isEmpty())
+	    	{
+	    	tempFactMap.keySet().stream().forEach(key-> tempWorkingMemory.put(key, tempFactMap.get(key))); 	
+	    	}
 	    	nodeFactList = new ArrayList<>(nodeSet.getNodeSortedList().size()*2); // contains all rules set as a fact given by a user from a ruleList
     	
     }
@@ -53,10 +60,8 @@ public class InferenceEngine {
 	    	int initialSize = nodeSet.getNodeSortedList().size() * 2;
 	    	AssessmentState ast = new AssessmentState();
 	    	List<String> inclusiveList = new ArrayList<>(initialSize);
-	    	List<String> exclusiveList = new ArrayList<>(initialSize);
-	    	List<Node> summaryList = new ArrayList<>(initialSize);
+	    	List<String> summaryList = new ArrayList<>(initialSize);
 	    	ast.setInclusiveList(inclusiveList);
-	    	ast.setExclusiveList(exclusiveList);
 	    	ast.setSummaryList(summaryList);
 	    	
 	    	return ast;
@@ -69,10 +74,18 @@ public class InferenceEngine {
      * this method is to extract all variableName of Nodes, and put them into a List<String>
      * it may be useful to display and ask a user to select which information they do have even before starting Inference process
      */
-    public List<String> getListOfVariableNameOfNodes()
+    public List<String> getListOfVariableNameAndValueOfNodes()
     {
 	    	List<String> variableNameList = null;
-	    	nodeSet.getNodeMap().values().stream().forEachOrdered(node -> variableNameList.add(node.getVariableName()));
+	    	nodeSet.getNodeMap().values().stream().forEachOrdered(node -> {
+	    		variableNameList.add(node.getVariableName());
+	    		FactValueType nodeFactValueType = node.getFactValue().getType();
+	    		if(nodeFactValueType.equals(FactValueType.BOOLEAN) || nodeFactValueType.equals(FactValueType.STRING))
+	    		{
+	    			variableNameList.add(node.getFactValue().getValue().toString());
+	    		}
+    		});
+	    	
 	    	
 	    	return variableNameList;
     }
@@ -83,9 +96,10 @@ public class InferenceEngine {
     {
 	    	nodeSet.getNodeMap().values().stream()
 	    								 .forEachOrdered((node) -> {
-	    									 if(node.getVariableName().equals(nodeVariableName))
+	    									 if(node.getVariableName().equals(nodeVariableName)||
+	    										node.getFactValue().getValue().toString().equals(nodeVariableName))
 											 {
-	    										 nodeFactList.add(node);
+	    										 	nodeFactList.add(node);
 											 }
 	    								});  
 		ast.getWorkingMemory().put(nodeVariableName, fv);
@@ -102,7 +116,7 @@ public class InferenceEngine {
 	    	if(!nodeFactList.isEmpty())
 	    	{
 	    		nodeFactList.stream().forEachOrdered(node -> {
-	    			if(!nodeSet.getDependencyMatrix().getInDependencyList(node.getNodeId()).isEmpty())
+	    			if(!nodeSet.getDependencyMatrix().getFromParentDependencyList(node.getNodeId()).isEmpty())
 	    			{
 	    				Node relevantNode = auxFindRelevantFactors(node);
 	    				relevantFactorList.add(relevantNode);
@@ -115,13 +129,13 @@ public class InferenceEngine {
     public Node auxFindRelevantFactors(Node node)
     {
 	    	Node relevantFactorNode = null;
-	    	List<Integer> incomingDependencyList = nodeSet.getDependencyMatrix().getInDependencyList(node.getNodeId()); // it contains all id of parent node where dependency come from
+	    	List<Integer> incomingDependencyList = nodeSet.getDependencyMatrix().getFromParentDependencyList(node.getNodeId()); // it contains all id of parent node where dependency come from
 	    	if(!incomingDependencyList.isEmpty())
 	    	{
 	    		for(int i = 0; i < incomingDependencyList.size(); i++)
 	    		{
 	    			Node parentNode = nodeSet.getNodeMap().get(nodeSet.getNodeIdMap().get(incomingDependencyList.get(i)));
-	    			if(!nodeSet.getDependencyMatrix().getInDependencyList(parentNode.getNodeId()).isEmpty() 
+	    			if(!nodeSet.getDependencyMatrix().getFromParentDependencyList(parentNode.getNodeId()).isEmpty() 
 	    					&& !parentNode.getNodeName().equals(nodeSet.getNodeSortedList().get(0).getNodeName()))
 	    			{
 	    				relevantFactorNode = auxFindRelevantFactors(parentNode);
@@ -134,7 +148,7 @@ public class InferenceEngine {
     }
     
     /*
-     * this method uses backward-chaining, and it will return node to be asked of a given assessment, which has not been determined and 
+     * this method uses 'BACKWARD-CHAININING', and it will return node to be asked of a given assessment, which has not been determined and 
      * does not have any child nodes if the goal node of the given assessment has still not been determined.
      */
     public Node getNextQuestion(Assessment ass)
@@ -163,7 +177,7 @@ public class InferenceEngine {
 	  	             * Step2. does the rule currently being been checked have child rules? 
 	  	             *     if yes then add the child rules into the inclusiveList
 	  	             */
-	  	            if (!hasChildren(node) && ast.getInclusiveList().contains(node.getNodeName()) && !canEvaluate(node))
+	  	            if (!hasChildren(node.getNodeId()) && ast.getInclusiveList().contains(node.getNodeName()) && !canEvaluate(node))
 	  	            {
 		  	            	ass.setNodeToBeAsked(node);
 		  	            	int indexOfRuleToBeAsked = i;
@@ -173,7 +187,7 @@ public class InferenceEngine {
 		            else
 		            {
 		            	
-			            	if(hasChildren(node) && !ast.getWorkingMemory().containsKey(node.getVariableName()) 
+			            	if(hasChildren(node.getNodeId()) && !ast.getWorkingMemory().containsKey(node.getVariableName()) 
 			            			&& !ast.getWorkingMemory().containsKey(node.getNodeName()) && ast.getInclusiveList().contains(node.getNodeName()))
 			            	{
 			            		addChildRuleIntoInclusiveList(node);
@@ -184,21 +198,35 @@ public class InferenceEngine {
 	    	return ass.getNodeToBeAsked();
     }
     
-    public List<String> getQuestionsfromNodeToBeAsked(Node nodeToBeAsked)
+    public List<String> getQuestionsFromNodeToBeAsked(Node nodeToBeAsked)
     {
-	    	List<String> questionList = new ArrayList<>();
-	    	
-	    	boolean isVariableInInputMap = nodeSet.getInputMap().get(nodeToBeAsked.getVariableName()) != null? true:false;
-	    	boolean isValueInInputMap = nodeSet.getInputMap().get(nodeToBeAsked.getFactValue().getValue().toString()) != null? true:false;
-	    	if(isVariableInInputMap)
-	    	{
-	    		questionList.add(nodeToBeAsked.getVariableName());
-	    	}
-	    	
-	    	if(isValueInInputMap)
-	    	{
-	    		questionList.add(nodeToBeAsked.getFactValue().getValue().toString());
-	    	}
+    		List<String> questionList = new ArrayList<>();
+    		LineType lineTypeOfNodeToBeAsked = nodeToBeAsked.getLineType();
+    		// the most child node line types are as follows
+    		// ValueConclusionLine type
+    		if(lineTypeOfNodeToBeAsked.equals(LineType.VALUE_CONCLUSION))
+    		{
+    			/*
+    			 * if the line format is 'A -statement' then node's nodeName and variableName has same value so that either of them can be asked as a question
+    			 * 
+    			 * if the line format is 'A IS IN LIST B' then the value of node's variableName is 'A' and the value of node's value is 'B' so that only 'A' needs to be asked.
+    			 * list 'B' has to be provided in 'FIXED' list
+    			 * 
+    			 * In conclusion, if the line type is 'ValueConclusionLine' then node's variableName should be asked regardless its format
+    			 */
+
+			questionList.add(nodeToBeAsked.getVariableName());
+    		}
+    		// ComparionLine type
+    		else if(lineTypeOfNodeToBeAsked.equals(LineType.COMPARISON))
+    		{
+			questionList.add(nodeToBeAsked.getVariableName());
+			
+    			if(!nodeToBeAsked.getFactValue().getType().equals(FactValueType.DEFI_STRING) || !hasAlreadySetType(nodeToBeAsked.getFactValue()))
+    			{
+    				questionList.add(nodeToBeAsked.getFactValue().getValue().toString());
+    			}
+    		}
 	    	
 	    	return questionList;
     }
@@ -239,22 +267,45 @@ public class InferenceEngine {
 	    	HashMap<String, FactValue> tempInputMap = this.nodeSet.getInputMap();
 	    	boolean isComparisonLineType = node.getLineType().equals(LineType.COMPARISON);
 	    	boolean isValueConclusionLineType = node.getLineType().equals(LineType.VALUE_CONCLUSION);
-	    	boolean variableAndValueHasSameContents = nodeVariableName.equals(nodeValueString) && node.getLineType().equals(LineType.VALUE_CONCLUSION);
-	    	boolean nodeValueStringIsInInputList = tempInputMap.containsKey(nodeValueString);
-	    	boolean nodeValueStringIsInFixedList = tempFactMap.containsKey(nodeValueString);
+	   
 	    	
-	    	//ComparisonLine type node and type of the node's value is clearly defined  
-	    	if(isComparisonLineType && hasAlreadySetType)
+	    	//ComparisonLine type node and type of the node's value is clearly defined 
+	    	if(isComparisonLineType)
 	    	{
-	    		fvt = node.getFactValue().getType();
+	    		FactValueType nodeRHSType = ((ComparisonLine)node).getRHS().getType();
+	    		if(nodeRHSType.equals(FactValueType.DEFI_STRING))
+	    		{
+	    			fvt = FactValueType.STRING;
+	    		}
+	    		else if(hasAlreadySetType)
+	    		{
+	    			fvt= nodeRHSType;
+	    		}
+	    		else if(nodeRHSType.equals(FactValueType.STRING) || nodeRHSType.equals(FactValueType.TEXT))
+	    		{
+	    			if(tempInputMap.containsKey(((ComparisonLine)node).getLHS()))
+	    			{
+	    				fvt = tempInputMap.get(((ComparisonLine)node).getLHS()).getType();
+	    			}
+	    			else if(tempInputMap.containsKey(((ComparisonLine)node).getRHS().getValue().toString()))
+	    			{
+	    				fvt = tempInputMap.get(((ComparisonLine)node).getRHS().getValue().toString()).getType();
+	    			}
+	    		}
 	    	}
 	    	//ComparisonLine type node and type of the node's value is not clearly defined and not defined in INPUT nor FIXED list
 	    	//ValueConclusionLine type node and it is 'A-statement' line, and variableName is not defined neither INPUT nor FIXED 
-	    	else if((isComparisonLineType && !hasAlreadySetType && !nodeValueStringIsInFixedList && !nodeValueStringIsInInputList) 
-	    			|| (isValueConclusionLineType && variableAndValueHasSameContents && !(nodeValueStringIsInInputList || nodeValueStringIsInFixedList)))
+	    	else if(isValueConclusionLineType)
 	    	{
-	    		fvt = FactValueType.BOOLEAN;
-	    	}	   
+	    		if(tempInputMap.containsKey(nodeVariableName))
+	    		{
+	    			fvt = tempInputMap.get(nodeVariableName).getType();
+	    		}
+	    		else
+	    		{
+	    			fvt = FactValueType.BOOLEAN;
+	    		}
+	    	}
 	    	else
 	    	{
 	        	FactValue factValueForNodeVariable = tempFactMap.get(nodeVariableName) == null? tempInputMap.get(nodeVariableName):tempFactMap.get(nodeVariableName);
@@ -313,35 +364,52 @@ public class InferenceEngine {
     
     
     /*
-     * this is to check whether or not a node can be evaluated with all information in the workingMemory. If there is information for a value of node's value(FactValue), then the node can be evaluated otherwise not.
+     * this is to check whether or not a node can be evaluated with all information in the workingMemory. If there is information for a value of node's value(FactValue) or variableName, then the node can be evaluated otherwise not.
      * In order to do it, AssessmentState.workingMemory must contain a value for variable of the rule, 
-     * and rule type must be either COMPARISON, ITERATE or VALUE_CONCLUSION because they are the ones only can be the most child nodes.		
+     * and rule type must be either COMPARISON, ITERATE or VALUE_CONCLUSION because they are the ones only can be the most child nodes, 
+     * and other type of node must be a parent of other types of node.	
      */
     public boolean canEvaluate(Node node)
     {
     	
 	    	boolean canEvaluate = false;
 	    	LineType lineType = node.getLineType();
-	    	/*
-	    	 * the reason for checking only VALUE_CONCLUSION, COMPARISON and ITERATE type of node is that they are the only ones can be the most child nodes in rule structure.
-	    	 * other type of node must be a parent of other types of node.
-	    	 * In addition, the reason being to check only if there is a value for a variableName of the node in the workingMemory is that
-	    	 * only a value for variableName of the node is needed to evaluate the node. even if the node is ValueConclusionLine, it wouldn't be matter because
-	    	 * variableName and nodeName will have a same value if the node is the most child node, which means that the statement for the node does NOT contain
-	    	 * 'IS' keyword. 
-	    	 */
-	    	if(((lineType.equals(LineType.VALUE_CONCLUSION) || lineType.equals(LineType.COMPARISON)) && ast.getWorkingMemory().containsKey(node.getVariableName()))
-	    			||(lineType.equals(LineType.ITERATE) && ast.getWorkingMemory().containsKey(node.getNodeName())))
+
+	    	if(lineType.equals(LineType.VALUE_CONCLUSION))
 	    	{
-	    		canEvaluate = true;
-	    		/*
-	    		 * the reason why ast.setFact() is used here rather than this.feedAndwerToNode() is that LineType is already known, and target node object is already found. 
-	    		 * node.selfEvaluation() returns a value of the node's self-evaluation hence, node.getNodeName() is used to store a value for the node itself into a workingMemory
-	    		 */
-	    		ast.setFact(node.getNodeName(), node.selfEvaluate(ast.getWorkingMemory(), this.scriptEngine, this.nodeSet.getDependencyMatrix().getDependencyType(node.getNodeId(), node.getNodeId())));
+	    		if(((ValueConclusionLine)node).getIsPlainStatementFormat() && ast.getWorkingMemory().containsKey(node.getVariableName()))
+	    		{
+		    	    	/*
+		    	    	 * If the node is in plain statement format then varibaleName has same value as nodeName,
+		    	    	 * and if a value for either variableName or nodeName of the node is in workingMemory then it means the node has already been evaluated.
+		    	    	 * Hence, 'canEvaluate' needs to be 'true' in this case.
+		    	    	 */
+	    			canEvaluate = true;
+	    		}
+	    		else if(node.getTokens().tokensList.stream().anyMatch((s) -> s.equals("IS IN LIST:")) && ast.getWorkingMemory().containsKey(node.getFactValue().getValue().toString()))
+			{
+	    			canEvaluate = true;
+	    			FactValue fv = node.selfEvaluate(ast.getWorkingMemory(), this.scriptEngine);
+
+	    			/*
+		    		 * the reason why ast.setFact() is used here rather than this.feedAndwerToNode() is that LineType is already known, and target node object is already found. 
+		    		 * node.selfEvaluation() returns a value of the node's self-evaluation hence, node.getNodeName() is used to store a value for the node itself into a workingMemory
+		    		 */
+		    		ast.setFact(node.getNodeName(), fv);
+			}
 	    	}
-	    	
-	    	
+	    	else if(lineType.equals(LineType.COMPARISON))
+	    	{
+	    		
+	    	}
+	    	else if(lineType.equals(LineType.EXPR_CONCLUSION))
+	    	{
+	    		
+	    	}
+	    	else if(lineType.equals(LineType.ITERATE))
+	    	{
+	    		
+	    	}
 	    	return canEvaluate;
     }
 
@@ -351,9 +419,9 @@ public class InferenceEngine {
      * the reason for taking nodeName instead nodeVariableName is that it will be easier to find an exact node with nodeName
      * rather than nodeVariableName because a certain nodeVariableName could be found in several nodes
      */
-    public <T> void feedAnswerToNode(String NodeName, String questionName, T nodeValue, FactValueType nodeValueType)
+    @SuppressWarnings({"unchecked" })
+	public <T> void feedAnswerToNode(Node targetNode, String questionName, T nodeValue, FactValueType nodeValueType)
     {
-	    	Node targetNode = nodeSet.getNodeMap().get(NodeName);	    	
 	    	FactValue fv = null;
 	    	
 	    	if(nodeValueType.equals(FactValueType.BOOLEAN))
@@ -362,6 +430,9 @@ public class InferenceEngine {
 	    	}
 	    	else if(nodeValueType.equals(FactValueType.DATE))
 	    	{
+	    		/*
+	    		 * the string of nodeValue date format is dd/MM/YYYY
+	    		 */
 	    		String[] dateArray = ((String)nodeValue).split("/");
 	    		LocalDate factValueInDate = LocalDate.of(Integer.parseInt(dateArray[2]), Integer.parseInt(dateArray[1]), Integer.parseInt(dateArray[0]));
 	    		
@@ -402,61 +473,43 @@ public class InferenceEngine {
 	    	
 	    	
 	    	/*
-	    	 * once we got an answer from a user we need to do followings;
-	    	 *  1. set a value of a question, which is a value for a variableName of the node, being asked to a user in a workingMemory
-	    	 *  2. set a value of the node itself in a workingMemory.
+	    	 * once an answer is given to the engine, then followings need to be done;
+	    	 *  1. The engine needs to know if the answer is for the node's variableName or the node's value(FactValue)
+	    	 *  2. set a value of a question, which is a value for a variableName or value of the node, being asked to a user in a workingMemory
+	    	 *  3. set a value of the node itself in a workingMemory.
+	    	 *  4. back propagate up until no longer forward chaining possible.
 	    	 *     
 	    	 */
-	    	if(questionName.equals(targetNode.getVariableName()))
-	    	{
-	        	ast.setFact(targetNode.getVariableName(), fv);
-	    	}
-	    	else if(questionName.equals(targetNode.getFactValue().getValue().toString()))
-	    	{
-	        	ast.setFact(targetNode.getFactValue().getValue().toString(), fv);
-	    	}
+//	    	if(questionName.equals(targetNode.getVariableName()))
+//	    	{
+//	        	ast.setFact(targetNode.getVariableName(), fv);
+//	    	}
+//	    	else if(questionName.equals(targetNode.getFactValue().getValue().toString()))
+//	    	{
+//	        	ast.setFact(targetNode.getFactValue().getValue().toString(), fv);
+//	    	}
 	    	
-	    	FactValue selfEvalFactValue = targetNode.selfEvaluate(ast.getWorkingMemory(), this.scriptEngine, this.nodeSet.getDependencyMatrix().getDependencyType(targetNode.getNodeId(), targetNode.getNodeId()));
+//	    	FactValue selfEvalFactValue = targetNode.selfEvaluate(ast.getWorkingMemory(), this.scriptEngine);
 	    	
-	    	if(selfEvalFactValue != null)
+	    	if(fv != null)
 	    	{
-	    		ast.setFact(targetNode.getNodeName(), selfEvalFactValue); // add the value of targetNode itself into the workingMemory	        		        	
-//	
-//	        	/*
-//	        	 * Note: in order to get summary view, each rules can be found in summaryList, and 
-//	        	 *       actual evaluation value can be found in workingMemory by looking up with each rules' variable
-//	        	 */
-//	        	ast.getSummaryList().add(targetNode);
-//	        	/*
-//	        	 * once any rules are set as fact and stored into the workingMemory, forward-chaining(back-propagation) needs to be done
-//	        	 */
-//	        	forwardChaining(nodeSet.findNodeIndex(targetNode.getNodeName()));
+	    		ast.setFact(targetNode.getNodeName(), fv); // add the value of targetNode itself into the workingMemory	
+	        	ast.getSummaryList().add(targetNode.getNodeName());
+	        	/*
+	        	 * once any rules are set as fact and stored into the workingMemory, forward-chaining(back-propagation) needs to be done
+	        	 */
+	        	forwardChaining(nodeSet.findNodeIndex(targetNode.getNodeName()));
 	    	}
-
-        	/*
-        	 * Note: in order to get summary view, each rules can be found in summaryList, and 
-        	 *       actual evaluation value can be found in workingMemory by looking up with each rules' variable
-        	 */
-        	ast.getSummaryList().add(targetNode);
-        	/*
-        	 * once any rules are set as fact and stored into the workingMemory, forward-chaining(back-propagation) needs to be done
-        	 */
-        	forwardChaining(nodeSet.findNodeIndex(targetNode.getNodeName()));
-	        
-	    	
-    	
     }
     
-    /*
-     * this method still needs to be completed, in particular update parent nodes of the being answered node.
-     */
+   
     public void forwardChaining(int nodeIndex)
     {
 	    	/*
-	    	 * all nodes prior to 'nodeIndex' in the nodeList(sortedList) of nodeSet should be looked at to be updated once the node at a nodeIndex is being answered for following reasons;
+	    	 * all nodes prior to 'nodeIndex' in the nodeList(sortedList) of nodeSet should be updated once the node at a nodeIndex is being answered for following reasons;
 	    	 * 1. regardless the nodeList is sorted with Khan's algorithm which is based on BFS, 
 	    	 *    all nodes in the inclusiveList and prior to the node at a nodeIndex are possibly parent nodes of the node at nodeIndex; 
-	    	 * 2. the list may be sorted based on historical statistic record, and if it is the case then the sorting is based on Deepening and Greedy algorithm;
+	    	 * 2. the list may be sorted based on historical statistic record, and if it is the case then the sorting is based on Deepening and Greedy algorithm with Bayesian inferencing ;
 	    	 * 3. there could be a node sharing parents nodes or children nodes in the list
 	    	 * And therefore, updating all nodes in the list based on a given fact is a safe way to get a next question and complete assessment.
 	    	 */
@@ -465,39 +518,59 @@ public class InferenceEngine {
 	    		
 	    		Node node = nodeSet.getNodeSortedList().get(nodeIndex-i);
 	    		
-	    		/* updating all nodes' state prior to ruleIndex in the ruleList 
-	    		 * by setting the value value of nodeVariables and nodeName of each node in workignMemory
-	    		 */
-	 
-	    		
-	    		/*
-	             *if the node currently being checked exists in the 'inclusiveList'
-	             *then check if the node has any children then update the current node's state based on the children's state
-	             *Note: a question will be asked if only if the being asked question is in the inclusiveLsit, however, following condition
-	             *is to do double check if the being asked question is in the inclusiveList
-	             */
+	    		/* updating all nodes' state prior to nodeIndex in the sorted List 
+	    		 * by setting the value of nodeVariables and nodeName of each node in workignMemory
+	    		 * 
+             * if the node currently being checked exists in the 'inclusiveList'
+             * then check if the node has any children then update the current node's state based on the children's state
+             * Note: a question will be asked if only if the being asked question is in the inclusiveLsit, however, following condition
+             * is to do double check if the being asked question is in the inclusiveList
+             */
 	    		if(ast.getInclusiveList().contains(node.getNodeName()))
 	    		{
-	    			
-	    			backPropagation(nodeIndex-i);
+	    			/*
+	    			 * once a user feeds an answer to the engine, the engine will propagate the entire NodeSet or Assessment base on the answer
+	    			 * during the back-propagation, the engine checks if current node the engine is checking;
+	    			 * 1. has been determined;
+	    			 * 2. has any child nodes;
+	    			 * 3. can be determined on the ground of various condition.
+	    			 * 
+	    			 *  once the current checking node meets the condition then add it to summaryList for summary view.
+	    			 * 
+	    			 * TODO need to consider ITERATE line type for this back-propagation due to there would be possibilities a list for the value of ITERATE will be generated or provided
+	    			 * during other rules back-propagation
+	    			 */
+	    				    			
+		    	    	LineType currentLineType = node.getLineType();
+		    	    	/*
+		    	     * following 'if' statement is to double check if the rule has any children or not.
+		    	     * it will be already determined by asking a question to a user if it doesn't have any children .
+		    	     */
+		    	   if (!ast.getWorkingMemory().containsKey(node.getVariableName()) 
+		    			   && hasChildren(node.getNodeId()) 
+		    			   && canDetermine(node, currentLineType)
+		    		  )
+		    	   {
+	    		   		ast.getSummaryList().add(node.getNodeName()); // add currentRule into SummeryList as the rule determined
+		    	   }
 	    		}
 	    		
 	    		 /*
-	             *following 'if' condition is to do
-	             *adding parent nodes to 'inclusiveList' if only the current node is in the 'workingMemory' list 
-	             *because only parent nodes of the node that is in 'workingMemory' list are only relevant.
-	             *this condition helps to do faster performance
-	             */
+             * following 'if' condition is to do
+             * adding parent nodes to 'inclusiveList' if only the current node is in the 'workingMemory' list 
+             * because only parent nodes of the node that is in 'workingMemory' list are only relevant.
+             * this condition helps to do faster performance
+             */
 	    		
-	            if(ast.getWorkingMemory().containsKey(node.getVariableName()) || ast.getWorkingMemory().containsKey(node.getNodeName()))
-	            {
-		            	/*
-		            	 * background of following method is as listed below
-		            	 * 1. adding child rules into inclusiveList sometimes miss out relevant rules because some rules have more than two parent hence tracking only child rules
-		            	 * would not be enough to find all relevant rules. As result, finding child rule of a certain rule and parent rule of the child rule will cover all relevant rules for an assessment
-		            	 */
-		            	addParentIntoInclusiveList(node); // adding all parents rules into the 'inclusiveList' if there is any
-	            }
+            if(ast.getWorkingMemory().containsKey(node.getVariableName()) || ast.getWorkingMemory().containsKey(node.getNodeName()))
+            {
+	            	/*
+	            	 * background of following method is as listed below
+	            	 * 1. adding child rules into inclusiveList sometimes miss out relevant nodes because some nodes have more than two parents hence tracking only child nodes
+	            	 * would not be enough to find all relevant nodes. As result, finding a child node of a certain node and the parent node of child node will cover all relevant nodes for an assessment
+	            	 */
+	            	addParentIntoInclusiveList(node); // adding all parents rules into the 'inclusiveList' if there is any
+            }
 	    		
 	    	}); 	
     }
@@ -507,60 +580,34 @@ public class InferenceEngine {
      */
     public void addParentIntoInclusiveList(Node node)
     {
-    		List<Integer> nodeInDependencyList = nodeSet.getDependencyMatrix().getInDependencyList(node.getNodeId());
+    		List<Integer> nodeInDependencyList = nodeSet.getDependencyMatrix().getFromParentDependencyList(node.getNodeId());
         if(!nodeInDependencyList.isEmpty()) // if rule has parents
         {
-        	nodeInDependencyList.stream().forEachOrdered(i -> {
-        		Node parentNode = nodeSet.getNodeMap().get(nodeSet.getNodeIdMap().get(i));
-        		if(!ast.getInclusiveList().contains(parentNode.getNodeName()))
-        		{
-        			ast.getInclusiveList().add(parentNode.getNodeName());
-        		}
-        	});
+	        	nodeInDependencyList.stream().forEachOrdered(i -> {
+	        		Node parentNode = nodeSet.getNodeMap().get(nodeSet.getNodeIdMap().get(i));
+	        		if(!ast.getInclusiveList().contains(parentNode.getNodeName()))
+	        		{
+	        			ast.getInclusiveList().add(parentNode.getNodeName());
+	        		}
+	        	});
           
         }
     }
     
-/*
- * once a user feed an answer to the engine, the engine will propagate the entire RuleSet or Assessment base on the answer
- * during the back-propagation, the engine checks if the current rule the engine is checking;
- * 1. has been determined;
- * 2. has any child rules;
- * 3. can be determined on ground of various condition.
- * 
- *  once the current checking rule meets the condition then set the state of the rule as DETERMINED, and add it to summaryList for summary view.
- * 
- * TODO need to consider ITERATE line type for this back-propagation due to there would be possibilities a list for the value of ITERATE will be generated or provided
- * during other rules back-propagation
- */
-    public void backPropagation(int i) 
-    {
-    	
-	    	Node currentNode = nodeSet.getNodeSortedList().get(i);
-	    	LineType currentLineType = currentNode.getLineType();
-	    	/*
-         *following 'if' statement is to double check if the rule has any children or not.
-         *it will be already determined by asking a question to a user if it doesn't have any children .
-         */
-       if (!ast.getWorkingMemory().containsKey(currentNode.getVariableName()) 
-    		   && hasChildren(currentNode) && canDetermine(currentNode, currentLineType) )
-       {
-    	   		ast.getSummaryList().add(currentNode); // add currentRule into SummeryList as the rule determined
-       }
-    }
     
-    public boolean canDetermine(Node node, LineType lineType)
-    {
+	public boolean canDetermine(Node node, LineType lineType)
+	{
 	    	boolean canDetermine = false;
 	    	/*
-	    	 * Any type of node/line can have either 'OR' or 'AND' child nodes
+	    	 * Any type of node/line can have either 'OR' or 'AND' type of child nodes
 	    	 * do following logic to check whether or not the node is determinable
 	    	 * 1. check the node/line type
-	    	 * 2. within the node/line type, check if it has 'OR' child nodes or 'AND' child nodes ( nodeSet.getDependencyMatrix.gete.getOrOutDependency().isEmpty() or rule.getAndOutDependency().isEmpty())    
+	    	 * 2. within the node/line type, check if it has 'OR' child nodes or 'AND' child nodes ( nodeSet.getDependencyMatrix.getOrOutDependency(node.getNodeId()).isEmpty() or .getAndOutDependency(node.getNodeId()).isEmpty()).
+	    	 *    Apparently, dependencyType contains information of 'NOT', 'KNOWN', 'MANDATORY', 'OPTIONAL', and/or 'POSSIBLE' so that dependencyType must be checked to propagate.
 	    	 * 
 	    	 * -----ValueConclusion Type
 	    	 * there will be two cases for this type
-	    	 *    V.1 'TRUE' or "FALSE' value outcome case
+	    	 *    V.1 the format of node is 'A -statement' so that 'TRUE' or "FALSE' value outcome case
 	    	 *    	   V.1.1 if it has 'OR' child nodes
 	    	 *    			 V.1.1.1 TRUE case
 	    	 *    					 if there is any of child node is 'true'
@@ -577,7 +624,7 @@ public class InferenceEngine {
 	    	 *              
 	    	 *         V.1.3 other than above scenario it can't be determined in 'V.1' case
 	    	 *    
-	    	 *    V.2 a case of that the value in the rule text can be used as a value of its rule's variable
+	    	 *    V.2 a case of that the value in the node text can be used as a value of its node's variable (e.g. A IS B, B can be used as a value for variable, 'A' in this case if all its child nodes or one of its child node is true)
 	    	 *    	   V.2.1 if it has 'OR' child nodes
 	    	 *    			 V.2.1.1 the value CAN BE USED case
 	    	 *    					 if its any of child node is 'true'
@@ -592,126 +639,89 @@ public class InferenceEngine {
 	    	 *                     	 , and there is no need to trim off 'UNDETERMINED' child nodes other than 'MANDATORY' child nodes
 	    	 *                       because since 'virtual node' is introduced, any parent nodes won't have 'OR' and 'AND' dependency at the same time
 	    	 *         
-	    	 *         V.2.3 other than above scenario it can't be determined in 'V.1' case
+	    	 *         V.2.3 other than above scenario it can't be determined in 'V.2' case
 	    	 *              
-	    	 * -----ExprConclusion Type
-	    	 *    within rule text file, this node has two types of child node, 'NEEDS' and 'WANTS'.
-	    	 *    'NEEDS' child rule will be translated as 'MANDATORY_AND', and 'WANTS' child node will be 'OR' in the rule structure.
-	    	 *    In addition, back-propagation(evaluation) part will be done within the rule itself,
-	    	 *    Due to the case of this node type having 'NEEDS' and 'WANTS' child nodes at the same time, 
-	    	 *    the node type can have either only 'MANDATORY_AND's, or 'MANDATORY_AND' and 'OR' child rules
-	    	 *    As a result, followings needs checking
-	    	 *    E.1. if it has 'OR' child nodes
-	    	 *         E.1.1 the node CAN BE EVALUATED case
-	    	 *               if 'MANDATORY_OR' child node is determined, which means 'MANDATORY_AND' child node is determined
-	    	 *               then trim off 'UNDETERMINED' child nodes
-	    	 *         E.1.2 the rule CAN'T BE EVALUATED case
-	    	 *               if 'MANDATORY_OR' child node is not determined yet, which means 'MANDATORY_AND' child is not determined yet.
-	    	 *               
-	    	 *    E.2 if it has 'AND' child rules
-	    	 *        E.2.1 the rule CAN BE EVALUATED case
-	    	 *              if all 'MANDATORY_AND' rules are determined.
-	    	 * 
-	    	 * -----Comparison Type
-	    	 *    within rule text file, this node must not have any child nodes. 
-	    	 *    However, in the rule structure of NodeSet class, the rule which contains '=' operator' can have only 'OR' child node of ValueConclusionLine Type or ExprConclusionLine Type if there is a corresponded node(s).
-	    	 *    In addition, the value of node type must exist among its child nodes' value.
-	    	 *    As a result, in order to confirm that whether or not the node type can be determined, there must be a value of its variableName in the workingMemory. 
-	    	 *    Back-propagation(evaluation) part will be done within the node itself by executing selfEvaluate().
-	    	 *
 	    	 *    
 	    	 * Note: the reason why only ResultType and ExpressionType are evaluated with selfEvaluation() is as follows;
-	    	 *       1. ResultType is only evaluated by comparing a value of rule's variable in workingMemory with the value in the rule
-	    	 *       2. ExpressionType is only evaluated by retrieving a value(s) of needed child rule(s)   
-	    	 *       3. BooleanConclusionType and ValueConclusionType is evaluated under same combination of various condition, and trimming dependency is involved.
-	    	 *          As a result, if selfEvaluate() is used in both rule type then each rule will have source code. 
-	    	 *        
+	    	 *       1. ComparisonType is only evaluated by comparing a value of rule's variable in workingMemory with the value in the node
+	    	 *       2. ExpressionType is only evaluated by retrieving a value(s) of needed child node(s)   
+	    	 *       3. ValueConclusionType is evaluated under same combination of various condition, and trimming dependency is involved.	    	 *        
 	    	 *       
 	    	 */
-	    	List<Integer> nodeOrOutDependencies = nodeSet.getDependencyMatrix().getOROutDependencyList(node.getNodeId());
-	    	List<Integer> nodeAndOutDependencies = nodeSet.getDependencyMatrix().getAndOutDependencyList(node.getNodeId());
-	    	int nodeOption = this.getNodeSet().getDependencyMatrix().getDependencyType(node.getNodeId(), node.getNodeId());
+	    	List<Integer> orToChildDependencies = nodeSet.getDependencyMatrix().getOrToChildDependencyList(node.getNodeId());
+	    	List<Integer> andToChildDependencies = nodeSet.getDependencyMatrix().getAndToChildDependencyList(node.getNodeId());
 	    	
 	    	if(LineType.VALUE_CONCLUSION.equals(lineType))
 	    	{
-	    		/*
-	    		 *	1. the rule is a plain statement
-	    		 *		- evaluate based on outcome of its child nodes
-	    		 *		  there only will be an outcome of entire rule statement with negation or known type value
-	    		 *		  , which should be handled within selfEvaluate()
-	    		 *	2. the rule is a statement of 'A IS B'
-	    		 *		- evaluate based on outcomes of its child nodes
-	    		 *		  there will be an outcome for a statement of that is it true for 'A = B'?
-	    		 *		  , and out
-	    		 * 	3. the rule is a statement of 'A IS IN LIST: B'
-	    		 * 	4. the rule is a statement of 'needs(wants) A'. this is from a child node of ExprConclusionLine type 
-	    		 */
-	    		boolean isInStatement = ((ValueConclusionLine)node).getIsInStatementFormat();
+	    		
+	    		boolean isPlainStatementFormat = ((ValueConclusionLine)node).getIsPlainStatementFormat();
 	    		
 	    		/*
-	    		 * isAnyOrDependencyTrue() method contains trimming off method to cut off any 'UNDETERMINED' state 'OR' rules. 
+	    		 * isAnyOrDependencyTrue() method contains trimming off method to cut off any 'UNDETERMINED' state 'OR' child nodes. 
 	    		 */
-	    		if(nodeAndOutDependencies.isEmpty() && !nodeOrOutDependencies.isEmpty()) // rule has only 'OR' child rules 
+	    		if(andToChildDependencies.isEmpty() && !orToChildDependencies.isEmpty()) // rule has only 'OR' child rules 
 	    		{
 	    			
-	    			if(isAnyOrDependencyTrue(node, nodeOrOutDependencies)) //TRUE case
+	    			if(isAnyOrDependencyTrue(node, orToChildDependencies)) //TRUE case
 	    			{
 	    				canDetermine = true;
-	    				if(isInStatement)
+	    				if(isPlainStatementFormat)
 					{
-	    					ast.setFact(node.getVariableName(), FactValue.parse(true));
+	    					ast.setFact(node.getNodeName(), FactValue.parse(true));
 					}
 	    				else
 	    				{
 	    					ast.setFact(node.getVariableName(), node.getFactValue());
 	    				}
 	    				
-	    				
-	    				ast.setFact(node.getNodeName(), node.selfEvaluate(ast.getWorkingMemory(), this.scriptEngine, nodeOption));
 	    			}
-	    			else if(isAllOrDependencyDetermined(nodeOrOutDependencies) && !isAnyOrDependencyTrue(node, nodeOrOutDependencies)) //FALSE case
+	    			else if(isAllRelevantChildDependencyDetermined(node, orToChildDependencies) && !isAnyOrDependencyTrue(node, orToChildDependencies)) //FALSE case
 	    			{
 	    				canDetermine = true;
-	    				if(isInStatement)
+	    				if(isPlainStatementFormat)
 					{
-	    					ast.setFact(node.getVariableName(), FactValue.parse(false));
+	    					ast.setFact(node.getNodeName(), FactValue.parse(false));
 					}
 	    				else
 	    				{
 	    					ast.setFact(node.getVariableName(), FactValue.parse(node.getVariableName()));
 	    				}
 	    				    				
-	    				ast.setFact(node.getNodeName(), node.selfEvaluate(ast.getWorkingMemory(), this.scriptEngine, nodeOption));
-	
+	    				if(node.getLineType()==LineType.VALUE_CONCLUSION && !((ValueConclusionLine)node).getIsPlainStatementFormat())
+	    				{
+		    				ast.setFact(node.getNodeName(), node.selfEvaluate(ast.getWorkingMemory(), this.scriptEngine));
+	    				}	
 	    			}
 	    		}
-	    		else if(!nodeAndOutDependencies.isEmpty() && nodeOrOutDependencies.isEmpty())// rule has only 'AND' child rules
+	    		else if(!andToChildDependencies.isEmpty() && orToChildDependencies.isEmpty())// node has only 'AND' child nodes
 	    		{
-	    			if(isAllAndDependencyDetermined(nodeAndOutDependencies) && isAllAndDependencyTrue(node, nodeAndOutDependencies)) // TRUE case
+	    			if(isAllRelevantChildDependencyDetermined(node, andToChildDependencies) && isAllAndDependencyTrue(node, andToChildDependencies)) // TRUE case
 					{
 		    				canDetermine = true;
-		    				if(isInStatement)
+		    				if(isPlainStatementFormat)
 						{
-		    					ast.setFact(node.getVariableName(), FactValue.parse(false));
+		    					ast.setFact(node.getVariableName(), FactValue.parse(true));
 						}
 		    				else
 		    				{
 		    					ast.setFact(node.getVariableName(), FactValue.parse(node.getVariableName()));
 		    				}
 		    				    				
-		    				ast.setFact(node.getNodeName(), node.selfEvaluate(ast.getWorkingMemory(), this.scriptEngine, nodeOption));
-	
+		    				if(node.getLineType()==LineType.VALUE_CONCLUSION && !((ValueConclusionLine)node).getIsPlainStatementFormat())
+		    				{
+			    				ast.setFact(node.getNodeName(), node.selfEvaluate(ast.getWorkingMemory(), this.scriptEngine));
+		    				}	
 					}
 	    			/*
 	    			 * 'isAnyAndDependencyFalse()' contains a trimming off dependency method 
-	    			 * due to the fact that all undetermined 'AND' rules need to be trimmed off when any 'AND' rule is evaluated as 'NO'
-	               	 * , which does not influence on determining a parent rule's evaluation.
-	               	 * 
+	    			 * due to the fact that all undetermined 'AND' child nodes need to be trimmed off when any 'AND' node is evaluated as 'NO'
+               	 * , which does not influence on determining a parent rule's evaluation.
+               	 * 
 	    			 */
-	    			else if(isAllAndDependencyDetermined(nodeAndOutDependencies) && isAnyAndDependencyFalse(nodeAndOutDependencies)) //FALSE case
+	    			else if(isAnyAndDependencyFalse(node, andToChildDependencies)) //FALSE case
 	    			{
 	    				canDetermine = true;
-	    				if(isInStatement)
+	    				if(isPlainStatementFormat)
 					{
 	    					ast.setFact(node.getVariableName(), FactValue.parse(false));
 					}
@@ -719,74 +729,20 @@ public class InferenceEngine {
 	    				{
 	    					ast.setFact(node.getVariableName(), FactValue.parse(node.getVariableName()));
 	    				}
-	    				
-	    				ast.setFact(node.getNodeName(), node.selfEvaluate(ast.getWorkingMemory(), this.scriptEngine, nodeOption));
+	    				if(node.getLineType()==LineType.VALUE_CONCLUSION && !((ValueConclusionLine)node).getIsPlainStatementFormat())
+	    				{
+		    				ast.setFact(node.getNodeName(), node.selfEvaluate(ast.getWorkingMemory(), this.scriptEngine));
+	    				}
 	    				
 	    			}
 			
 	    		}
-	    	}
-	    	else if(LineType.EXPR_CONCLUSION.equals(lineType))
-	    	{
-	
-	    		if(!nodeAndOutDependencies.isEmpty() && nodeOrOutDependencies.isEmpty()) // rule has 'MANDATORY_OR' and 'OR' child rules 
-	    		{
-	    			for(int i=0; i < nodeOrOutDependencies.size(); i++)
-	    			{
-	    				int mandatoryOrDependencyType = DependencyType.getMandatory() | DependencyType.getOr();
-	    				if((nodeSet.getDependencyMatrix().getDependencyMatrixArray()[node.getNodeId()][nodeOrOutDependencies.get(i)] & mandatoryOrDependencyType) == mandatoryOrDependencyType)
-	    				{
-	    					if(ast.getWorkingMemory().get(nodeSet.getNodeMap().get(nodeSet.getNodeIdMap().get(nodeOrOutDependencies.get(i))).getVariableName()) != null)
-	    					{
-	    						canDetermine = true;
-	    						ast.setFact(node.getVariableName(), node.selfEvaluate(ast.getWorkingMemory(), this.scriptEngine, nodeOption)); // add currentRule into the workingMemory
-	    					}
-	    				}
-	    				else
-	    				{
-	    					ast.getInclusiveList().remove(nodeSet.getNodeMap().get(nodeSet.getNodeIdMap().get(i)).getNodeName());
-	    				}
-	    			}    			
-	    		}
-	    		else if(nodeAndOutDependencies.isEmpty() &&!nodeOrOutDependencies.isEmpty())// rule has only 'MANDATORY_AND' child rules
-	    		{
-	    			if(allNeedsChildDetermined(node, nodeAndOutDependencies)) // TRUE case
-					{
-		    				canDetermine = true;
-		    				/*  
-	 	                 * The reason why ast.setFact() is used here rather than this.addFactToRule() is that ruleType is already known, and target rule object is already found. 
-	 	                 */
-	 	                ast.setFact(node.getVariableName(), node.selfEvaluate(ast.getWorkingMemory(), this.scriptEngine, nodeOption)); // add currentRule into the workingMemory
-					}
-			
-	    		}
-	    	}
-	    	else if(LineType.COMPARISON.equals(lineType))
-	    	{
 	    		
-	    		if(ast.getWorkingMemory().get(node.getVariableName()) != null)
-	    		{
-	    			canDetermine = true;
-	    			/*  
-	    			 * The reason why ast.setFact() is used here rather than this.addFactToRule() is that ruleType is already known, and target rule object is already found. 
-	    			 */
-	     		   ast.setFact(node.getNodeName(), node.selfEvaluate(ast.getWorkingMemory(), this.scriptEngine, nodeOption)); // add currentRule into the workingMemory
-	    		}
-	    	}
-	    	else if(LineType.ITERATE.equals(lineType))
-	    	{
-	    		if(ast.getWorkingMemory().get(node.getFactValue().getValue().toString()) != null )
-	    		{
-	    			canDetermine = true;
-	    			ast.setFact(node.getNodeName(), node.selfEvaluate(ast.getWorkingMemory(), this.scriptEngine, nodeOption));
-	    		}
 	    	}
 	    	
 	    	return canDetermine;
-    }
+	}
     
-
-   
     
     public String getDefaultGoalRuleQuestion() 
     {
@@ -812,10 +768,10 @@ public class InferenceEngine {
      Returns boolean value that can determine whether or not the given rule has any children
      this method is used within the process of backward chaining.
      */
-    public boolean hasChildren(Node node)
+    public boolean hasChildren(int nodeId)
     {
         boolean hasChildren = false;
-        if (!nodeSet.getDependencyMatrix().getOutDependencyList(node.getNodeId()).isEmpty())
+        if (!nodeSet.getDependencyMatrix().getToChildDependencyList(nodeId).isEmpty())
         {
             hasChildren = true;
         }
@@ -827,7 +783,7 @@ public class InferenceEngine {
     */
     public void addChildRuleIntoInclusiveList(Node node)
     {
-	    	List<Integer> childrenListOfNode = nodeSet.getDependencyMatrix().getOutDependencyList(node.getNodeId());
+	    	List<Integer> childrenListOfNode = nodeSet.getDependencyMatrix().getToChildDependencyList(node.getNodeId());
 	    	childrenListOfNode.stream().forEachOrdered(item -> {
 	    		String childNodeName = nodeSet.getNodeMap().get(nodeSet.getNodeIdMap().get(item)).getNodeName();
 	    		if(!ast.getInclusiveList().contains(childNodeName))
@@ -839,20 +795,57 @@ public class InferenceEngine {
     }
 
 
-    public boolean isAnyOrDependencyTrue(Node node, List<Integer> orOutDependencies)
+    public boolean isAnyOrDependencyTrue(Node node, List<Integer> orChildDependencies)
     {
         boolean isAnyOrDependencyTrue = false;
-        if (!orOutDependencies.isEmpty())
-        {
-	        	List<Integer> trueOrOutNodesList = orOutDependencies.stream().filter(i -> 
-	        	ast.getWorkingMemory().get(nodeSet.getNodeIdMap().get(i)) != null && ast.getWorkingMemory().get(nodeSet.getNodeIdMap().get(i)).getValue().equals(true))
-	        																 .collect(Collectors.toList());
+        targetNode = node;
+        if (!orChildDependencies.isEmpty())
+        {	        	
 	        	
-	        	if(!trueOrOutNodesList.isEmpty())
+	        	List<Integer> trueOrChildList = new ArrayList<>();
+	        	orChildDependencies.stream().forEachOrdered(item -> {
+	        		if(ast.isInclusiveList(nodeSet.getNodeIdMap().get(item)) 
+	        			&& ast.getWorkingMemory().containsKey(nodeSet.getNodeIdMap().get(item)))
+	        		{
+	        			if((nodeSet.getDependencyMatrix().getDependencyType(targetNode.getNodeId(), item)&DependencyType.getKnown()) == DependencyType.getKnown()
+						  &&((nodeSet.getDependencyMatrix().getDependencyType(targetNode.getNodeId(), item)&DependencyType.getNot()) != DependencyType.getNot())
+					  )
+	        			{
+	        				trueOrChildList.add(item);
+	        				if(!ast.getWorkingMemory().containsKey("KNOWN "+nodeSet.getNodeIdMap().get(item)))
+	        				{
+	        					ast.setFact("KNOWN "+nodeSet.getNodeIdMap().get(item), FactBooleanValue.parse(true));
+		        				ast.getSummaryList().add("KNOWN "+nodeSet.getNodeIdMap().get(item));
+	        				}
+	        				
+	        			}
+	        			else if(ast.getWorkingMemory().get(nodeSet.getNodeIdMap().get(item)).getValue().equals(true)
+							  &&((nodeSet.getDependencyMatrix().getDependencyType(targetNode.getNodeId(), item)&DependencyType.getNot()) != DependencyType.getNot()))
+	        			{
+	        				
+	        				trueOrChildList.add(item);
+	        			}
+	        			else if(ast.getWorkingMemory().get(nodeSet.getNodeIdMap().get(item)).getValue().equals(false)
+							  &&((nodeSet.getDependencyMatrix().getDependencyType(targetNode.getNodeId(), item)&DependencyType.getNot()) == DependencyType.getNot()))
+	        			{
+	        				trueOrChildList.add(item);
+	        				
+	        				if(!ast.getWorkingMemory().containsKey("NOT "+nodeSet.getNodeIdMap().get(item)))
+	        				{
+	        					ast.setFact("NOT "+nodeSet.getNodeIdMap().get(item), FactBooleanValue.parse(true));
+		        				ast.getSummaryList().add("NOT "+nodeSet.getNodeIdMap().get(item));
+	        				}
+
+	        			}
+	        		}
+	        	});
+	        	
+	        	
+	        	if(!trueOrChildList.isEmpty())
 	        	{
 	        		isAnyOrDependencyTrue = true;
-	        		orOutDependencies.stream().forEachOrdered(i -> {
-	        			trueOrOutNodesList.stream().forEachOrdered(n -> {
+	        		orChildDependencies.stream().forEachOrdered(i -> {
+	        			trueOrChildList.stream().forEachOrdered(n -> {
 	        				if(i != n)
 	        				{
 	        					trimDependency(node, nodeSet.getNodeMap().get(nodeSet.getNodeIdMap().get(i)));
@@ -864,7 +857,7 @@ public class InferenceEngine {
         return isAnyOrDependencyTrue;
     }
 
-    public void trimDependency(Node parentNode, Node childNode)
+	public void trimDependency(Node parentNode, Node childNode)
     {
 	    	int dpType = nodeSet.getDependencyMatrix().getDependencyMatrixArray()[parentNode.getNodeId()][childNode.getNodeId()];
 	    	int mandatoryDependencyType = DependencyType.getMandatory();
@@ -874,41 +867,122 @@ public class InferenceEngine {
 	    	}
     }
     
-    public boolean isAnyAndDependencyFalse(List<Integer> andOutDependencies)
+    public boolean isAnyAndDependencyFalse(Node node, List<Integer> andChildDependencies)
     {
         boolean isAnyAndDependencyFalse = false;
-        
-        List<Integer> falseAndList = andOutDependencies.stream().filter(i -> ast.getWorkingMemory().get(nodeSet.getNodeMap().get(nodeSet.getNodeIdMap().get(i))).getValue().toString().equals("false")).collect(Collectors.toList());
+        targetNode = node;
 
-        if(falseAndList.size() > 0)
-        {
-	        	isAnyAndDependencyFalse = true;
-	        	andOutDependencies.stream().forEachOrdered(i -> {
-	        		falseAndList.stream().forEachOrdered(f -> {
-	        			if(i != f)
-	        			{
-	        				ast.getInclusiveList().remove(nodeSet.getNodeMap().get(nodeSet.getNodeIdMap().get(i)).getNodeName());
-	        			}
-	        		});
-	        	});
+        if (!andChildDependencies.isEmpty())
+        {	
+	        	List<Integer> falseAndList = new ArrayList<>();
+	            
+            andChildDependencies.stream().forEachOrdered(item -> {
+            		if(ast.getWorkingMemory().containsKey(nodeSet.getNodeIdMap().get(item)))
+            		{
+            			if(ast.getWorkingMemory().get(nodeSet.getNodeIdMap().get(item)).getValue().equals(false)
+    							&&((nodeSet.getDependencyMatrix().getDependencyType(targetNode.getNodeId(), item)&DependencyType.getNot()) != DependencyType.getNot())
+    							&&((nodeSet.getDependencyMatrix().getDependencyType(targetNode.getNodeId(), item) & DependencyType.getKnown()) != DependencyType.getKnown()))
+            			{
+//            				ast.setFact(nodeSet.getNodeIdMap().get(item), FactBooleanValue.parse(false));
+//            				ast.getSummaryList().add(nodeSet.getNodeIdMap().get(item));
+               	 		falseAndList.add(item);
+            			}
+            			else if(ast.getWorkingMemory().get(nodeSet.getNodeIdMap().get(item)).getValue().equals(true)
+								&&((nodeSet.getDependencyMatrix().getDependencyType(targetNode.getNodeId(), item)&DependencyType.getNot()) == DependencyType.getNot())
+								&&((nodeSet.getDependencyMatrix().getDependencyType(targetNode.getNodeId(), item) & DependencyType.getKnown()) != DependencyType.getKnown())
+						)
+            			{
+            				if(!ast.getWorkingMemory().containsKey("NOT "+nodeSet.getNodeIdMap().get(item)))
+            				{
+            					ast.setFact("NOT "+nodeSet.getNodeIdMap().get(item), FactBooleanValue.parse(false));
+                				ast.getSummaryList().add("NOT "+nodeSet.getNodeIdMap().get(item));
+            				}
+            				
+               	 		falseAndList.add(item);
+            			}
+            			else if((nodeSet.getDependencyMatrix().getDependencyType(targetNode.getNodeId(), item) & (DependencyType.getNot()|DependencyType.getKnown())) == (DependencyType.getNot()|DependencyType.getKnown()))
+            			{
+            				if(!ast.getWorkingMemory().containsKey("NOT KNOWN "+nodeSet.getNodeIdMap().get(item)))
+            				{
+            					ast.setFact("NOT KNOWN "+nodeSet.getNodeIdMap().get(item), FactBooleanValue.parse(false));
+                				ast.getSummaryList().add("NOT KNOWN "+nodeSet.getNodeIdMap().get(item));
+            				}
+            				
+               	 		falseAndList.add(item);
+            			}
+            		}
+            });
+            
+            if(falseAndList.size() > 0)
+            {
+    	        	isAnyAndDependencyFalse = true;
+    	        	andChildDependencies.stream().forEachOrdered(i -> {
+    	        		falseAndList.stream().forEachOrdered(f -> {
+    	        			if(i != f)
+    	        			{
+    	        				trimDependency(node, nodeSet.getNodeMap().get(nodeSet.getNodeIdMap().get(i)));
+    	        			}
+    	        		});
+    	        	});
+            }
+            else if(andChildDependencies.size() == 0)
+            {
+            		isAnyAndDependencyFalse = true;
+            }
         }
-        else if(andOutDependencies.size() == 0)
-        {
-        		isAnyAndDependencyFalse = true;
-        }
+         
+        		 
+       
         return isAnyAndDependencyFalse;
     }
     
     
-    public boolean isAllAndDependencyTrue(Node parentRule, List<Integer> andOutDependencies)
+    public boolean isAllAndDependencyTrue(Node node, List<Integer> andChildDependencies)
     {
         boolean isAllAndTrue = false;
+        targetNode = node;
 
-        List<Integer> determinedTrueAndOutDependencies = andOutDependencies.stream().filter(i ->
-        													ast.getWorkingMemory().get(nodeSet.getNodeMap().get(nodeSet.getNodeIdMap().get(i))).getValue().toString().equals("true")).collect(Collectors.toList());
+        	List<Integer> determinedTrueAndChildDependencies = new ArrayList<>();
+
+        andChildDependencies.stream().forEachOrdered(item -> {
+        	if(ast.isInclusiveList(nodeSet.getNodeIdMap().get(item))
+	        && ast.getWorkingMemory().containsKey(nodeSet.getNodeIdMap().get(item)) )
+    		{
+    			if(ast.getWorkingMemory().get(nodeSet.getNodeIdMap().get(item)).getValue().equals(true)
+				&&((nodeSet.getDependencyMatrix().getDependencyType(targetNode.getNodeId(), item)&DependencyType.getNot()) != DependencyType.getNot()))
+    			{
+//    				ast.setFact(nodeSet.getNodeIdMap().get(item), FactBooleanValue.parse(true));
+//    				ast.getSummaryList().add(nodeSet.getNodeIdMap().get(item));
+    				determinedTrueAndChildDependencies.add(item);
+    			}
+    			else if((nodeSet.getDependencyMatrix().getDependencyType(targetNode.getNodeId(), item)&DependencyType.getKnown()) == DependencyType.getKnown()
+					  &&((nodeSet.getDependencyMatrix().getDependencyType(targetNode.getNodeId(), item)&DependencyType.getNot()) != DependencyType.getNot()))
+    			{
+    				if(!ast.getWorkingMemory().containsKey("KNOWN "+nodeSet.getNodeIdMap().get(item)))
+    				{
+    					ast.setFact("KNOWN "+nodeSet.getNodeIdMap().get(item), FactBooleanValue.parse(false));
+        				ast.getSummaryList().add("KNOWN "+nodeSet.getNodeIdMap().get(item));
+    				}
+    				
+    				determinedTrueAndChildDependencies.add(item);
+    			}
+    			else if(ast.getWorkingMemory().get(nodeSet.getNodeIdMap().get(item)).getValue().equals(false)
+					  &&((nodeSet.getDependencyMatrix().getDependencyType(targetNode.getNodeId(), item)&DependencyType.getNot()) == DependencyType.getNot())
+					  && ((nodeSet.getDependencyMatrix().getDependencyType(targetNode.getNodeId(), item)&DependencyType.getKnown()) != DependencyType.getKnown()))
+    			{
+    				if(!ast.getWorkingMemory().containsKey("NOT "+nodeSet.getNodeIdMap().get(item)))
+    				{
+    					ast.setFact("NOT "+nodeSet.getNodeIdMap().get(item), FactBooleanValue.parse(false));
+        				ast.getSummaryList().add("NOT "+nodeSet.getNodeIdMap().get(item));
+    				}
+    				
+    				determinedTrueAndChildDependencies.add(item);
+    			}
+    		}
+        	
+        });
         
-        
-        if(andOutDependencies != null && determinedTrueAndOutDependencies.size() == andOutDependencies.size())
+        if(andChildDependencies != null && determinedTrueAndChildDependencies.size() == andChildDependencies.size())
         {
         		isAllAndTrue = true;
         } 
@@ -916,38 +990,63 @@ public class InferenceEngine {
        return isAllAndTrue;
     }
 
-    public boolean isAllAndDependencyDetermined(List<Integer> andOutDependencies)
+    public boolean isAllRelevantChildDependencyDetermined(Node node, List<Integer> allChildDependencies)
     {
-        boolean isAllAndDependencyDetermined = false;
+        boolean isAllRelevantChildDependencyDetermined = false;
+        targetNode = node;
         
-        List<Integer> determinedAndOutDependencies = andOutDependencies.stream().filter(i ->
-        							ast.getWorkingMemory().get(nodeSet.getNodeIdMap().get(i)) != null).collect(Collectors.toList());
+        List<Integer> determinedAndOutDependencies = new ArrayList<>();
+        allChildDependencies.stream().forEachOrdered(item ->{
+	        														if(ast.getWorkingMemory().get(nodeSet.getNodeIdMap().get(item)) != null
+	    																&&(nodeSet.getDependencyMatrix().getDependencyType(targetNode.getNodeId(), item) & (DependencyType.getNot()|DependencyType.getKnown())) == (DependencyType.getNot()|DependencyType.getKnown())
+	    																&& !ast.getWorkingMemory().containsKey("NOT KNOWN "+nodeSet.getNodeIdMap().get(item)))
+	        														{
+	        															ast.setFact("NOT KNOWN "+nodeSet.getNodeIdMap().get(item), FactBooleanValue.parse(false));
+	        								            					ast.getSummaryList().add("NOT KNOWN "+nodeSet.getNodeIdMap().get(item));
+	        														}
+	        														else if(ast.getWorkingMemory().get(nodeSet.getNodeIdMap().get(item)) != null
+	        																 &&ast.getWorkingMemory().get(nodeSet.getNodeIdMap().get(item)).getValue().equals(false)
+	        																 &&(nodeSet.getDependencyMatrix().getDependencyType(targetNode.getNodeId(), item)&DependencyType.getNot()) == DependencyType.getNot()
+	        																 && !ast.getWorkingMemory().containsKey("NOT "+nodeSet.getNodeIdMap().get(item)))
+														        {
+	        															ast.setFact("NOT "+nodeSet.getNodeIdMap().get(item), FactBooleanValue.parse(true));
+	        										    					ast.getSummaryList().add("NOT "+nodeSet.getNodeIdMap().get(item));
+														        }
+	        														else if(ast.getWorkingMemory().get(nodeSet.getNodeIdMap().get(item))  != null
+	        																 &&(nodeSet.getDependencyMatrix().getDependencyType(targetNode.getNodeId(), item)&DependencyType.getKnown()) == DependencyType.getKnown()
+	        																 && !ast.getWorkingMemory().containsKey("KNOWN "+nodeSet.getNodeIdMap().get(item)))
+	        														{
+	        															ast.setFact("KNOWN "+nodeSet.getNodeIdMap().get(item), FactBooleanValue.parse(true));
+	    										    						ast.getSummaryList().add("KNOWN "+nodeSet.getNodeIdMap().get(item));
+	        														}
+	        														else if(ast.getWorkingMemory().get(nodeSet.getNodeIdMap().get(item)) != null
+	        																 &&ast.getWorkingMemory().get(nodeSet.getNodeIdMap().get(item)).getValue().equals(true)
+	        																 &&(nodeSet.getDependencyMatrix().getDependencyType(targetNode.getNodeId(), item)&DependencyType.getNot()) == DependencyType.getNot()
+	        																 && !ast.getWorkingMemory().containsKey("NOT "+nodeSet.getNodeIdMap().get(item)))
+														        {
+	        															ast.setFact("NOT "+nodeSet.getNodeIdMap().get(item), FactBooleanValue.parse(false));
+	        										    					ast.getSummaryList().add("NOT "+nodeSet.getNodeIdMap().get(item));
+														        }
+	        														
+	        														
+	        														if(ast.isInclusiveList(nodeSet.getNodeIdMap().get(item)) 
+																	&& ast.getWorkingMemory().containsKey(nodeSet.getNodeIdMap().get(item)))
+																{
+	        															determinedAndOutDependencies.add(item);
+																}
+												        }
+												       );
         
         
-        if(andOutDependencies != null && determinedAndOutDependencies.size() == andOutDependencies.size())
+        if(allChildDependencies != null && determinedAndOutDependencies.size() == allChildDependencies.size())
         {
-        		isAllAndDependencyDetermined = true;
+        	isAllRelevantChildDependencyDetermined = true;
         }
 
 
-        return isAllAndDependencyDetermined;
+        return isAllRelevantChildDependencyDetermined;
     }
 
-    public boolean isAllOrDependencyDetermined(List<Integer> orOutDependencies)
-    {
-        boolean isAllOrDependencyDetermined = false;
-        
-        List<Integer> determinedOrOutDependencies = orOutDependencies.stream().filter(i ->
-        					ast.getWorkingMemory().get(nodeSet.getNodeMap().get(nodeSet.getNodeIdMap().get(i))) != null
-        				).collect(Collectors.toList());
-        
-        if(orOutDependencies != null && determinedOrOutDependencies.size() == orOutDependencies.size())
-        {
-        		isAllOrDependencyDetermined = true;
-        }
-
-        return isAllOrDependencyDetermined;
-    }
 
 
     public boolean allNeedsChildDetermined(Node parentNode, List<Integer> outDependency)
@@ -956,7 +1055,7 @@ public class InferenceEngine {
     	
     	int mandatoryAndDependencyType = DependencyType.getMandatory() | DependencyType.getAnd();
     	List<Integer> determinedList = outDependency.stream().filter(i -> (nodeSet.getDependencyMatrix().getDependencyMatrixArray()[parentNode.getNodeId()][i] & mandatoryAndDependencyType) == mandatoryAndDependencyType
-    										&& ast.getWorkingMemory().get(nodeSet.getNodeMap().get(nodeSet.getNodeIdMap().get(i)).getVariableName())!= null).collect(Collectors.toList());
+    										&& ast.getWorkingMemory().containsKey(nodeSet.getNodeMap().get(nodeSet.getNodeIdMap().get(i)).getVariableName())).collect(Collectors.toList());
     	
     	if(outDependency.size() == determinedList.size())
     	{
@@ -1012,11 +1111,11 @@ public class InferenceEngine {
     {
         if(!ast.getInclusiveList().isEmpty())
         {
-        	ast.getInclusiveList().removeAll(ast.getInclusiveList());
+        		ast.getInclusiveList().removeAll(ast.getInclusiveList());
         }
         if(!ast.getWorkingMemory().isEmpty())
         {
-        	ast.getWorkingMemory().clear();
+        		ast.getWorkingMemory().clear();
         }
     }
     
@@ -1097,7 +1196,7 @@ public class InferenceEngine {
     	List<String> questionList = new ArrayList<>(initialSize);
     	for(Node node: nodeSet.getNodeSortedList())
     	{
-    		if(nodeSet.getDependencyMatrix().getOutDependencyList(node.getNodeId()).isEmpty())
+    		if(nodeSet.getDependencyMatrix().getToChildDependencyList(node.getNodeId()).isEmpty())
     		{
     			questionList.add(node.getNodeName());
     		}

@@ -1,0 +1,40 @@
+nodeName: we have information about a person
+dependency type: 10
+dependency: we have person's name and dob
+dependency type: 42
+dependency: we have the person's passport
+dependency type: 8
+dependency: person's nationality is Australian
+dependency type: 8
+dependency: person made it to Las Vegas
+dependency type: 8
+dependency: person qualifies for the grant
+nodeName: we have person's name and dob
+dependency type: 25
+dependency: person's name
+dependency type: 8
+dependency: person's dob
+nodeName: we have the person's passport
+nodeName: person's nationality is Australian
+dependency type: 68
+dependency: citizenship testing of person's parents
+dependency type: 6
+dependency: the person was born in Australia
+nodeName: person made it to Las Vegas
+dependency type: 27
+dependency: the person missed the flight
+nodeName: person qualifies for the grant
+dependency type: 72
+dependency: person is currently studying
+nodeName: person's name
+nodeName: person's dob
+nodeName: citizenship testing of person's parents
+dependency type: 4
+dependency: one of person's parents is Australian
+dependency type: 4
+dependency: both of person's parents are Australian
+nodeName: the person was born in Australia
+nodeName: the person missed the flight
+nodeName: person is currently studying
+nodeName: one of person's parents is Australian
+nodeName: both of person's parents are Australian

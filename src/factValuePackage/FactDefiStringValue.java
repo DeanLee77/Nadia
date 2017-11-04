@@ -1,12 +1,25 @@
 package factValuePackage;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 public class FactDefiStringValue extends FactValue {
 	
 	private String value;
 	private String defaultValue;
+	private Pattern pattern = Pattern.compile("(\")(.*)(\")");
+	private Matcher matcher;
 	
 	public FactDefiStringValue(String s) {
-		setValue(s);
+		matcher = pattern.matcher(s);
+		if(matcher.find())
+		{
+			setValue(matcher.group(2));
+		}
+		else
+		{			
+			throw new IllegalStateException("FactDefiStringValue cannot be initiated");
+		}
 	}
 
 
