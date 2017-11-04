@@ -82,7 +82,7 @@ public class WeddingPlanner_Inference_Test {
 //		});
 		HashMap<String, FactValue> workingMemory = ie.getAssessmentState().getWorkingMemory();
 		ie.getAssessmentState().getSummaryList().stream().forEachOrdered(node ->{
-			System.out.println(node.getNodeName()+" : "+workingMemory.get(node.getNodeName()).getValue().toString());
+			System.out.println(node+" : "+workingMemory.get(node).getValue().toString());
 		});
 		
 //		scan.close();

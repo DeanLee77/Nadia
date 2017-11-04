@@ -675,7 +675,7 @@ public class InferenceEngine {
 	    				}
 	    				
 	    			}
-	    			else if(isAllRelevantChildDependencyDetermined(orToChildDependencies) && !isAnyOrDependencyTrue(node, orToChildDependencies)) //FALSE case
+	    			else if(isAllRelevantChildDependencyDetermined(node, orToChildDependencies) && !isAnyOrDependencyTrue(node, orToChildDependencies)) //FALSE case
 	    			{
 	    				canDetermine = true;
 	    				if(isPlainStatementFormat)
@@ -695,7 +695,7 @@ public class InferenceEngine {
 	    		}
 	    		else if(!andToChildDependencies.isEmpty() && orToChildDependencies.isEmpty())// node has only 'AND' child nodes
 	    		{
-	    			if(isAllRelevantChildDependencyDetermined(andToChildDependencies) && isAllAndDependencyTrue(node, andToChildDependencies)) // TRUE case
+	    			if(isAllRelevantChildDependencyDetermined(node, andToChildDependencies) && isAllAndDependencyTrue(node, andToChildDependencies)) // TRUE case
 					{
 		    				canDetermine = true;
 		    				if(isPlainStatementFormat)
@@ -812,20 +812,30 @@ public class InferenceEngine {
 					  )
 	        			{
 	        				trueOrChildList.add(item);
-	        				ast.setFact("KNOWN "+nodeSet.getNodeIdMap().get(item), FactBooleanValue.parse(true));
-	        				ast.getSummaryList().add("KNOWN "+nodeSet.getNodeIdMap().get(item));
+	        				if(!ast.getWorkingMemory().containsKey("KNOWN "+nodeSet.getNodeIdMap().get(item)))
+	        				{
+	        					ast.setFact("KNOWN "+nodeSet.getNodeIdMap().get(item), FactBooleanValue.parse(true));
+		        				ast.getSummaryList().add("KNOWN "+nodeSet.getNodeIdMap().get(item));
+	        				}
+	        				
 	        			}
 	        			else if(ast.getWorkingMemory().get(nodeSet.getNodeIdMap().get(item)).getValue().equals(true)
 							  &&((nodeSet.getDependencyMatrix().getDependencyType(targetNode.getNodeId(), item)&DependencyType.getNot()) != DependencyType.getNot()))
 	        			{
+	        				
 	        				trueOrChildList.add(item);
 	        			}
 	        			else if(ast.getWorkingMemory().get(nodeSet.getNodeIdMap().get(item)).getValue().equals(false)
 							  &&((nodeSet.getDependencyMatrix().getDependencyType(targetNode.getNodeId(), item)&DependencyType.getNot()) == DependencyType.getNot()))
 	        			{
 	        				trueOrChildList.add(item);
-	        				ast.setFact("NOT "+nodeSet.getNodeIdMap().get(item), FactBooleanValue.parse(true));
-	        				ast.getSummaryList().add("NOT "+nodeSet.getNodeIdMap().get(item));
+	        				
+	        				if(!ast.getWorkingMemory().containsKey("NOT "+nodeSet.getNodeIdMap().get(item)))
+	        				{
+	        					ast.setFact("NOT "+nodeSet.getNodeIdMap().get(item), FactBooleanValue.parse(true));
+		        				ast.getSummaryList().add("NOT "+nodeSet.getNodeIdMap().get(item));
+	        				}
+
 	        			}
 	        		}
 	        	});
@@ -873,8 +883,8 @@ public class InferenceEngine {
     							&&((nodeSet.getDependencyMatrix().getDependencyType(targetNode.getNodeId(), item)&DependencyType.getNot()) != DependencyType.getNot())
     							&&((nodeSet.getDependencyMatrix().getDependencyType(targetNode.getNodeId(), item) & DependencyType.getKnown()) != DependencyType.getKnown()))
             			{
-            				ast.setFact(nodeSet.getNodeIdMap().get(item), FactBooleanValue.parse(false));
-            				ast.getSummaryList().add(nodeSet.getNodeIdMap().get(item));
+//            				ast.setFact(nodeSet.getNodeIdMap().get(item), FactBooleanValue.parse(false));
+//            				ast.getSummaryList().add(nodeSet.getNodeIdMap().get(item));
                	 		falseAndList.add(item);
             			}
             			else if(ast.getWorkingMemory().get(nodeSet.getNodeIdMap().get(item)).getValue().equals(true)
@@ -882,14 +892,22 @@ public class InferenceEngine {
 								&&((nodeSet.getDependencyMatrix().getDependencyType(targetNode.getNodeId(), item) & DependencyType.getKnown()) != DependencyType.getKnown())
 						)
             			{
-            				ast.setFact("NOT "+nodeSet.getNodeIdMap().get(item), FactBooleanValue.parse(false));
-            				ast.getSummaryList().add("NOT "+nodeSet.getNodeIdMap().get(item));
+            				if(!ast.getWorkingMemory().containsKey("NOT "+nodeSet.getNodeIdMap().get(item)))
+            				{
+            					ast.setFact("NOT "+nodeSet.getNodeIdMap().get(item), FactBooleanValue.parse(false));
+                				ast.getSummaryList().add("NOT "+nodeSet.getNodeIdMap().get(item));
+            				}
+            				
                	 		falseAndList.add(item);
             			}
             			else if((nodeSet.getDependencyMatrix().getDependencyType(targetNode.getNodeId(), item) & (DependencyType.getNot()|DependencyType.getKnown())) == (DependencyType.getNot()|DependencyType.getKnown()))
             			{
-            				ast.setFact("NOT KNOWN "+nodeSet.getNodeIdMap().get(item), FactBooleanValue.parse(false));
-            				ast.getSummaryList().add("NOT KNOWN "+nodeSet.getNodeIdMap().get(item));
+            				if(!ast.getWorkingMemory().containsKey("NOT KNOWN "+nodeSet.getNodeIdMap().get(item)))
+            				{
+            					ast.setFact("NOT KNOWN "+nodeSet.getNodeIdMap().get(item), FactBooleanValue.parse(false));
+                				ast.getSummaryList().add("NOT KNOWN "+nodeSet.getNodeIdMap().get(item));
+            				}
+            				
                	 		falseAndList.add(item);
             			}
             		}
@@ -933,23 +951,31 @@ public class InferenceEngine {
     			if(ast.getWorkingMemory().get(nodeSet.getNodeIdMap().get(item)).getValue().equals(true)
 				&&((nodeSet.getDependencyMatrix().getDependencyType(targetNode.getNodeId(), item)&DependencyType.getNot()) != DependencyType.getNot()))
     			{
-    				ast.setFact(nodeSet.getNodeIdMap().get(item), FactBooleanValue.parse(true));
-    				ast.getSummaryList().add(nodeSet.getNodeIdMap().get(item));
+//    				ast.setFact(nodeSet.getNodeIdMap().get(item), FactBooleanValue.parse(true));
+//    				ast.getSummaryList().add(nodeSet.getNodeIdMap().get(item));
     				determinedTrueAndChildDependencies.add(item);
     			}
     			else if((nodeSet.getDependencyMatrix().getDependencyType(targetNode.getNodeId(), item)&DependencyType.getKnown()) == DependencyType.getKnown()
 					  &&((nodeSet.getDependencyMatrix().getDependencyType(targetNode.getNodeId(), item)&DependencyType.getNot()) != DependencyType.getNot()))
     			{
-    				ast.setFact("KNOWN "+nodeSet.getNodeIdMap().get(item), FactBooleanValue.parse(false));
-    				ast.getSummaryList().add("KNOWN "+nodeSet.getNodeIdMap().get(item));
+    				if(!ast.getWorkingMemory().containsKey("KNOWN "+nodeSet.getNodeIdMap().get(item)))
+    				{
+    					ast.setFact("KNOWN "+nodeSet.getNodeIdMap().get(item), FactBooleanValue.parse(false));
+        				ast.getSummaryList().add("KNOWN "+nodeSet.getNodeIdMap().get(item));
+    				}
+    				
     				determinedTrueAndChildDependencies.add(item);
     			}
     			else if(ast.getWorkingMemory().get(nodeSet.getNodeIdMap().get(item)).getValue().equals(false)
 					  &&((nodeSet.getDependencyMatrix().getDependencyType(targetNode.getNodeId(), item)&DependencyType.getNot()) == DependencyType.getNot())
 					  && ((nodeSet.getDependencyMatrix().getDependencyType(targetNode.getNodeId(), item)&DependencyType.getKnown()) != DependencyType.getKnown()))
     			{
-    				ast.setFact("NOT "+nodeSet.getNodeIdMap().get(item), FactBooleanValue.parse(false));
-    				ast.getSummaryList().add("NOT "+nodeSet.getNodeIdMap().get(item));
+    				if(!ast.getWorkingMemory().containsKey("NOT "+nodeSet.getNodeIdMap().get(item)))
+    				{
+    					ast.setFact("NOT "+nodeSet.getNodeIdMap().get(item), FactBooleanValue.parse(false));
+        				ast.getSummaryList().add("NOT "+nodeSet.getNodeIdMap().get(item));
+    				}
+    				
     				determinedTrueAndChildDependencies.add(item);
     			}
     		}
@@ -964,15 +990,52 @@ public class InferenceEngine {
        return isAllAndTrue;
     }
 
-    public boolean isAllRelevantChildDependencyDetermined(List<Integer> allChildDependencies)
+    public boolean isAllRelevantChildDependencyDetermined(Node node, List<Integer> allChildDependencies)
     {
         boolean isAllRelevantChildDependencyDetermined = false;
+        targetNode = node;
         
-        List<Integer> determinedAndOutDependencies = allChildDependencies.stream().filter(i ->
-																					        ast.isInclusiveList(nodeSet.getNodeIdMap().get(i)) 
-																							&& ast.getWorkingMemory().containsKey(nodeSet.getNodeIdMap().get(i))
-        																					)  
-        																			.collect(Collectors.toList());
+        List<Integer> determinedAndOutDependencies = new ArrayList<>();
+        allChildDependencies.stream().forEachOrdered(item ->{
+	        														if(ast.getWorkingMemory().get(nodeSet.getNodeIdMap().get(item)) != null
+	    																&&(nodeSet.getDependencyMatrix().getDependencyType(targetNode.getNodeId(), item) & (DependencyType.getNot()|DependencyType.getKnown())) == (DependencyType.getNot()|DependencyType.getKnown())
+	    																&& !ast.getWorkingMemory().containsKey("NOT KNOWN "+nodeSet.getNodeIdMap().get(item)))
+	        														{
+	        															ast.setFact("NOT KNOWN "+nodeSet.getNodeIdMap().get(item), FactBooleanValue.parse(false));
+	        								            					ast.getSummaryList().add("NOT KNOWN "+nodeSet.getNodeIdMap().get(item));
+	        														}
+	        														else if(ast.getWorkingMemory().get(nodeSet.getNodeIdMap().get(item)) != null
+	        																 &&ast.getWorkingMemory().get(nodeSet.getNodeIdMap().get(item)).getValue().equals(false)
+	        																 &&(nodeSet.getDependencyMatrix().getDependencyType(targetNode.getNodeId(), item)&DependencyType.getNot()) == DependencyType.getNot()
+	        																 && !ast.getWorkingMemory().containsKey("NOT "+nodeSet.getNodeIdMap().get(item)))
+														        {
+	        															ast.setFact("NOT "+nodeSet.getNodeIdMap().get(item), FactBooleanValue.parse(true));
+	        										    					ast.getSummaryList().add("NOT "+nodeSet.getNodeIdMap().get(item));
+														        }
+	        														else if(ast.getWorkingMemory().get(nodeSet.getNodeIdMap().get(item))  != null
+	        																 &&(nodeSet.getDependencyMatrix().getDependencyType(targetNode.getNodeId(), item)&DependencyType.getKnown()) == DependencyType.getKnown()
+	        																 && !ast.getWorkingMemory().containsKey("KNOWN "+nodeSet.getNodeIdMap().get(item)))
+	        														{
+	        															ast.setFact("KNOWN "+nodeSet.getNodeIdMap().get(item), FactBooleanValue.parse(true));
+	    										    						ast.getSummaryList().add("KNOWN "+nodeSet.getNodeIdMap().get(item));
+	        														}
+	        														else if(ast.getWorkingMemory().get(nodeSet.getNodeIdMap().get(item)) != null
+	        																 &&ast.getWorkingMemory().get(nodeSet.getNodeIdMap().get(item)).getValue().equals(true)
+	        																 &&(nodeSet.getDependencyMatrix().getDependencyType(targetNode.getNodeId(), item)&DependencyType.getNot()) == DependencyType.getNot()
+	        																 && !ast.getWorkingMemory().containsKey("NOT "+nodeSet.getNodeIdMap().get(item)))
+														        {
+	        															ast.setFact("NOT "+nodeSet.getNodeIdMap().get(item), FactBooleanValue.parse(false));
+	        										    					ast.getSummaryList().add("NOT "+nodeSet.getNodeIdMap().get(item));
+														        }
+	        														
+	        														
+	        														if(ast.isInclusiveList(nodeSet.getNodeIdMap().get(item)) 
+																	&& ast.getWorkingMemory().containsKey(nodeSet.getNodeIdMap().get(item)))
+																{
+	        															determinedAndOutDependencies.add(item);
+																}
+												        }
+												       );
         
         
         if(allChildDependencies != null && determinedAndOutDependencies.size() == allChildDependencies.size())
