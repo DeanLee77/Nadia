@@ -35,7 +35,7 @@ public class InferenceEngine {
 	    	
 	    if(!tempFactMap.isEmpty())
 	    	{
-	    	tempFactMap.keySet().stream().forEach(key-> tempWorkingMemory.put(key, tempFactMap.get(key))); 	
+	    		tempFactMap.keySet().stream().forEach(key-> tempWorkingMemory.put(key, tempFactMap.get(key))); 	
 	    	}
 	    	nodeFactList = new ArrayList<>(nodeSet.getNodeSortedList().size()*2); // contains all rules set as a fact given by a user from a ruleList
     	

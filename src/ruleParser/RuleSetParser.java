@@ -48,7 +48,7 @@ public class RuleSetParser implements IScanFeeder {
 	final Pattern META_PATTERN_MATCHER = Pattern.compile("(^U)([MLU]*)([(No)(Da)ML(De)(Ha)(U(rl)?)(Id)]*$)");
 	final Pattern VALUE_MATCHER = Pattern.compile("(^[LM]+)(U)?([MLQ(No)(Da)(De)(Ha)(Url)(Id)]*$)(?!C)");
 	final Pattern EXPRESSION_CONCLUSION_MATCHER = Pattern.compile("(^[LM(Da)]+)(U)(C)");
-	final Pattern COMPARISON_MATCHER = Pattern.compile("(^U)([MLU(Da)]+)(O)([MLU(No)(Da)(De)(Ha)(Url)(Id)]*$)");
+	final Pattern COMPARISON_MATCHER = Pattern.compile("(^U)([MLU(Da)]+)(O)([MLUQ(No)(Da)(De)(Ha)(Url)(Id)]*$)");
 	final Pattern ITERATE_MATCHER = Pattern.compile("(^U)([MLU(No)(Da)]+)(I)([MLU]+$)");
 	final Pattern WARNING_MATCHER = Pattern.compile("WARNING");
 	LineType matchTypes[] = LineType.values();
@@ -200,7 +200,7 @@ public class RuleSetParser implements IScanFeeder {
 			{
 //				valueConclusionMatcher =Pattern.compile("(^U)([LMU(Da)(No)(De)(Ha)(Url)(Id)]+$)"); // child statement for ValueConclusionLine starts with AND(OR), AND MANDATORY(OPTIONALLY, POSSIBLY) or AND (MANDATORY) (NOT) KNOWN
 							
-				Pattern matchPatterns[] = { VALUE_MATCHER, WARNING_MATCHER};
+				Pattern matchPatterns[] = { VALUE_MATCHER, COMPARISON_MATCHER, WARNING_MATCHER};
 				
 				
 				Pattern p;
@@ -214,10 +214,10 @@ public class RuleSetParser implements IScanFeeder {
 					{
 						switch(i)
 						{
-							case 3:
+							case 3:  // warningMatcher case
 								handleWarning(childText);
 								break;
-							case 0:
+							case 0:  // valueConclusionMatcher case
 								data = new ValueConclusionLine(childText, tokens);
 								
 								if(data.getFactValue().getValue().equals("WARNING"))
@@ -225,6 +225,8 @@ public class RuleSetParser implements IScanFeeder {
 									handleWarning(parentText);
 								}
 								break;
+							case 1:  // comparisonMatcher case
+								data = new ComparisonLine(childText, tokens);
 						}
 						data.setNodeLine(lineNumber);
 						this.nodeSet.getNodeMap().put(data.getNodeName(), data);
