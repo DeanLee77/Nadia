@@ -93,6 +93,9 @@ public abstract class Node {
 			case "Ha":
 				this.value = FactValue.parseHash(lastToken);
 				break;
+			case "Q":
+				this.value = FactValue.parseDefiString(lastToken);
+				break;
 			case "L":
 			case "M":
 			case "U":

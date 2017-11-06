@@ -28,9 +28,10 @@ public class DeanTest {
 		System.out.println((dp&(DependencyType.getNot()|DependencyType.getKnown())) == (DependencyType.getNot()|DependencyType.getKnown()));
 		
 		String str = "\"double quoted\"";
-		Pattern p = Pattern.compile("(\")(.*)(\")");
+		Pattern p = Pattern.compile("([\"\'])(.*)([\"\'])");
 		Matcher m = p.matcher(str);
 		m.find();
+		System.out.println("str: "+str);
 		System.out.println(m.group(2));
 		
 		Pattern pt = Pattern.compile("^[\\d\\-()\\s\\+\\\\]*$");
