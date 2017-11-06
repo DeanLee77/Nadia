@@ -1,4 +1,4 @@
-INPUT name list AS LIST
+FIXED name list AS LIST
 	ITEM John Smith
 	ITEM Dean Tudir
 	ITEM Agness Huge
