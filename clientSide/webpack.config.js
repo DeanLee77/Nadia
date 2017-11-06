@@ -37,24 +37,17 @@ var config = {
   // Makes sure errors in console map to the correct file and line number
   devtool: 'eval-source-map',
 
-  entry: [
-          	'babel-polyfill',
-          	// The script refreshing the browser on non-hot updates
-            'webpack-dev-server/client?http://localhost:3000',
-
-          	// For hot style updates
-          	'webpack/hot/dev-server',
-
-          	// Our application entry point
-          	path.resolve(appPath, 'index.js')
-          ],
-
+  entry:  {
+		      'bundle': [
+				          'webpack-hot-middleware/client?reload=true',
+				          'babel-polyfill',
+				          path.resolve(appPath, 'shim.js'),
+				          path.resolve(appPath, 'main.js')
+			            ]
+		  },
   resolve: {
-	            modules: [
-                          path.join(__dirname,"src"),
-                          "node_modules"
-                       ],
-              alias: {'src': path.resolve( __dirname, 'src')}
+  				modules: [path.resolve(__dirname), nodeModulesPath],
+  				alias: {'src': path.resolve( __dirname, 'src')}
            },
 
   output: {
@@ -71,9 +64,7 @@ var config = {
     publicPath: '/build/'
   },
   module: {
-            	noParse: function(content) {
-                                            return /jquery|lodash/.test(content);
-                                         },
+           
             	rules: [
 
             	           // I highly recommend using the babel-loader as it gives you
@@ -81,7 +72,7 @@ var config = {
                         	{
                             test: /\.js$/,
                             loader: "babel-loader",
-                            exclude: [nodeModulesPath],
+                            exclude: [],
                             options: {
                                         cacheDirectory: true,
                                         presets: ["react", "es2015", "stage-0"]
@@ -108,7 +99,15 @@ var config = {
                         	    		"less-loader"
                             		]
                           },
-                        	{
+                          {
+                              test: /\.scss$/,
+                              use: [
+                                      "style-loader",
+                                      "css-loader",
+                                      "sass-loader"
+                                   ]
+                          },
+                        	 {
                             test: /\.(png|jpg|svg|woff|woff2|eot|ttf)$/,
                             use: [
                       	          {
@@ -132,14 +131,15 @@ var config = {
             },
 
 
+            devServer: {
+                host: "localhost",
+                port: 3000,
+                https: false
+              },
+              
   // We have to manually add the Hot Replacement plugin when running from Node
   plugins: [
     new Webpack.HotModuleReplacementPlugin(),
-    new Webpack.ProvidePlugin({
-        $: "jquery",
-        jQuery: "jquery",
-        "window.jQuery": "jquery"
-    })
   ]
 };
 

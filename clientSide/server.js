@@ -31,21 +31,23 @@ if (isDeveloping)
 
     app.use(middleware);
     app.use(webpackHotMiddleware(compiler));
-    app.use('/service', proxy('localhost:3030', {
-
-      // This is needed to stop the proxy from corrupting byte streams particularly on upload.
-      reqBodyEncoding: null,
-
-      forwardPath: function(req, res) {
-          return '/service' + req.path;
-      },
-      intercept: function(responseIn, data, req, responseOut, callback) {
-          let key = 'WWW-Authenticate';
-          responseOut.set(key, responseOut.get(key) ? responseOut.get(key).split(',') : []);
-
-          callback(null, data);
-      }
-  }));
+    
+//    app.use('/service', proxy('localhost:3030', {
+//
+//      // This is needed to stop the proxy from corrupting byte streams particularly on upload.
+//      reqBodyEncoding: null,
+//
+//      forwardPath: function(req, res) {
+//          return '/service' + req.path;
+//      },
+//      intercept: function(responseIn, data, req, responseOut, callback) {
+//          let key = 'WWW-Authenticate';
+//          responseOut.set(key, responseOut.get(key) ? responseOut.get(key).split(',') : []);
+//
+//          callback(null, data);
+//      }
+//  }));
+    
   app.use('/', express.static('public/'));
 
 } else {
