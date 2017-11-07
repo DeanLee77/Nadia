@@ -386,7 +386,9 @@ public class InferenceEngine {
 		    	    	 */
 	    			canEvaluate = true;
 	    		}
-	    		else if(node.getTokens().tokensList.stream().anyMatch((s) -> s.equals("IS IN LIST:")) && ast.getWorkingMemory().containsKey(node.getFactValue().getValue().toString()))
+	    		else if(node.getTokens().tokensList.stream().anyMatch((s) -> s.equals("IS IN LIST:")) 
+	    				&& ast.getWorkingMemory().containsKey(node.getFactValue().getValue().toString())
+	    				&& ast.getWorkingMemory().containsKey(node.getVariableName()))
 			{
 	    			canEvaluate = true;
 	    			FactValue fv = node.selfEvaluate(ast.getWorkingMemory(), this.scriptEngine);
@@ -687,7 +689,7 @@ public class InferenceEngine {
 	    					ast.setFact(node.getVariableName(), FactValue.parse(node.getVariableName()));
 	    				}
 	    				    				
-	    				if(node.getLineType()==LineType.VALUE_CONCLUSION && !((ValueConclusionLine)node).getIsPlainStatementFormat())
+	    				if(node.getLineType()==LineType.VALUE_CONCLUSION && !isPlainStatementFormat)
 	    				{
 		    				ast.setFact(node.getNodeName(), node.selfEvaluate(ast.getWorkingMemory(), this.scriptEngine));
 	    				}	
@@ -707,7 +709,7 @@ public class InferenceEngine {
 		    					ast.setFact(node.getVariableName(), FactValue.parse(node.getVariableName()));
 		    				}
 		    				    				
-		    				if(node.getLineType()==LineType.VALUE_CONCLUSION && !((ValueConclusionLine)node).getIsPlainStatementFormat())
+		    				if(node.getLineType()==LineType.VALUE_CONCLUSION && !isPlainStatementFormat)
 		    				{
 			    				ast.setFact(node.getNodeName(), node.selfEvaluate(ast.getWorkingMemory(), this.scriptEngine));
 		    				}	
@@ -729,7 +731,7 @@ public class InferenceEngine {
 	    				{
 	    					ast.setFact(node.getVariableName(), FactValue.parse(node.getVariableName()));
 	    				}
-	    				if(node.getLineType()==LineType.VALUE_CONCLUSION && !((ValueConclusionLine)node).getIsPlainStatementFormat())
+	    				if(node.getLineType()==LineType.VALUE_CONCLUSION && !isPlainStatementFormat)
 	    				{
 		    				ast.setFact(node.getNodeName(), node.selfEvaluate(ast.getWorkingMemory(), this.scriptEngine));
 	    				}
