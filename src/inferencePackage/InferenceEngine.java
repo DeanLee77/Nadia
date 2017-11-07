@@ -301,6 +301,18 @@ public class InferenceEngine {
 	    		{
 	    			fvt = tempInputMap.get(nodeVariableName).getType();
 	    		}
+	    		else if(ast.getWorkingMemory().containsKey(nodeValueString))
+	    		{
+	    			FactValue tempFv= ast.getWorkingMemory().get(nodeValueString);
+	    			if(tempFv.getType().equals(FactValueType.LIST))
+	    			{
+	    				fvt = ((FactValue)((FactListValue)tempFv).getValue().get(0)).getType();
+	    			}
+	    			else
+	    			{
+	    				fvt = tempFv.getType();
+	    			}
+	    		}
 	    		else
 	    		{
 	    			fvt = FactValueType.BOOLEAN;
