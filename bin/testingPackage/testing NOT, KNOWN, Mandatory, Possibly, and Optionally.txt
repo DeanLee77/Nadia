@@ -1,0 +1,24 @@
+we have information about a person
+	AND NOT we have person's name and dob
+		AND POSSIBLY KNOWN person's name
+		AND person's dob  
+	AND OPTIONALLY NOT we have the person's passport
+	AND person's nationality is Australian
+	AND person made it to Las Vegas
+	AND person qualifies for the grant
+
+	
+person's nationality is Australian
+	OR MANDATORY citizenship testing of person's parents
+		OR one of person's parents is Australian
+		OR both of person's parents are Australian
+	OR NOT the person was born in Australia
+
+  
+
+person made it to Las Vegas
+	AND POSSIBLY NOT KNOWN the person missed the flight  
+  
+
+person qualifies for the grant 
+	AND MANDATORY person is currently studying

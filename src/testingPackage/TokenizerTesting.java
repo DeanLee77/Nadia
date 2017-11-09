@@ -3,17 +3,18 @@ package testingPackage;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 
 import ruleParser.Tokenizer;
 import ruleParser.Tokens;
 
 public class TokenizerTesting {
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws IOException {
 		// TODO Auto-generated method stub
 		String fileName = "Tokenizer_Testing.txt";
 
-		try (BufferedReader br = new BufferedReader(new FileReader(fileName))) {
+		BufferedReader br = new BufferedReader(new InputStreamReader(TokenizerTesting.class.getResourceAsStream(fileName)));
 
 			String line;
 			String textString = "";
@@ -22,7 +23,7 @@ public class TokenizerTesting {
 			while ((line = br.readLine()) != null) 
 			{
 				line = line.trim();
-				if(!line.equals(""))
+				if(!line.equals("") && !line.matches("^\\/.*"))
 				{
 					if(lineTracking == 0)
 					{
@@ -51,9 +52,6 @@ public class TokenizerTesting {
 								
 				
 			}
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
 
 
 	}

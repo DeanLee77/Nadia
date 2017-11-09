@@ -1,0 +1,93 @@
+//this file has been tested with TokenizerTesting.java in testingPackage, and passed the testing.
+// as you may see, the testing set consists of two lines. First line is for a rule string, and second line is an outcome of Tokenizer.
+
+INPUT person’s name AS TEXT
+ULU
+
+this line is for UUID ffa4788a-a33f-11e7-abc4-cec278b6b50a
+LUId
+		
+FIXED service start date IS 1/1/1988
+ULUDa
+
+we have information about a person
+L
+
+OR we have person’s name and dob
+UL
+
+AND KNOWN person’s name
+UL
+
+OR person’s name IS IN LIST: name list
+ULUL
+	
+person’s nationality IS Australian
+LUM
+
+person made it to Las Vegas
+LM  
+
+AND NOT person’s name = “troy jones”
+ULOQ
+
+AND the person’s dob > 01/01/1990
+ULODa
+          
+AND the person is currently studying
+UL
+  
+person is eligible for a premium service
+L
+
+AND person's drinking habit = frequent drinker
+ULOL
+
+AND person's account IS IN LIST: premium account type
+ULUL     
+	
+AND person’s nationality = "Australian"
+ULOQ    
+ 
+person's drinking habit IS social drinker
+LUL
+
+AND number of drinks the person consumes a week > 0
+ULONo
+
+AND number of drinks the person consumes a week < ffa4788a-a33f-11e7-abc4-cec278b6b50a
+ULOId
+
+AND number of drinks the person consumes a week > https://www.theGroomHomepage.com.au
+ULOUrl
+	
+AND number of drinks the person consumes a week < 093059d79d009662a0a7f70c74cec934a73c1becc8ac813cdcc4995f2aeb882c
+ULOHa
+
+
+number of drinks the person consumes a week IS CALC ( (number of drinks the person consumes an hour * hours of drinks a day)*5)
+LUC
+ 
+year difference between 6/04/1994 and check-up date>= 3
+LDaLONo 
+ 
+year difference between 6/04/1994 and check-up date IS CALC (check-up date - 6/04/1994)
+LDaLUC
+ 
+person is eligible for platinum service
+L	
+
+this is for quoted match, “this is double quoted” sentence.
+LQL
+
+the person’s age IS around "50"
+LULQ
+
+FIXED the groom's homepage IS https://www.theGroomHomepage.com.au
+ULUUrl
+
+the price of a good is 12.35
+LDe
+
+Australian law was initiated date IS 19/11/1900
+MUDa

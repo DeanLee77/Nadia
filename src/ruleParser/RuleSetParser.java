@@ -46,9 +46,9 @@ public class RuleSetParser implements IScanFeeder {
 //	enum LineType {META, VALUE_CONCLUSION, EXPR_CONCLUSION, COMPARISON, WARNING}
 	
 	final Pattern META_PATTERN_MATCHER = Pattern.compile("(^U)([MLU]*)([(No)(Da)ML(De)(Ha)(U(rl)?)(Id)]*$)");
-	Pattern valueConclusionMatcher; //value of this variable is different in handleParent case and handleChild case
+	final Pattern VALUE_MATCHER = Pattern.compile("(^[LM]+)(U)?([MLQ(No)(Da)(De)(Ha)(Url)(Id)]*$)(?!C)");
 	final Pattern EXPRESSION_CONCLUSION_MATCHER = Pattern.compile("(^[LM(Da)]+)(U)(C)");
-	final Pattern COMPARISON_MATCHER = Pattern.compile("(^U)([MLU(Da)]+)(O)([MLU(No)(Da)(De)(Ha)(Url)(Id)]*$)");
+	final Pattern COMPARISON_MATCHER = Pattern.compile("(^U)([MLU(Da)]+)(O)([MLUQ(No)(Da)(De)(Ha)(Url)(Id)]*$)");
 	final Pattern ITERATE_MATCHER = Pattern.compile("(^U)([MLU(No)(Da)]+)(I)([MLU]+$)");
 	final Pattern WARNING_MATCHER = Pattern.compile("WARNING");
 	LineType matchTypes[] = LineType.values();
@@ -62,18 +62,13 @@ public class RuleSetParser implements IScanFeeder {
 		
 		if(data == null)
 		{
-			/*
-			 * the reason for using '*' at the last group of pattern within meta and valueConclusion is that 
-			 * the last group contains No, Da, De, Ha, Url, Id. 
-			 * In order to track more than one character within the square bracket of last group '*' needs to be used.
-			 * 
-			 */
-			valueConclusionMatcher = Pattern.compile("(^[LM]+)(U)?([MLQ(No)(Da)(De)(Ha)(Url)(Id)]*$)(?!C)"); // parent statement must not have operators in the middle of the statement, hence there is no 'O' of Token.tokenString in the regex.
+			
+//			valueConclusionMatcher = Pattern.compile("(^[LM]+)(U)?([MLQ(No)(Da)(De)(Ha)(Url)(Id)]*$)(?!C)"); // parent statement must not have operators in the middle of the statement, hence there is no 'O' of Token.tokenString in the regex.
 			 
 			 
 			Tokens tokens = Tokenizer.getTokens(parentText);
 			
-			Pattern matchPatterns[] = {META_PATTERN_MATCHER, valueConclusionMatcher, WARNING_MATCHER};
+			Pattern matchPatterns[] = {META_PATTERN_MATCHER, VALUE_MATCHER, WARNING_MATCHER};
 			Pattern p;
 			Matcher matcher;
 			for(int i = 0; i < matchPatterns.length; i++) {
@@ -145,14 +140,13 @@ public class RuleSetParser implements IScanFeeder {
 	}
 
 	@Override
-	public void handleChild(String parentText, String childText, int lineNumber) {
+	public void handleChild(String parentText, String childText, String firstKeywordsGroup, int lineNumber) {
 		/*
 		 * the reason for using '*' at the last group of pattern within comparison is that 
 		 * the last group contains No, Da, De, Ha, Url, Id. 
 		 * In order to track more than one character within the square bracket of last group '*'(Matches 0 or more occurrences of the preceding expression) needs to be used.
 		 * 
 		 */
-		Tokens tokens = Tokenizer.getTokens(childText);   
 		int dependencyType = 0; 
 		
 		// is 'ITEM' child line
@@ -179,15 +173,16 @@ public class RuleSetParser implements IScanFeeder {
 		}
 		else  // is 'A-statement' child line
 		{
-			String firstTokenString = tokens.tokensList.get(0);
-			if(firstTokenString.matches("^(AND\\s?)(.*)")) 
+			if(firstKeywordsGroup.matches("^(AND\\s?)(.*)")) 
 			{
-				dependencyType = DependencyType.getAnd(); // 8
+				dependencyType = handleNotKnownManOptPos(firstKeywordsGroup, DependencyType.getAnd()); // 8-AND | 1-KNOWN? 2-NOT? 64-MANDATORY? 32-OPTIONALLY? 16-POSSIBLY? 
 			}
-			else if(firstTokenString.matches("^(OR\\s?)(.*)"))
+			else if(firstKeywordsGroup.matches("^(OR\\s?)(.*)"))
 			{
-				dependencyType = DependencyType.getOr(); // 4
+				dependencyType = handleNotKnownManOptPos(firstKeywordsGroup, DependencyType.getOr()); // 4-OR | 1-KNOWN? 2-NOT? 64-MANDATORY? 32-OPTIONALLY? 16-POSSIBLY? 
 			}
+			
+			
 			/*
 			 * the keyword of 'AND' or 'OR' should be removed individually. 
 			 * it should NOT be removed by using firstToken string in Tokens.tokensList.get(0)
@@ -198,15 +193,14 @@ public class RuleSetParser implements IScanFeeder {
 			 * 
 			 */
 			
-			childText = childText.replaceFirst("OR(?=\\s)|AND(?=\\s)", "").trim();
 			
-			Node data = nodeSet.getNodeMap().get(childText); // remove dependencyType keywords like 'AND', 'OR', 'AND MANDATORY', and/or 'OR MANDATORY'
-			
+			Node data = nodeSet.getNodeMap().get(childText);  
+			Tokens tokens = Tokenizer.getTokens(childText);
 			if(data == null)
 			{
-				valueConclusionMatcher =Pattern.compile("(^U)([LMU(Da)(No)(De)(Ha)(Url)(Id)]+$)"); // child statement for ValueConclusionLine starts with AND(OR), AND MANDATORY(OPTIONALLY, POSSIBLY) or AND (MANDATORY) (NOT) KNOWN
+//				valueConclusionMatcher =Pattern.compile("(^U)([LMU(Da)(No)(De)(Ha)(Url)(Id)]+$)"); // child statement for ValueConclusionLine starts with AND(OR), AND MANDATORY(OPTIONALLY, POSSIBLY) or AND (MANDATORY) (NOT) KNOWN
 							
-				Pattern matchPatterns[] = { valueConclusionMatcher, WARNING_MATCHER};
+				Pattern matchPatterns[] = { VALUE_MATCHER, COMPARISON_MATCHER, WARNING_MATCHER};
 				
 				
 				Pattern p;
@@ -220,10 +214,10 @@ public class RuleSetParser implements IScanFeeder {
 					{
 						switch(i)
 						{
-							case 3:
+							case 3:  // warningMatcher case
 								handleWarning(childText);
 								break;
-							case 0:
+							case 0:  // valueConclusionMatcher case
 								data = new ValueConclusionLine(childText, tokens);
 								
 								if(data.getFactValue().getValue().equals("WARNING"))
@@ -231,6 +225,8 @@ public class RuleSetParser implements IScanFeeder {
 									handleWarning(parentText);
 								}
 								break;
+							case 1:  // comparisonMatcher case
+								data = new ComparisonLine(childText, tokens);
 						}
 						data.setNodeLine(lineNumber);
 						this.nodeSet.getNodeMap().put(data.getNodeName(), data);
@@ -286,11 +282,11 @@ public class RuleSetParser implements IScanFeeder {
 		String stringToGetFactValue = (parentText.substring(5, parentText.indexOf("AS"))).trim();
 		if(metaType.equals(MetaType.INPUT))
 		{
-			((FactListValue)this.nodeSet.getInputMap().get(stringToGetFactValue)).getListValue().add(fv);
+			((FactListValue<?>)this.nodeSet.getInputMap().get(stringToGetFactValue)).getValue().add(fv);
 		}
 		else if(metaType.equals(MetaType.FIXED))
 		{
-			((FactListValue)this.nodeSet.getFactMap().get(stringToGetFactValue)).getListValue().add(fv);
+			((FactListValue<?>)this.nodeSet.getFactMap().get(stringToGetFactValue)).getValue().add(fv);
 		}
 	}
 	
@@ -334,18 +330,18 @@ public class RuleSetParser implements IScanFeeder {
 			{
 				for(Dependency dp: dpList) //can this for each loop be converted to dpList.stream().forEachOrdered() ?
 				{
-					if(dp.getChildNode().getNodeId() != dp.getParentNode().getNodeId())
+					if((dp.getDependencyType() & DependencyType.getAnd()) == DependencyType.getAnd())
 					{
-						if(dp.getDependencyType() == DependencyType.getAnd()) 
+						and++;
+						if(dp.getDependencyType() == (DependencyType.getMandatory() | DependencyType.getAnd()))
 						{
-							and++;
-						}
-						else if(dp.getDependencyType() == DependencyType.getOr())
-						{
-							or++;
+							mandatoryAnd++;
 						}
 					}
-					
+					else if((dp.getDependencyType() & DependencyType.getOr()) == DependencyType.getOr())
+					{
+						or++;
+					}
 				}
 				boolean hasAndOr = (and>0 && or>0)? true:false;  
 				if(hasAndOr)
@@ -355,10 +351,16 @@ public class RuleSetParser implements IScanFeeder {
 					Node virtualNode = new ValueConclusionLine("VirtualNode-"+parentNodeOfVirtualNodeName, Tokenizer.getTokens("VirtualNode-"+parentNodeOfVirtualNodeName));
 					this.nodeSet.getNodeIdMap().put(virtualNode.getNodeId(), "VirtualNode-"+parentNodeOfVirtualNodeName);
 					virtualNodeMap.put("VirtualNode-"+parentNodeOfVirtualNodeName, virtualNode);
-					dependencyList.add(new Dependency(node, virtualNode, DependencyType.getOr()));
-
+					if(mandatoryAnd > 0)
+					{
+						dependencyList.add(new Dependency(node, virtualNode, (DependencyType.getMandatory() | DependencyType.getOr())));
+					}
+					else
+					{
+						dependencyList.add(new Dependency(node, virtualNode, DependencyType.getOr()));
+					}
 					dpList.stream()
-						  .filter(dp -> dp.getDependencyType() == DependencyType.getAnd())
+						  .filter(dp -> dp.getDependencyType() == DependencyType.getAnd() || dp.getDependencyType() == (DependencyType.getMandatory() | DependencyType.getAnd()))
 						  .forEachOrdered(dp -> dp.setParentNode(virtualNode));
 				}
 			}
@@ -393,6 +395,35 @@ public class RuleSetParser implements IScanFeeder {
 	public void setNodeSet(NodeSet ns)
 	{
 		this.nodeSet = ns;
+	}
+	
+	private int handleNotKnownManOptPos(String firstTokenString, int dependencyType)
+	{
+		if(dependencyType != 0)
+		{
+			if(firstTokenString.contains("NOT"))
+			{
+				dependencyType |= DependencyType.getNot();
+			}
+			if(firstTokenString.contains("KNOWN"))
+			{
+				dependencyType |= DependencyType.getKnown();
+			}
+			if(firstTokenString.contains("MANDATORY"))
+			{
+				dependencyType |= DependencyType.getMandatory();
+			}
+			if(firstTokenString.contains("OPTIONALLY"))
+			{
+				dependencyType |= DependencyType.getOptional();
+			}
+			if(firstTokenString.contains("POSSIBLY"))
+			{
+				dependencyType |= DependencyType.getPossible();
+			}
+		}
+		
+		return dependencyType;
 	}
 
 }
