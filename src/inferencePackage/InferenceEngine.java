@@ -231,7 +231,7 @@ public class InferenceEngine {
 	    	return questionList;
     }
     
-    public FactValueType findTypeOfElementToBeAsked(Node node)
+    public HashMap<String,FactValueType> findTypeOfElementToBeAsked(Node node)
     {
 	    	/*
 	    	 * FactValueType can be handled as of 16/06/2017 is as follows;
@@ -246,7 +246,7 @@ public class InferenceEngine {
 	    	 * rest of them (LIST, RULE, RULE_SET, OBJECT, UNKNOWN, NULL) can't be handled at this stage
 	    	 */
 	    	FactValueType fvt = null;
-	    	
+	    	HashMap<String,FactValueType> factValueTypeMap = new HashMap<>();
 	    	/*
 	    	 * In a case of that if type of toBeAsked node is ComparisonLine type with following conditions;
 	    	 *    - the type of the node's variable to compare is already set as 
@@ -316,7 +316,10 @@ public class InferenceEngine {
 	    		else
 	    		{
 	    			fvt = FactValueType.BOOLEAN;
+	    			
 	    		}
+	    		factValueTypeMap.put(nodeVariableName, fvt);
+	    		
 	    	}
 	    	else
 	    	{
@@ -359,7 +362,7 @@ public class InferenceEngine {
 	    	}
 	
 	    	
-	    	return fvt;
+	    	return factValueTypeMap;
     }
     
     public boolean hasAlreadySetType(FactValue value)
@@ -503,7 +506,7 @@ public class InferenceEngine {
 //	        	ast.setFact(targetNode.getFactValue().getValue().toString(), fv);
 //	    	}
 	    	
-//	    	FactValue selfEvalFactValue = targetNode.selfEvaluate(ast.getWorkingMemory(), this.scriptEngine);
+	    	FactValue selfEvalFactValue = targetNode.selfEvaluate(ast.getWorkingMemory(), this.scriptEngine);
 	    	
 	    	if(fv != null)
 	    	{

@@ -2,6 +2,7 @@ package testingPackage;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Scanner;
 import java.util.stream.Collectors;
@@ -59,16 +60,17 @@ public static void main(String[] args) {
 		{
 			
 			Node nextQuestionNode = ie.getNextQuestion(ass);
-			FactValueType questionFvt = ie.findTypeOfElementToBeAsked(nextQuestionNode);
-			System.out.println("questionFvt :"+questionFvt);
+			HashMap<String,FactValueType> questionFvtMap = ie.findTypeOfElementToBeAsked(nextQuestionNode);
+			
 			System.out.println("Question: "+nextQuestionNode.getNodeName() +" ?");
 			FactValueType fvt = null;
 			for(String question: ie.getQuestionsFromNodeToBeAsked(nextQuestionNode))
 			{
+				System.out.println("questionFvt :"+questionFvtMap.get(question));
 				System.out.println("Question: " + question);
 				String answer = scan.nextLine();			
 				
-				ie.feedAnswerToNode(nextQuestionNode, question, answer, questionFvt);
+				ie.feedAnswerToNode(nextQuestionNode, question, answer, questionFvtMap.get(question));
 			}
 
 			

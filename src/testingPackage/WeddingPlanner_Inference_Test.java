@@ -50,13 +50,14 @@ public class WeddingPlanner_Inference_Test {
 		{
 			
 			Node nextQuestionNode = ie.getNextQuestion(ass);
-			FactValueType questionFvt = ie.findTypeOfElementToBeAsked(nextQuestionNode);
-			System.out.println("questionFvt :"+questionFvt);
+			HashMap<String, FactValueType> questionFvtMap = ie.findTypeOfElementToBeAsked(nextQuestionNode);
+			
 			FactValueType fvt = null;
 			String answer;
 			
 			for(String question: ie.getQuestionsFromNodeToBeAsked(nextQuestionNode))
 			{
+				System.out.println("questionFvt :"+questionFvtMap.get(question));
 				System.out.println("Question: " + question+"?");
 
 				if(i < 3)
@@ -70,7 +71,7 @@ public class WeddingPlanner_Inference_Test {
 				System.out.println("Answer: "+answer);
 //				String answer = scan.nextLine();			
 				
-				ie.feedAnswerToNode(nextQuestionNode, question, answer, questionFvt);
+				ie.feedAnswerToNode(nextQuestionNode, question, answer, questionFvtMap.get(question));
 				i++;
 			}
 

@@ -100,15 +100,20 @@ public class Testing_ValueConclusionLine {
 		{
 			
 			Node nextQuestionNode = ie.getNextQuestion(ass);
-			FactValueType questionFvt = ie.findTypeOfElementToBeAsked(nextQuestionNode);
-			System.out.println("questionFvt :"+questionFvt);
+			HashMap<String,FactValueType> questionFvtMap = ie.findTypeOfElementToBeAsked(nextQuestionNode);
+			
 			FactValueType fvt = null;
 			String answer;
 			
 			for(String question: ie.getQuestionsFromNodeToBeAsked(nextQuestionNode))
 			{
+				System.out.println("questionFvt :"+questionFvtMap.get(question));
 				System.out.println("Question: " + question+"?");
-				if(i == 0)
+				if(questionFvtMap.get(question).equals(FactValueType.STRING))
+				{
+					answer = "String";
+				}
+				else if(i == 0)
 				{
 					answer = "true";
 				}
@@ -130,7 +135,7 @@ public class Testing_ValueConclusionLine {
 				}
 				System.out.println("Answer: "+answer);
 				
-				ie.feedAnswerToNode(nextQuestionNode, question, answer, questionFvt);
+				ie.feedAnswerToNode(nextQuestionNode, question, answer, questionFvtMap.get(question));
 				i++;
 			}
 
