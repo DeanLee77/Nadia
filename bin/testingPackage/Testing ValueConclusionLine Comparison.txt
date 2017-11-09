@@ -1,4 +1,3 @@
-	
 person's nationality IS "Australian" - true:false
 citizenship testing of person's parents - true:false
 the person was born in Australia - true:false

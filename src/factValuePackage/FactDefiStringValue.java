@@ -7,7 +7,7 @@ public class FactDefiStringValue extends FactValue {
 	
 	private String value;
 	private String defaultValue;
-	private Pattern pattern = Pattern.compile("(\")(.*)(\")");
+	private Pattern pattern = Pattern.compile("^([\"\\“])(.*)([\"\\”])(\\.)*");
 	private Matcher matcher;
 	
 	public FactDefiStringValue(String s) {

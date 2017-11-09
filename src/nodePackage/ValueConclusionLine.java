@@ -99,9 +99,9 @@ public class ValueConclusionLine extends Node{
 				String listName = this.getFactValue().getValue().toString();
 				if(workingMemory.get(listName) != null)
 				{
-					String variableValueInString = workingMemory.get(this.variableName).getValue().toString();
-					lineValue = variableValueInString != null?
-					((FactListValue<?>)workingMemory.get(listName)).getValue().stream().anyMatch((factValue)->((FactStringValue)factValue).getValue().equals(variableValueInString))
+					FactValue variableValueFromWorkingMemory = workingMemory.get(this.variableName);
+					lineValue = variableValueFromWorkingMemory != null?
+					((FactListValue<?>)workingMemory.get(listName)).getValue().stream().anyMatch((factValue)->((FactStringValue)factValue).getValue().equals(variableValueFromWorkingMemory.getValue().toString()))
 					:
 					((FactListValue<?>)workingMemory.get(listName)).getValue().stream().anyMatch((factValue)->((FactStringValue)factValue).getValue().equals(this.variableName));
 					

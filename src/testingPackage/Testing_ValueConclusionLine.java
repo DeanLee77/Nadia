@@ -39,24 +39,13 @@ public class Testing_ValueConclusionLine {
 
 		while((line = br.readLine()) != null)
 		{
-			if(line.equals("rule lines"))
-			{
-				ruleLinePassed = true;
-			}
-			if(!ruleLinePassed && !line.trim().isEmpty())
-			{
-				fixedMapMock.add(line);
-			}
-			else if(!line.equals("rule lines") && !line.trim().isEmpty() && ruleLinePassed)
-			{
-				tempArray = line.split("-");
-				nodeListMock.add(tempArray[0].trim());
-				System.out.println("line: "+line);
-				dependencyListMock.add(Integer.parseInt(tempArray[1].trim()));
-				
-				NodeObject_For_Inference_Test nfit = new NodeObject_For_Inference_Test(tempArray[0].trim(),tempArray[1].trim().split(":"));
-				nameMap.put(tempArray[0].trim(), nfit);
-			}
+
+			tempArray = line.split("-");
+			nodeListMock.add(tempArray[0].trim());
+			System.out.println("line: "+line);
+			
+			NodeObject_For_Inference_Test nfit = new NodeObject_For_Inference_Test(tempArray[0].trim(),tempArray[1].trim().split(":"));
+			nameMap.put(tempArray[0].trim(), nfit);
 		}
 		br.close();
 
@@ -111,7 +100,11 @@ public class Testing_ValueConclusionLine {
 				System.out.println("Question: " + question+"?");
 				if(questionFvtMap.get(question).equals(FactValueType.STRING))
 				{
-					answer = "String";
+					answer = "John Smith";
+				}
+				else if(question.equals("person's dob"))
+				{
+					answer = "11/12/1934";
 				}
 				else if(i == 0)
 				{

@@ -5,9 +5,9 @@ FIXED name list AS LIST
 	ITEM Sugar Sweet
 	ITEM Tim Armond
 	ITEM Lolly T.Sweet
-
+INPUT person's dob AS DATE
 	
-person's nationality IS "Australian"
+person's nationality IS “Australian”
 	AND citizenship testing of person's parents
 		OR one of person's parents is Australian
 		OR both of person's parents are Australian

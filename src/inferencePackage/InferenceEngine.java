@@ -506,12 +506,20 @@ public class InferenceEngine {
 //	        	ast.setFact(targetNode.getFactValue().getValue().toString(), fv);
 //	    	}
 	    	
-	    	FactValue selfEvalFactValue = targetNode.selfEvaluate(ast.getWorkingMemory(), this.scriptEngine);
+	   
 	    	
 	    	if(fv != null)
 	    	{
-	    		ast.setFact(targetNode.getNodeName(), fv); // add the value of targetNode itself into the workingMemory	
-	        	ast.getSummaryList().add(targetNode.getNodeName());
+	    		ast.setFact(questionName, fv);
+	    		ast.getSummaryList().add(questionName);
+	    		
+	    		if(targetNode.getLineType().equals(LineType.VALUE_CONCLUSION) && !((ValueConclusionLine)targetNode).getIsPlainStatementFormat())
+	    		{
+	    			FactValue selfEvalFactValue = targetNode.selfEvaluate(ast.getWorkingMemory(), this.scriptEngine);
+		    		ast.setFact(targetNode.getNodeName(), selfEvalFactValue); // add the value of targetNode itself into the workingMemory	
+		        	ast.getSummaryList().add(targetNode.getNodeName());
+	    		}
+	    	 	
 	        	/*
 	        	 * once any rules are set as fact and stored into the workingMemory, forward-chaining(back-propagation) needs to be done
 	        	 */
@@ -672,6 +680,7 @@ public class InferenceEngine {
 	    	{
 	    		
 	    		boolean isPlainStatementFormat = ((ValueConclusionLine)node).getIsPlainStatementFormat();
+	    		String nodeFactValueInString = node.getFactValue().getValue().toString();
 	    		
 	    		/*
 	    		 * isAnyOrDependencyTrue() method contains trimming off method to cut off any 'UNDETERMINED' state 'OR' child nodes. 
@@ -682,53 +691,27 @@ public class InferenceEngine {
 	    			if(isAnyOrDependencyTrue(node, orToChildDependencies)) //TRUE case
 	    			{
 	    				canDetermine = true;
-	    				if(isPlainStatementFormat)
-					{
-	    					ast.setFact(node.getNodeName(), FactValue.parse(true));
-					}
-	    				else
-	    				{
-	    					ast.setFact(node.getVariableName(), node.getFactValue());
-	    				}
+	    				
+	    				handleValuConclusionLineTrueCase(node, isPlainStatementFormat, nodeFactValueInString);
 	    				
 	    			}
 	    			else if(isAllRelevantChildDependencyDetermined(node, orToChildDependencies) && !isAnyOrDependencyTrue(node, orToChildDependencies)) //FALSE case
 	    			{
 	    				canDetermine = true;
-	    				if(isPlainStatementFormat)
-					{
-	    					ast.setFact(node.getNodeName(), FactValue.parse(false));
-					}
-	    				else
-	    				{
-	    					ast.setFact(node.getVariableName(), FactValue.parse(node.getVariableName()));
-	    				}
-	    				    				
-	    				if(node.getLineType()==LineType.VALUE_CONCLUSION && !isPlainStatementFormat)
-	    				{
-		    				ast.setFact(node.getNodeName(), node.selfEvaluate(ast.getWorkingMemory(), this.scriptEngine));
-	    				}	
+	    				
+	    				handleValueConclusionLineFalseCase(node, isPlainStatementFormat, nodeFactValueInString);
+	    				
 	    			}
 	    		}
 	    		else if(!andToChildDependencies.isEmpty() && orToChildDependencies.isEmpty())// node has only 'AND' child nodes
 	    		{
 	    			if(isAllRelevantChildDependencyDetermined(node, andToChildDependencies) && isAllAndDependencyTrue(node, andToChildDependencies)) // TRUE case
-					{
-		    				canDetermine = true;
-		    				if(isPlainStatementFormat)
-						{
-		    					ast.setFact(node.getVariableName(), FactValue.parse(true));
-						}
-		    				else
-		    				{
-		    					ast.setFact(node.getVariableName(), FactValue.parse(node.getVariableName()));
-		    				}
-		    				    				
-		    				if(node.getLineType()==LineType.VALUE_CONCLUSION && !isPlainStatementFormat)
-		    				{
-			    				ast.setFact(node.getNodeName(), node.selfEvaluate(ast.getWorkingMemory(), this.scriptEngine));
-		    				}	
-					}
+				{
+	    				canDetermine = true;
+	    				
+	    				handleValuConclusionLineTrueCase(node, isPlainStatementFormat, nodeFactValueInString);
+    					
+				}
 	    			/*
 	    			 * 'isAnyAndDependencyFalse()' contains a trimming off dependency method 
 	    			 * due to the fact that all undetermined 'AND' child nodes need to be trimmed off when any 'AND' node is evaluated as 'NO'
@@ -738,19 +721,9 @@ public class InferenceEngine {
 	    			else if(isAnyAndDependencyFalse(node, andToChildDependencies)) //FALSE case
 	    			{
 	    				canDetermine = true;
-	    				if(isPlainStatementFormat)
-					{
-	    					ast.setFact(node.getVariableName(), FactValue.parse(false));
-					}
-	    				else
-	    				{
-	    					ast.setFact(node.getVariableName(), FactValue.parse(node.getVariableName()));
-	    				}
-	    				if(node.getLineType()==LineType.VALUE_CONCLUSION && !isPlainStatementFormat)
-	    				{
-		    				ast.setFact(node.getNodeName(), node.selfEvaluate(ast.getWorkingMemory(), this.scriptEngine));
-	    				}
 	    				
+	    				handleValueConclusionLineFalseCase(node, isPlainStatementFormat, nodeFactValueInString);
+    					
 	    			}
 			
 	    		}
@@ -760,6 +733,40 @@ public class InferenceEngine {
 	    	return canDetermine;
 	}
     
+	private void handleValuConclusionLineTrueCase(Node node, boolean isPlainStatementFormat, String nodeFactValueInString)
+	{
+		ast.setFact(node.getNodeName(), FactValue.parse(true));
+		
+		if(!isPlainStatementFormat)
+		{
+			if(ast.getWorkingMemory().containsKey(nodeFactValueInString))
+			{
+				ast.setFact(node.getVariableName(),  ast.getWorkingMemory().get(nodeFactValueInString));
+			}
+			else
+			{
+				ast.setFact(node.getVariableName(), node.getFactValue());
+			}
+			ast.getSummaryList().add(node.getVariableName());
+		}
+	}
+	private void handleValueConclusionLineFalseCase(Node node, boolean isPlainStatementFormat, String nodeFactValueInString)
+	{
+		ast.setFact(node.getNodeName(), FactValue.parse(false));
+		
+		if(!isPlainStatementFormat)
+		{
+			if(ast.getWorkingMemory().containsKey(nodeFactValueInString))
+			{
+				ast.setFact(node.getVariableName(), FactValue.parse("NOT "+ast.getWorkingMemory().get(nodeFactValueInString)));
+			}
+			else
+			{
+				ast.setFact(node.getVariableName(), FactValue.parse("NOT "+nodeFactValueInString));
+			}
+			ast.getSummaryList().add(node.getVariableName());
+		}
+	}
     
     public String getDefaultGoalRuleQuestion() 
     {
@@ -932,15 +939,15 @@ public class InferenceEngine {
             
             if(falseAndList.size() > 0)
             {
-    	        	isAnyAndDependencyFalse = true;
-    	        	andChildDependencies.stream().forEachOrdered(i -> {
-    	        		falseAndList.stream().forEachOrdered(f -> {
-    	        			if(i != f)
-    	        			{
-    	        				trimDependency(node, nodeSet.getNodeMap().get(nodeSet.getNodeIdMap().get(i)));
-    	        			}
-    	        		});
-    	        	});
+	    	        	isAnyAndDependencyFalse = true;
+	    	        	andChildDependencies.stream().forEachOrdered(i -> {
+	    	        		falseAndList.stream().forEachOrdered(f -> {
+	    	        			if(i != f)
+	    	        			{
+	    	        				trimDependency(node, nodeSet.getNodeMap().get(nodeSet.getNodeIdMap().get(i)));
+	    	        			}
+	    	        		});
+	    	        	});
             }
             else if(andChildDependencies.size() == 0)
             {
@@ -1057,7 +1064,7 @@ public class InferenceEngine {
         
         if(allChildDependencies != null && determinedAndOutDependencies.size() == allChildDependencies.size())
         {
-        	isAllRelevantChildDependencyDetermined = true;
+        		isAllRelevantChildDependencyDetermined = true;
         }
 
 
