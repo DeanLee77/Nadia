@@ -1,0 +1,13 @@
+person's nationality IS "Australian" - true:false
+citizenship testing of person's parents - true:false
+the person was born in Australia - true:false
+we have person's name and dob - true:false
+we have the person's passport - true:false
+person's name IS IN LIST: name list - true:false
+person made it to Las Vegas - true:false
+one of person's parents is Australian - true:false
+both of person's parents are Australian - true:false
+all grand parents of the person were Australian - true:false
+person's name - true:false
+person's dob - v  
+the person missed the flight - true:false  	
