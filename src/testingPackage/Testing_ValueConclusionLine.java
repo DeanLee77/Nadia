@@ -1,5 +1,6 @@
 package testingPackage;
 
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -22,7 +23,7 @@ public class Testing_ValueConclusionLine {
 
 	public static void main(String[] args) throws IOException {
 		RuleSetReader ilr = new RuleSetReader();
-		ilr.setStreamSource(WeddingPlanner_Inference_Test.class.getResourceAsStream("Testing ValueConclusionLine with NOT, KNOW, IS, and IS IN LIST features.txt"));
+		ilr.setStreamSource(Testing_ValueConclusionLine.class.getResourceAsStream("Testing ValueConclusionLine with NOT, KNOW, IS, and IS IN LIST features.txt"));
 		RuleSetParser isf = new RuleSetParser();		
 		RuleSetScanner rsc = new RuleSetScanner(ilr,isf);
 		rsc.scanRuleSet();
