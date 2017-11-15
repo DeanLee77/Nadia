@@ -84,8 +84,11 @@ public class ComparisonLine extends Node{
 		 * 
 		 */		
 		
-		FactValue workingMemoryLhsValue = workingMemory.get(this.variableName);
-		FactValue workingMemoryRhsValue = workingMemory.get(this.getFactValue().getValue().toString());
+		FactValue workingMemoryLhsValue = workingMemory.containsKey(this.variableName)?workingMemory.get(this.variableName):null;
+		FactValue workingMemoryRhsValue = this.getRHS().getType().equals(FactValueType.STRING)?
+											workingMemory.get(this.getFactValue().getValue().toString())
+											:
+											this.getRHS();
 		
 		String script = "";
 		
@@ -121,22 +124,18 @@ public class ComparisonLine extends Node{
 			{
 				script = "'"+workingMemoryLhsValue.getValue().toString()+"' "+operator+" '"+workingMemoryRhsValue.getValue().toString()+"'" ;
 			}
-			else if(workingMemoryRhsValue == null && workingMemoryLhsValue != null)
-			{
-				script = "'"+workingMemoryLhsValue.getValue().toString()+"' "+operator+" '"+this.getFactValue().getValue().toString()+"'" ;
-			}
-		}
-		FactValue fv = null;
-		
-		try {
-			boolean result = (boolean) nashorn.eval(script);
-			fv = (nodeOption & DependencyType.getNot())== DependencyType.getNot()? FactValue.parse(!result):FactValue.parse(result);
 			
+		}
+		boolean result;
+		FactValue fv = null;
+		try {
+			result = (boolean) nashorn.eval(script);
+			fv = FactValue.parse(result);
 		} catch (ScriptException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
+				
 		return fv;
 	}
 }

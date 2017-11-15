@@ -20,12 +20,12 @@ import ruleParser.RuleSetReader;
 import ruleParser.RuleSetScanner;
 import testingUtilPackage.NodeObject_For_Inference_Test;
 
-public class WeddingPlanner_Inference_Test {
+public class WeddingPlanner_Inference_Test_3 {
 
 	public static void main(String[] args) throws IOException {
 		
 		HashMap<String, NodeObject_For_Inference_Test> nameMap = new HashMap<>();
-		BufferedReader br = new BufferedReader(new InputStreamReader(WeddingPlanner_Inference_Test.class.getResourceAsStream("Wedding_Planner Inference Test.txt")));
+		BufferedReader br = new BufferedReader(new InputStreamReader(WeddingPlanner_Inference_Test_3.class.getResourceAsStream("Wedding_Planner Inference Test.txt")));
 		String line;
 		while((line = br.readLine()) != null)
 		{
@@ -37,7 +37,7 @@ public class WeddingPlanner_Inference_Test {
 		br.close();
 		
 		RuleSetReader ilr = new RuleSetReader();
-		ilr.setStreamSource(WeddingPlanner_Inference_Test.class.getResourceAsStream("Wedding Planner.txt"));
+		ilr.setStreamSource(WeddingPlanner_Inference_Test_3.class.getResourceAsStream("Wedding Planner.txt"));
 		RuleSetParser isf = new RuleSetParser();		
 		RuleSetScanner rsc = new RuleSetScanner(ilr,isf);
 		rsc.scanRuleSet();

@@ -520,14 +520,94 @@ public class InferenceEngine {
 		        	ast.getSummaryList().add(targetNode.getNodeName());
 	    		}
 	    	 	
-	        	/*
-	        	 * once any rules are set as fact and stored into the workingMemory, forward-chaining(back-propagation) needs to be done
+	    		/*
+	        	 * once any rules are set as fact and stored into the workingMemory, back-propagation(forward-chaining) needs to be done
 	        	 */
-	        	forwardChaining(nodeSet.findNodeIndex(targetNode.getNodeName()));
+	    		backPropagating(nodeSet.findNodeIndex(targetNode.getNodeName()));
+	        
 	    	}
     }
     
    
+    public void backPropagating(int nodeIndex)
+    {
+    		List<Node> nodeSortedList = nodeSet.getNodeSortedList();
+    		int sortedListSize = nodeSortedList.size();
+    		IntStream.range(0, sortedListSize).forEachOrdered(i ->{
+    			//current index = sortedListSize - (i+1)
+    			Node tempNode = nodeSortedList.get(sortedListSize - (i+1));
+			LineType lineType = tempNode.getLineType();
+			
+    			if(nodeIndex < (sortedListSize - (i+1)))
+    			{
+    				
+    				if(hasChildren(tempNode.getNodeId()))
+    				{
+    					 if(!ast.getWorkingMemory().containsKey(tempNode.getVariableName()) 
+	    		    			   && canDetermine(tempNode, lineType)
+	    		    		   )
+	    		    	   {
+	    	    		   		ast.getSummaryList().add(tempNode.getNodeName()); // add currentRule into SummeryList as the rule determined
+	    		    	   }
+    				}
+    				else
+    				{
+    					/*
+    					 * ValueConclusionLine does not need to be considered here due to the reason that
+    					 * child case of ValueConclusionLine is 'A-statement' or 'A IS IN LIST: B'
+    					 * but these two cases should not re-evaluated here if it was asked because it should be same node.
+    					 */
+    					if(lineType.equals(LineType.COMPARISON))
+        				{
+    						FactValue fv = tempNode.selfEvaluate(ast.getWorkingMemory(), scriptEngine);
+        					if(fv != null)
+        					{
+        						ast.setFact(tempNode.getNodeName(), fv);
+        						ast.getSummaryList().add(tempNode.getNodeName()); // add currentRule into SummeryList as the rule determined
+        					}
+        					
+        				}
+        				else if(lineType.equals(LineType.ITERATE))
+        				{
+        					
+        				}
+    				}
+    				
+    			}
+    			else
+    			{
+    				if(ast.getInclusiveList().contains(tempNode.getNodeName()))
+	    	    		{
+	    	    			/*
+	    	    			 * once a user feeds an answer to the engine, the engine will propagate the entire NodeSet or Assessment base on the answer
+	    	    			 * during the back-propagation, the engine checks if current node the engine is checking;
+	    	    			 * 1. has been determined;
+	    	    			 * 2. has any child nodes;
+	    	    			 * 3. can be determined on the ground of various condition.
+	    	    			 * 
+	    	    			 *  once the current checking node meets the condition then add it to summaryList for summary view.
+	    	    			 * 
+	    	    			 * TODO need to consider ITERATE line type for this back-propagation due to there would be possibilities a list for the value of ITERATE will be generated or provided
+	    	    			 * during other rules back-propagation
+	    	    			 */
+	    	    				    			
+	    		    	    
+	    		    	    	/*
+	    		    	     * following 'if' statement is to double check if the rule has any children or not.
+	    		    	     * it will be already determined by asking a question to a user if it doesn't have any children .
+	    		    	     */
+	    		    	   if (!ast.getWorkingMemory().containsKey(tempNode.getVariableName()) 
+	    		    			   && hasChildren(tempNode.getNodeId()) 
+	    		    			   && canDetermine(tempNode, lineType)
+	    		    		  )
+	    		    	   {
+	    	    		   		ast.getSummaryList().add(tempNode.getNodeName()); // add currentRule into SummeryList as the rule determined
+	    		    	   }
+	    	    		}
+    			}
+    		});
+    		
+    }
     public void forwardChaining(int nodeIndex)
     {
 	    	/*
@@ -729,6 +809,11 @@ public class InferenceEngine {
 	    		}
 	    		
 	    	}
+	    	else if(LineType.EXPR_CONCLUSION.equals(lineType))
+	    	{
+	    		
+	    	}
+	    	
 	    	
 	    	return canDetermine;
 	}

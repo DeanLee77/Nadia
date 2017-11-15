@@ -18,22 +18,20 @@ import ruleParser.RuleSetReader;
 import ruleParser.RuleSetScanner;
 import testingUtilPackage.NodeObject_For_Inference_Test;
 
-public class Testing_ValueConclusionLine {
+public class Tesing_Full_ValueConclusion_Comparison_7 {
 
+	
 	public static void main(String[] args) throws IOException {
 		RuleSetReader ilr = new RuleSetReader();
-		ilr.setStreamSource(WeddingPlanner_Inference_Test.class.getResourceAsStream("Testing ValueConclusionLine with NOT, KNOW, IS, and IS IN LIST features.txt"));
+		ilr.setStreamSource(Tesing_Full_ValueConclusion_Comparison_7.class.getResourceAsStream("Testing full ValueConclusion and Comparison.txt"));
 		RuleSetParser isf = new RuleSetParser();		
 		RuleSetScanner rsc = new RuleSetScanner(ilr,isf);
 		rsc.scanRuleSet();
 		rsc.establishNodeSet();
 		
-		BufferedReader br = new BufferedReader(new InputStreamReader(Testing_ValueConclusionLine.class.getResourceAsStream("Testing ValueConclusionLine Comparison.txt")));
+		BufferedReader br = new BufferedReader(new InputStreamReader(Tesing_Full_ValueConclusion_Comparison_7.class.getResourceAsStream("Comparison for Testing full ValueConclusion and Comparison.txt")));
 		String line;
-		boolean ruleLinePassed = false;
-		List<String> fixedMapMock = new ArrayList<>();
 		List<String> nodeListMock = new ArrayList<>();
-		List<Integer> dependencyListMock = new ArrayList<>();
 		String[] tempArray;
 		HashMap<String, NodeObject_For_Inference_Test> nameMap = new HashMap<>();
 
@@ -138,6 +136,6 @@ public class Testing_ValueConclusionLine {
 		HashMap<String, FactValue> workingMemory = ie.getAssessmentState().getWorkingMemory();
 		ie.getAssessmentState().getSummaryList().stream().forEachOrdered(node ->{
 			System.out.println(node+" : "+workingMemory.get(node).getValue().toString());
-		});	}
-
+		});	
+	}
 }

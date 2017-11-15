@@ -1,0 +1,32 @@
+FIXED name list AS LIST
+	ITEM John Smith
+	ITEM Dean Tudir
+	ITEM Agness Huge
+	ITEM Sugar Sweet
+	ITEM Tim Armond
+	ITEM Lolly T.Sweet
+INPUT person's dob AS DATE
+	
+person's nationality IS “Australian”
+	AND citizenship testing of person's parents
+		OR one of person's parents is Australian
+		OR both of person's parents are Australian
+		OR MANDATORY all grand parents of the person were Australian
+	AND the person was born in Australia
+	AND we have person's name and dob
+		AND KNOWN person's name
+		AND KNOWN person's dob  
+	AND we have the person's passport
+	AND person's name IS IN LIST: name list
+	AND person made it to Las Vegas
+		AND NOT the person missed the flight  
+
+we have the person's passport
+	AND person has an Australian passport
+		AND person passport type = "Australian"
+		AND person passport issued country = "Australia"
+		AND person age >18
+		AND a number of countries the person has travelled so far >= 40
+	AND MANDATOR person has not lost the passport
+		OR current location of person's passport = the place the person normally locate the passport
+		OR NOT person's passport is in a police station
