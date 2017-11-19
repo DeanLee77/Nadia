@@ -26,20 +26,16 @@ public class ComparisonLine extends Node{
 	public void initialisation(String childText, Tokens tokens) {
 
 		/*
-		 * this line pattern is as (^U)([ML]+)(O)([MLNoDaDeHaUrlId]*$)
+		 * this line pattern is as (^[ML]+)(O)([MLNoDaDeHaUrlId]*$)
 		 */
-		StringBuilder sb = new StringBuilder();
-		tokens.tokensList.subList(1, tokens.tokensList.size()).stream().forEachOrdered((s)->sb.append(s+" "));
-		this.nodeName = childText;
 		
-		int operatorIndex = tokens.tokensStringList.indexOf("O");
-		sb.setLength(0);
-		tokens.tokensList.subList(1, operatorIndex).stream().forEachOrdered((s)-> sb.append(s+" "));
-		this.variableName = sb.toString().trim();	
+		this.nodeName = childText;		
+		this.variableName = tokens.tokensList.get(0);	
 		this.lhs = variableName;
 		/*
 		 * In javascript engine '=' operator means assigning a value, hence if the operator is '=' then it needs to be replaced with '=='. 
 		 */
+		int operatorIndex = tokens.tokensStringList.indexOf("O");
 		this.operator = tokens.tokensList.get(operatorIndex).matches("=")?"==":tokens.tokensList.get(operatorIndex);
 		
 		
@@ -107,7 +103,7 @@ public class ComparisonLine extends Node{
 		/*
 		 * if it is about date comparison then string of 'script' needs rewriting
 		 */
-		if(workingMemoryLhsValue.getType().equals(FactValueType.DATE) || workingMemoryRhsValue.getType().equals(FactValueType.DATE))
+		if((workingMemoryLhsValue!= null && workingMemoryLhsValue.getType().equals(FactValueType.DATE)) || (workingMemoryRhsValue!= null && workingMemoryRhsValue.getType().equals(FactValueType.DATE)))
 		{
 			if(workingMemoryRhsValue != null && workingMemoryLhsValue != null)
 			{
@@ -128,13 +124,17 @@ public class ComparisonLine extends Node{
 		}
 		boolean result;
 		FactValue fv = null;
-		try {
-			result = (boolean) nashorn.eval(script);
-			fv = FactValue.parse(result);
-		} catch (ScriptException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		if(workingMemoryRhsValue != null && workingMemoryLhsValue != null)
+		{
+			try {
+				result = (boolean) nashorn.eval(script);
+				fv = FactValue.parse(result);
+			} catch (ScriptException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
+		
 				
 		return fv;
 	}

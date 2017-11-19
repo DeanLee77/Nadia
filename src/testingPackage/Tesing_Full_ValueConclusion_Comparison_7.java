@@ -12,7 +12,7 @@ import factValuePackage.FactValue;
 import factValuePackage.FactValueType;
 import inferencePackage.Assessment;
 import inferencePackage.InferenceEngine;
-import nodePackage.Node;
+import nodePackage.*;
 import ruleParser.RuleSetParser;
 import ruleParser.RuleSetReader;
 import ruleParser.RuleSetScanner;
@@ -51,11 +51,11 @@ public class Tesing_Full_ValueConclusion_Comparison_7 {
 		IntStream.range(0, nodeListMock.size()).forEach(i->{
 			String mockNode = nodeListMock.get(i);
 			Node actualNode = isf.getNodeSet().getNodeSortedList().get(i);
-			if(actualNode.getNodeName().equals("person's nationality IS \"Australian\"")
+			if(actualNode.getNodeName().equals("person's nationality IS “Australian”")
 				&&mockNode.equals(actualNode.getNodeName())
 				&&actualNode.getVariableName().equals("person's nationality")
 				&&actualNode.getFactValue().getType().equals(FactValueType.DEFI_STRING)
-				&&actualNode.getFactValue().getValue().toString().equals("\"Australian\""))
+				&&actualNode.getFactValue().getValue().toString().equals("Australian"))
 			{
 				comparisonTempList.add(i);
 				
@@ -69,6 +69,46 @@ public class Tesing_Full_ValueConclusion_Comparison_7 {
 			{
 				comparisonTempList.add(i);
 				
+			}
+			else if(actualNode.getNodeName().equals("person passport type = “Australian”")
+					&&mockNode.equals(actualNode.getNodeName())
+					&&((ComparisonLine)actualNode).getLHS().equals("person passport type")
+					&&((ComparisonLine)actualNode).getRHS().getType().equals(FactValueType.DEFI_STRING)
+					&&((ComparisonLine)actualNode).getRHS().getValue().toString().equals("Australian"))
+			{
+				comparisonTempList.add(i);
+			}
+			else if(actualNode.getNodeName().equals("person passport issued country = “Australian”")
+					&&mockNode.equals(actualNode.getNodeName())
+					&&((ComparisonLine)actualNode).getLHS().equals("person passport issued country")
+					&&((ComparisonLine)actualNode).getRHS().getType().equals(FactValueType.DEFI_STRING)
+					&&((ComparisonLine)actualNode).getRHS().getValue().toString().equals("Australian"))
+			{
+				comparisonTempList.add(i);
+			}
+			else if(actualNode.getNodeName().equals("person age >18")
+					&&mockNode.equals(actualNode.getNodeName())
+					&&((ComparisonLine)actualNode).getLHS().equals("person age")
+					&&((ComparisonLine)actualNode).getRHS().getType().equals(FactValueType.INTEGER)
+					&&((ComparisonLine)actualNode).getRHS().getValue().toString().equals("18"))
+			{
+				comparisonTempList.add(i);
+			}
+			else if(actualNode.getNodeName().equals("a number of countries the person has travelled so far >= 40")
+					&&mockNode.equals(actualNode.getNodeName())
+					&&((ComparisonLine)actualNode).getLHS().equals("a number of countries the person has travelled so far")
+					&&((ComparisonLine)actualNode).getRHS().getType().equals(FactValueType.INTEGER)
+					&&((ComparisonLine)actualNode).getRHS().getValue().toString().equals("40"))
+			{
+				comparisonTempList.add(i);
+			}
+			else if(actualNode.getNodeName().equals("current location of person's passport = the place the person normally locate the passport")
+					&&mockNode.equals(actualNode.getNodeName())
+					&&((ComparisonLine)actualNode).getLHS().equals("current location of person's passport")
+					&&((ComparisonLine)actualNode).getRHS().getType().equals(FactValueType.STRING)
+					&&((ComparisonLine)actualNode).getRHS().getValue().toString().equals("the place the person normally locate the passport"))
+			{
+				comparisonTempList.add(i);
 			}
 			else if(mockNode.equals(actualNode.getNodeName()))
 			{
@@ -103,6 +143,10 @@ public class Tesing_Full_ValueConclusion_Comparison_7 {
 				else if(question.equals("person's dob"))
 				{
 					answer = "11/12/1934";
+				}
+				else if(question.equals("the person missed the flight"))
+				{
+					answer = "false";
 				}
 				else if(i == 0)
 				{
