@@ -15,12 +15,12 @@ import ruleParser.RuleSetReader;
 import ruleParser.RuleSetScanner;
 import testingUtilPackage.NodeObject_For_Inference_Test;
 
-public class TestingInferenceForNotKnownManOpPo {
+public class TestingInferenceForNotKnownManOpPo_5 {
 
 	public static void main(String[] args) throws IOException {
 		
 		HashMap<String, NodeObject_For_Inference_Test> nameMap = new HashMap<>();
-		BufferedReader br = new BufferedReader(new InputStreamReader(WeddingPlanner_Inference_Test.class.getResourceAsStream("testing NOT, KNOWN, Mandatory, Possibly, and Optionally inference.txt")));
+		BufferedReader br = new BufferedReader(new InputStreamReader(WeddingPlanner_Inference_Test_3.class.getResourceAsStream("testing NOT, KNOWN, Mandatory, Possibly, and Optionally inference.txt")));
 		String line;
 		while((line = br.readLine()) != null)
 		{
@@ -33,7 +33,7 @@ public class TestingInferenceForNotKnownManOpPo {
 		
 
 		RuleSetReader ilr = new RuleSetReader();
-		ilr.setStreamSource(WeddingPlanner_Inference_Test.class.getResourceAsStream("testing NOT, KNOWN, Mandatory, Possibly, and Optionally.txt"));
+		ilr.setStreamSource(WeddingPlanner_Inference_Test_3.class.getResourceAsStream("testing NOT, KNOWN, Mandatory, Possibly, and Optionally.txt"));
 		RuleSetParser isf = new RuleSetParser();		
 		RuleSetScanner rsc = new RuleSetScanner(ilr,isf);
 		rsc.scanRuleSet();

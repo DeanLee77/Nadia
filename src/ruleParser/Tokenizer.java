@@ -27,7 +27,7 @@ public static Tokens getTokens(String text)
 	Pattern datePattern = Pattern.compile("^([0-2]?[0-9]|3[0-1])/(0?[0-9]|1[0-2])/([0-9][0-9])?[0-9][0-9]|^([0-9][0-9])?[0-9][0-9]/(0?[0-9]|1[0-2])/([0-2]?[0-9]|3[0-1])");
 	Pattern urlPattern = Pattern.compile( "^(ht|f)tps?\\:(\\p{Graph}|\\p{XDigit}|\\p{Space})*$");
 	Pattern uuidPattern = Pattern.compile("^[0-9a-f]{8}-([0-9a-f]{4}-){3}[0-9a-f]{12}");
-	Pattern hashPattern = Pattern.compile("^([-]?)([0-9a-f]{2,}$)(?!\\-)*");
+	Pattern hashPattern = Pattern.compile("^([-]?)([0-9a-f]{10,}$)(?!\\-)*");
 	Pattern quotedPattern = Pattern.compile("^([\"\\“])(.*)([\"\\”])(\\.)*");
 	/*
 	 * the order of Pattern in the array of 'matchPatterns' is extremely important because some patterns won't work if other patterns are invoked earlier than them

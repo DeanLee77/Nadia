@@ -15,19 +15,19 @@ import ruleParser.RuleSetParser;
 import ruleParser.RuleSetReader;
 import ruleParser.RuleSetScanner;
 
-public class TopoSortingTest {
+public class TopoSortingTest_2 {
 
 	public static void main(String[] args) throws IOException {
 		//this testing is to check if topological sorting is done correctly or not by comparing a sorted list of 'Wedding Planner.txt' file in RuleSetParser with 'ToposortedNodeName.txt' file
 		
 		RuleSetReader ilr = new RuleSetReader();
-		ilr.setStreamSource(TopoSortingTest.class.getResourceAsStream("Wedding Planner.txt"));
+		ilr.setStreamSource(TopoSortingTest_2.class.getResourceAsStream("Wedding Planner.txt"));
 		RuleSetParser isf = new RuleSetParser();		
 		RuleSetScanner rsc = new RuleSetScanner(ilr,isf);
 		rsc.scanRuleSet();
 		rsc.establishNodeSet();
 		List<String> nameList = new ArrayList<>();
-		BufferedReader br = new BufferedReader(new InputStreamReader(TopoSortingTest.class.getResourceAsStream("ToposortedNodeName.txt")));
+		BufferedReader br = new BufferedReader(new InputStreamReader(TopoSortingTest_2.class.getResourceAsStream("ToposortedNodeName.txt")));
 		String line;
 		while((line = br.readLine()) != null)
 		{
