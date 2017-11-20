@@ -271,17 +271,20 @@ public class InferenceEngine {
 	    	if(LineType.COMPARISON.equals(nodeLineType))
 	    	{
 	    		FactValueType nodeRHSType = ((ComparisonLine)node).getRHS().getType();
-	    		if(nodeRHSType.equals(FactValueType.DEFI_STRING))
-	    		{
-	    			fvt = FactValueType.STRING;
-	    		}
-	    		else if(TypeAlreadySet)
-	    		{
-	    			fvt= nodeRHSType;
-	    		}
-	    		factValueTypeMap.put(((ComparisonLine)node).getLHS(), fvt);
-	    		
-	    		if(nodeRHSType.equals(FactValueType.STRING))
+	    		if(!nodeRHSType.equals(FactValueType.STRING))
+    			{
+	    			if(nodeRHSType.equals(FactValueType.DEFI_STRING))
+	    			{
+		    			fvt = FactValueType.STRING;
+		    		}
+		    		else if(TypeAlreadySet)
+		    		{
+		    			fvt= nodeRHSType;
+		    		}
+		    		factValueTypeMap.put(((ComparisonLine)node).getLHS(), fvt);
+	    				
+    			}
+	    		else if(nodeRHSType.equals(FactValueType.STRING))
 	    		{
 	    			if(tempInputMap.containsKey(((ComparisonLine)node).getLHS()))
 	    			{
@@ -430,7 +433,26 @@ public class InferenceEngine {
 	    	}
 	    	else if(lineType.equals(LineType.COMPARISON))
 	    	{
-	    		
+	    		FactValue nodeRhsValue = ((ComparisonLine)node).getRHS();
+	    		if(!nodeRhsValue.getType().equals(FactValueType.STRING) 
+	    				&& ast.getWorkingMemory().containsKey(((ComparisonLine)node).getLHS()))
+	    		{
+	    			canEvaluate = true;
+	    			if(!ast.getWorkingMemory().containsKey(node.getNodeName())) 
+	    			{
+	    				ast.setFact(node.getNodeName(), node.selfEvaluate(ast.getWorkingMemory(), this.scriptEngine));
+	    			}
+	    		}
+	    		else if(nodeRhsValue.getType().equals(FactValueType.STRING) 
+	    				&& ast.getWorkingMemory().containsKey(((ComparisonLine)node).getLHS()) 
+	    				&& ast.getWorkingMemory().containsKey(((ComparisonLine)node).getRHS().getValue().toString()))
+	    		{
+	    			canEvaluate = true;
+	    			if(!ast.getWorkingMemory().containsKey(node.getNodeName())) 
+	    			{
+	    				ast.setFact(node.getNodeName(), node.selfEvaluate(ast.getWorkingMemory(), this.scriptEngine));
+	    			}
+	    		}
 	    	}
 	    	else if(lineType.equals(LineType.EXPR_CONCLUSION))
 	    	{
@@ -531,6 +553,21 @@ public class InferenceEngine {
 	    			FactValue selfEvalFactValue = targetNode.selfEvaluate(ast.getWorkingMemory(), this.scriptEngine);
 		    		ast.setFact(targetNode.getNodeName(), selfEvalFactValue); // add the value of targetNode itself into the workingMemory	
 		        	ast.getSummaryList().add(targetNode.getNodeName());
+	    		}
+	    		else if(targetNode.getLineType().equals(LineType.COMPARISON))
+	    		{
+	    			FactValue rhsValue = ((ComparisonLine)targetNode).getRHS();
+	    			if((rhsValue.getType().equals(FactValueType.STRING) 
+	    					&& (nodeSet.getInputMap().containsKey(rhsValue.getValue().toString()) || nodeSet.getFactMap().containsKey(rhsValue.getValue().toString()))
+	    					&& ast.getWorkingMemory().containsKey(rhsValue.getValue().toString())) 
+	    				|| !rhsValue.getType().equals(FactValueType.STRING)
+    				  )
+	    			{
+	    				FactValue selfEvalFactValue = targetNode.selfEvaluate(ast.getWorkingMemory(), this.scriptEngine);
+	    				ast.setFact(targetNode.getNodeName(), selfEvalFactValue); // add the value of targetNode itself into the workingMemory	
+			        	ast.getSummaryList().add(targetNode.getNodeName());
+	    			}
+	    			
 	    		}
 	    	 	
 	    		/*

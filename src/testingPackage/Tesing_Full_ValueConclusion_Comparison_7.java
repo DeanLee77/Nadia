@@ -136,7 +136,7 @@ public class Tesing_Full_ValueConclusion_Comparison_7 {
 			{
 				System.out.println("questionFvt :"+questionFvtMap.get(question));
 				System.out.println("Question: " + question+"?");
-				if(questionFvtMap.get(question).equals(FactValueType.STRING))
+				if(question.equals("person's name"))
 				{
 					answer = "John Smith";
 				}
@@ -151,6 +151,34 @@ public class Tesing_Full_ValueConclusion_Comparison_7 {
 				else if(i == 0)
 				{
 					answer = "true";
+				}
+				else if(question.equals("person passport type"))
+				{
+					answer = "Australian";
+				}
+				else if(question.equalsIgnoreCase("person passport issued country"))
+				{
+					answer = "Australia";
+				}
+				else if(question.equalsIgnoreCase("person age"))
+				{
+					answer = "19";
+				}
+				else if(question.equalsIgnoreCase("a number of countries the person has travelled so far"))
+				{
+					answer = "40";
+				}
+				else if(question.equalsIgnoreCase("current location of person's passport"))
+				{
+					answer = "there";
+				}
+				else if(question.equalsIgnoreCase("the place the person normally locate the passport"))
+				{
+					answer = "here";
+				}
+				else if(question.equalsIgnoreCase("person's passport is in a police station"))
+				{
+					answer = "false";
 				}
 //				else if(question.equals("person's dob"))
 //				{

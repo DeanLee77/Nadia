@@ -6,6 +6,7 @@ FIXED name list AS LIST
 	ITEM Tim Armond
 	ITEM Lolly T.Sweet
 INPUT person's dob AS DATE
+INPUT the place the person normally locate the passport AS TEXT
 	
 person's nationality IS “Australian”
 	AND citizenship testing of person's parents
