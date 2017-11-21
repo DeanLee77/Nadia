@@ -236,7 +236,7 @@ public class Testing_Whole_Features_Of_ValueConclusionLIne_and_ComparisonLine_8 
 				}
 				System.out.println("Answer: "+answer);
 				
-				ie.feedAnswerToNode(nextQuestionNode, question, answer, questionFvtMap.get(question), ass.getGoalNode().getNodeId());
+				ie.feedAnswerToNode(nextQuestionNode, question, answer, questionFvtMap.get(question));
 				i++;
 			}
 
