@@ -12,24 +12,26 @@ import factValuePackage.FactValue;
 import factValuePackage.FactValueType;
 import inferencePackage.Assessment;
 import inferencePackage.InferenceEngine;
-import nodePackage.*;
+import nodePackage.ComparisonLine;
+import nodePackage.Node;
 import ruleParser.RuleSetParser;
 import ruleParser.RuleSetReader;
 import ruleParser.RuleSetScanner;
 import testingUtilPackage.NodeObject_For_Inference_Test;
 
-public class Tesing_Full_ValueConclusion_Comparison_7 {
+public class Testing_Whole_Features_Of_ValueConclusionLIne_and_ComparisonLine_8 {
+
 
 	
 	public static void main(String[] args) throws IOException {
 		RuleSetReader ilr = new RuleSetReader();
-		ilr.setStreamSource(Tesing_Full_ValueConclusion_Comparison_7.class.getResourceAsStream("Testing full ValueConclusion and Comparison.txt"));
+		ilr.setStreamSource(Testing_Whole_Features_Of_ValueConclusionLIne_and_ComparisonLine_8.class.getResourceAsStream("Testing for whole features of ValueConclusionLine and ComparisonLine.txt"));
 		RuleSetParser isf = new RuleSetParser();		
 		RuleSetScanner rsc = new RuleSetScanner(ilr,isf);
 		rsc.scanRuleSet();
 		rsc.establishNodeSet();
 		
-		BufferedReader br = new BufferedReader(new InputStreamReader(Tesing_Full_ValueConclusion_Comparison_7.class.getResourceAsStream("Comparison for Testing full ValueConclusion and Comparison.txt")));
+		BufferedReader br = new BufferedReader(new InputStreamReader(Testing_Whole_Features_Of_ValueConclusionLIne_and_ComparisonLine_8.class.getResourceAsStream("Comparison Testing for Whole features of ValueConclusionLine and ComparisonLine.txt")));
 		String line;
 		List<String> nodeListMock = new ArrayList<>();
 		String[] tempArray;
@@ -110,6 +112,30 @@ public class Tesing_Full_ValueConclusion_Comparison_7 {
 			{
 				comparisonTempList.add(i);
 			}
+			else if(actualNode.getNodeName().equals("person's citizenship status = “canceled”")
+					&&mockNode.equals(actualNode.getNodeName())
+					&&((ComparisonLine)actualNode).getLHS().equals("person's citizenship status")
+					&&((ComparisonLine)actualNode).getRHS().getType().equals(FactValueType.STRING)
+					&&((ComparisonLine)actualNode).getRHS().getValue().toString().equals("canceled"))
+			{
+				comparisonTempList.add(i);
+			}
+			else if(actualNode.getNodeName().equals("person's legally yearly period of stay in Australia <= 20")
+					&&mockNode.equals(actualNode.getNodeName())
+					&&((ComparisonLine)actualNode).getLHS().equals("person's legally yearly period of stay in Australia")
+					&&((ComparisonLine)actualNode).getRHS().getType().equals(FactValueType.INTEGER)
+					&&((ComparisonLine)actualNode).getRHS().getValue().toString().equals("20"))
+			{
+				comparisonTempList.add(i);
+			}
+			else if(actualNode.getNodeName().equals("person's permanent residentship status = “canceled”")
+					&&mockNode.equals(actualNode.getNodeName())
+					&&((ComparisonLine)actualNode).getLHS().equals("person's permanent residentship status")
+					&&((ComparisonLine)actualNode).getRHS().getType().equals(FactValueType.STRING)
+					&&((ComparisonLine)actualNode).getRHS().getValue().toString().equals("canceled"))
+			{
+				comparisonTempList.add(i);
+			}
 			else if(mockNode.equals(actualNode.getNodeName()))
 			{
 				comparisonTempList.add(i);
@@ -162,7 +188,7 @@ public class Tesing_Full_ValueConclusion_Comparison_7 {
 				}
 				else if(question.equalsIgnoreCase("person age"))
 				{
-					answer = "19";
+					answer = "18";
 				}
 				else if(question.equalsIgnoreCase("a number of countries the person has travelled so far"))
 				{
@@ -179,6 +205,18 @@ public class Tesing_Full_ValueConclusion_Comparison_7 {
 				else if(question.equalsIgnoreCase("person's passport is in a police station"))
 				{
 					answer = "false";
+				}
+				else if(question.equalsIgnoreCase("person's citizenship status"))
+				{
+					answer = "canceled";
+				}
+				else if(question.equalsIgnoreCase("person's legally yearly period of stay in Australia"))
+				{
+					answer = "19";
+				}
+				else if(question.equalsIgnoreCase("person's permanent residentship status"))
+				{
+					answer = "resident";
 				}
 //				else if(question.equals("person's dob"))
 //				{
@@ -198,7 +236,7 @@ public class Tesing_Full_ValueConclusion_Comparison_7 {
 				}
 				System.out.println("Answer: "+answer);
 				
-				ie.feedAnswerToNode(nextQuestionNode, question, answer, questionFvtMap.get(question));
+				ie.feedAnswerToNode(nextQuestionNode, question, answer, questionFvtMap.get(question), ass.getGoalNode().getNodeId());
 				i++;
 			}
 

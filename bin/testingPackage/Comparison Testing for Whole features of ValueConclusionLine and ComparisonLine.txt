@@ -1,0 +1,26 @@
+person's nationality IS “Australian”-true:false
+Rule one -true:false
+Rule two -true:false
+person's citizenship status = "canceled" -true:false
+person's legally yearly period of stay in Australia <= 20 -true:false
+person's permanent residentship status = "canceled" -true:false
+citizenship testing of person's parents-true:false
+the person was born in Australia-true:false
+we have person's name and dob-true:false
+we have the person's passport-true:false
+person's name IS IN LIST: name list-true:false
+person made it to Las Vegas-true:false
+one of person's parents is Australian-true:false
+both of person's parents are Australian-true:false
+all grand parents of the person were Australian-true:false
+person's name-true:false
+person's dob  -true:false
+person has an Australian passport-true:false
+person has not lost the passport-true:false
+the person missed the flight  -true:false
+person passport type = "Australian"-true:false
+person passport issued country = "Australia"-true:false
+person age >18-true:false
+a number of countries the person has travelled so far >= 40-true:false
+current location of person's passport = the place the person normally locate the passport-true:false
+person's passport is in a police station-true:false

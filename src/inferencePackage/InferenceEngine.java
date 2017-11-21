@@ -547,6 +547,7 @@ public class InferenceEngine {
 	    	{
 	    		ast.setFact(questionName, fv);
 	    		ast.getSummaryList().add(questionName);
+
 	    		
 	    		if(targetNode.getLineType().equals(LineType.VALUE_CONCLUSION) && !((ValueConclusionLine)targetNode).getIsPlainStatementFormat())
 	    		{
@@ -637,8 +638,6 @@ public class InferenceEngine {
 	    	    			 * 
 	    	    			 *  once the current checking node meets the condition then add it to summaryList for summary view.
 	    	    			 * 
-	    	    			 * TODO need to consider ITERATE line type for this back-propagation due to there would be possibilities a list for the value of ITERATE will be generated or provided
-	    	    			 * during other rules back-propagation
 	    	    			 */
 	    	    				    			
 	    		    	    
@@ -658,77 +657,77 @@ public class InferenceEngine {
     		});
     		
     }
-    public void forwardChaining(int nodeIndex)
-    {
-	    	/*
-	    	 * all nodes prior to 'nodeIndex' in the nodeList(sortedList) of nodeSet should be updated once the node at a nodeIndex is being answered for following reasons;
-	    	 * 1. regardless the nodeList is sorted with Khan's algorithm which is based on BFS, 
-	    	 *    all nodes in the inclusiveList and prior to the node at a nodeIndex are possibly parent nodes of the node at nodeIndex; 
-	    	 * 2. the list may be sorted based on historical statistic record, and if it is the case then the sorting is based on Deepening and Greedy algorithm with Bayesian inferencing ;
-	    	 * 3. there could be a node sharing parents nodes or children nodes in the list
-	    	 * And therefore, updating all nodes in the list based on a given fact is a safe way to get a next question and complete assessment.
-	    	 */
-	    	
-	    	IntStream.range(0, nodeIndex+1).forEach(i -> {
-	    		
-	    		Node node = nodeSet.getNodeSortedList().get(nodeIndex-i);
-	    		
-	    		/* updating all nodes' state prior to nodeIndex in the sorted List 
-	    		 * by setting the value of nodeVariables and nodeName of each node in workignMemory
-	    		 * 
-             * if the node currently being checked exists in the 'inclusiveList'
-             * then check if the node has any children then update the current node's state based on the children's state
-             * Note: a question will be asked if only if the being asked question is in the inclusiveLsit, however, following condition
-             * is to do double check if the being asked question is in the inclusiveList
-             */
-	    		if(ast.getInclusiveList().contains(node.getNodeName()))
-	    		{
-	    			/*
-	    			 * once a user feeds an answer to the engine, the engine will propagate the entire NodeSet or Assessment base on the answer
-	    			 * during the back-propagation, the engine checks if current node the engine is checking;
-	    			 * 1. has been determined;
-	    			 * 2. has any child nodes;
-	    			 * 3. can be determined on the ground of various condition.
-	    			 * 
-	    			 *  once the current checking node meets the condition then add it to summaryList for summary view.
-	    			 * 
-	    			 * TODO need to consider ITERATE line type for this back-propagation due to there would be possibilities a list for the value of ITERATE will be generated or provided
-	    			 * during other rules back-propagation
-	    			 */
-	    				    			
-		    	    	LineType currentLineType = node.getLineType();
-		    	    	/*
-		    	     * following 'if' statement is to double check if the rule has any children or not.
-		    	     * it will be already determined by asking a question to a user if it doesn't have any children .
-		    	     */
-		    	   if (!ast.getWorkingMemory().containsKey(node.getVariableName()) 
-		    			   && hasChildren(node.getNodeId()) 
-		    			   && canDetermine(node, currentLineType)
-		    		  )
-		    	   {
-	    		   		ast.getSummaryList().add(node.getNodeName()); // add currentRule into SummeryList as the rule determined
-		    	   }
-	    		}
-	    		
-	    		 /*
-             * following 'if' condition is to do
-             * adding parent nodes to 'inclusiveList' if only the current node is in the 'workingMemory' list 
-             * because only parent nodes of the node that is in 'workingMemory' list are only relevant.
-             * this condition helps to do faster performance
-             */
-	    		
-            if(ast.getWorkingMemory().containsKey(node.getVariableName()) || ast.getWorkingMemory().containsKey(node.getNodeName()))
-            {
-	            	/*
-	            	 * background of following method is as listed below
-	            	 * 1. adding child rules into inclusiveList sometimes miss out relevant nodes because some nodes have more than two parents hence tracking only child nodes
-	            	 * would not be enough to find all relevant nodes. As result, finding a child node of a certain node and the parent node of child node will cover all relevant nodes for an assessment
-	            	 */
-	            	addParentIntoInclusiveList(node); // adding all parents rules into the 'inclusiveList' if there is any
-            }
-	    		
-	    	}); 	
-    }
+//    public void forwardChaining(int nodeIndex)
+//    {
+//	    	/*
+//	    	 * all nodes prior to 'nodeIndex' in the nodeList(sortedList) of nodeSet should be updated once the node at a nodeIndex is being answered for following reasons;
+//	    	 * 1. regardless the nodeList is sorted with Khan's algorithm which is based on BFS, 
+//	    	 *    all nodes in the inclusiveList and prior to the node at a nodeIndex are possibly parent nodes of the node at nodeIndex; 
+//	    	 * 2. the list may be sorted based on historical statistic record, and if it is the case then the sorting is based on Deepening and Greedy algorithm with Bayesian inferencing ;
+//	    	 * 3. there could be a node sharing parents nodes or children nodes in the list
+//	    	 * And therefore, updating all nodes in the list based on a given fact is a safe way to get a next question and complete assessment.
+//	    	 */
+//	    	
+//	    	IntStream.range(0, nodeIndex+1).forEach(i -> {
+//	    		
+//	    		Node node = nodeSet.getNodeSortedList().get(nodeIndex-i);
+//	    		
+//	    		/* updating all nodes' state prior to nodeIndex in the sorted List 
+//	    		 * by setting the value of nodeVariables and nodeName of each node in workignMemory
+//	    		 * 
+//             * if the node currently being checked exists in the 'inclusiveList'
+//             * then check if the node has any children then update the current node's state based on the children's state
+//             * Note: a question will be asked if only if the being asked question is in the inclusiveLsit, however, following condition
+//             * is to do double check if the being asked question is in the inclusiveList
+//             */
+//	    		if(ast.getInclusiveList().contains(node.getNodeName()))
+//	    		{
+//	    			/*
+//	    			 * once a user feeds an answer to the engine, the engine will propagate the entire NodeSet or Assessment base on the answer
+//	    			 * during the back-propagation, the engine checks if current node the engine is checking;
+//	    			 * 1. has been determined;
+//	    			 * 2. has any child nodes;
+//	    			 * 3. can be determined on the ground of various condition.
+//	    			 * 
+//	    			 *  once the current checking node meets the condition then add it to summaryList for summary view.
+//	    			 * 
+//	    			 * TODO need to consider ITERATE line type for this back-propagation due to there would be possibilities a list for the value of ITERATE will be generated or provided
+//	    			 * during other rules back-propagation
+//	    			 */
+//	    				    			
+//		    	    	LineType currentLineType = node.getLineType();
+//		    	    	/*
+//		    	     * following 'if' statement is to double check if the rule has any children or not.
+//		    	     * it will be already determined by asking a question to a user if it doesn't have any children .
+//		    	     */
+//		    	   if (!ast.getWorkingMemory().containsKey(node.getVariableName()) 
+//		    			   && hasChildren(node.getNodeId()) 
+//		    			   && canDetermine(node, currentLineType, goalNodeId)
+//		    		  )
+//		    	   {
+//	    		   		ast.getSummaryList().add(node.getNodeName()); // add currentRule into SummeryList as the rule determined
+//		    	   }
+//	    		}
+//	    		
+//	    		 /*
+//             * following 'if' condition is to do
+//             * adding parent nodes to 'inclusiveList' if only the current node is in the 'workingMemory' list 
+//             * because only parent nodes of the node that is in 'workingMemory' list are only relevant.
+//             * this condition helps to do faster performance
+//             */
+//	    		
+//            if(ast.getWorkingMemory().containsKey(node.getVariableName()) || ast.getWorkingMemory().containsKey(node.getNodeName()))
+//            {
+//	            	/*
+//	            	 * background of following method is as listed below
+//	            	 * 1. adding child rules into inclusiveList sometimes miss out relevant nodes because some nodes have more than two parents hence tracking only child nodes
+//	            	 * would not be enough to find all relevant nodes. As result, finding a child node of a certain node and the parent node of child node will cover all relevant nodes for an assessment
+//	            	 */
+//	            	addParentIntoInclusiveList(node); // adding all parents rules into the 'inclusiveList' if there is any
+//            }
+//	    		
+//	    	}); 	
+//    }
     
     /*
      *this method is to find all parent rules of a given rule, and add them into the ' inclusiveList' for future reference
@@ -805,8 +804,20 @@ public class InferenceEngine {
 	    	 */
 	    	List<Integer> orToChildDependencies = nodeSet.getDependencyMatrix().getOrToChildDependencyList(node.getNodeId());
 	    	List<Integer> andToChildDependencies = nodeSet.getDependencyMatrix().getAndToChildDependencyList(node.getNodeId());
-	    	
-	    	if(LineType.VALUE_CONCLUSION.equals(lineType))
+	   
+//	    	if(node.getNodeId() == goalNodeId)
+//	    	{
+//	    		if(nodeSet.getDependencyMatrix().hasMandatoryChildNode(goalNodeId))
+//	    		{
+//	    			if(!nodeSet.getDependencyMatrix().getMandatoryToChildDependencyList(goalNodeId).stream().allMatch(i -> ast.getWorkingMemory().containsKey(nodeSet.getNodeIdMap().get(i))))
+//	    			{
+//	    				return canDetermine;
+//	    			}
+//	    		}
+//	    		
+//	    	}
+	    
+    		if(LineType.VALUE_CONCLUSION.equals(lineType))
 	    	{
 	    		
 	    		boolean isPlainStatementFormat = ((ValueConclusionLine)node).getIsPlainStatementFormat();
@@ -820,6 +831,14 @@ public class InferenceEngine {
 	    			
 	    			if(isAnyOrDependencyTrue(node, orToChildDependencies)) //TRUE case
 	    			{
+	    				int nodeId = node.getNodeId();
+    				    if(nodeSet.getDependencyMatrix().hasMandatoryChildNode(nodeId))
+    					{
+    						if(!nodeSet.getDependencyMatrix().getMandatoryToChildDependencyList(nodeId).stream().allMatch(i -> ast.getWorkingMemory().containsKey(nodeSet.getNodeIdMap().get(i))))
+    						{
+    							return canDetermine;
+    						}
+    					}
 	    				canDetermine = true;
 	    				
 	    				handleValuConclusionLineTrueCase(node, isPlainStatementFormat, nodeFactValueInString);
@@ -850,6 +869,14 @@ public class InferenceEngine {
 	    			 */
 	    			else if(isAnyAndDependencyFalse(node, andToChildDependencies)) //FALSE case
 	    			{
+	    				int nodeId = node.getNodeId();
+    				    if(nodeSet.getDependencyMatrix().hasMandatoryChildNode(nodeId))
+    					{
+    						if(!nodeSet.getDependencyMatrix().getMandatoryToChildDependencyList(nodeId).stream().allMatch(i -> ast.getWorkingMemory().containsKey(nodeSet.getNodeIdMap().get(i))))
+    						{
+    							return canDetermine;
+    						}
+    					}
 	    				canDetermine = true;
 	    				
 	    				handleValueConclusionLineFalseCase(node, isPlainStatementFormat, nodeFactValueInString);
@@ -863,6 +890,8 @@ public class InferenceEngine {
 	    	{
 	    		
 	    	}
+	    	
+	    
 	    	
 	    	
 	    	return canDetermine;
