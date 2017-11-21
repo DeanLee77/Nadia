@@ -1,4 +1,4 @@
-package testingPackage;
+package testingPackage.testing4;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -19,7 +19,7 @@ public class TestingForReadingNotKnownMandatoryPossiblyAndOptionally_4 {
 	public static void main(String[] args) throws IOException{
 		
 		RuleSetReader ilr = new RuleSetReader();
-		ilr.setStreamSource(WeddingPlanner_Inference_Test_3.class.getResourceAsStream("testing NOT, KNOWN, Mandatory, Possibly, and Optionally.txt"));
+		ilr.setStreamSource(TestingForReadingNotKnownMandatoryPossiblyAndOptionally_4.class.getResourceAsStream("testing NOT, KNOWN, Mandatory, Possibly, and Optionally.txt"));
 		RuleSetParser isf = new RuleSetParser();		
 		RuleSetScanner rsc = new RuleSetScanner(ilr,isf);
 		rsc.scanRuleSet();
@@ -37,7 +37,7 @@ public class TestingForReadingNotKnownMandatoryPossiblyAndOptionally_4 {
 																   );
 		
 		List<String> comparisonFileRead = new ArrayList<>();
-		BufferedReader br = new BufferedReader(new InputStreamReader(WeddingPlanner_Inference_Test_3.class.getResourceAsStream("Comparison File For Reading Not Known Man Op Pos file.txt")));
+		BufferedReader br = new BufferedReader(new InputStreamReader(TestingForReadingNotKnownMandatoryPossiblyAndOptionally_4.class.getResourceAsStream("Comparison File For Reading Not Known Man Op Pos file.txt")));
 		String line;
 		while((line = br.readLine()) != null)
 		{

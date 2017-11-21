@@ -30,14 +30,21 @@ public class ComparisonLine extends Node{
 		 */
 		
 		this.nodeName = childText;		
-		this.variableName = tokens.tokensList.get(0);	
-		this.lhs = variableName;
 		/*
 		 * In javascript engine '=' operator means assigning a value, hence if the operator is '=' then it needs to be replaced with '=='. 
 		 */
 		int operatorIndex = tokens.tokensStringList.indexOf("O");
 		this.operator = tokens.tokensList.get(operatorIndex).matches("=")?"==":tokens.tokensList.get(operatorIndex);
 		
+		if(operator.equals("=="))
+		{
+			this.variableName = childText.split("=")[0].trim();
+		}
+		else
+		{
+			this.variableName = childText.split(this.operator)[0].trim();
+		}
+		this.lhs = variableName;
 		
 		int tokensStringListSize = tokens.tokensStringList.size();
 		String lastToken = tokens.tokensList.get(tokensStringListSize-1);

@@ -72,4 +72,9 @@ public class DependencyMatrix {
 		return IntStream.range(0, this.dependencyMatrixSize).filter(i -> i != nodeId && this.dependencyMatrix[i][nodeId] != 0)
 															.boxed().collect(Collectors.toList());
 	}
+	
+	public boolean hasMandatoryChildNode(int nodeId)
+	{
+		return getMandatoryToChildDependencyList(nodeId).size() > 0;
+	}
 }
