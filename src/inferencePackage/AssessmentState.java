@@ -111,7 +111,10 @@ public class AssessmentState {
 	
 	public void addItemToSummaryList(String node)
 	{
-		this.summaryList.add(node);
+		if(!this.workingMemory.containsKey(node))
+		{
+			this.summaryList.add(node);
+		}
 	}
 	public List<String> getSummaryList()
 	{

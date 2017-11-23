@@ -76,7 +76,7 @@ public class InferenceEngine {
      */
     public List<String> getListOfVariableNameAndValueOfNodes()
     {
-	    	List<String> variableNameList = null;
+	    	List<String> variableNameList = new ArrayList<>();
 	    	nodeSet.getNodeMap().values().stream().forEachOrdered(node -> {
 	    		variableNameList.add(node.getVariableName());
 	    		FactValueType nodeFactValueType = node.getFactValue().getType();
@@ -320,7 +320,7 @@ public class InferenceEngine {
 	    			FactValue tempFv= ast.getWorkingMemory().get(nodeValueString);
 	    			if(tempFv.getType().equals(FactValueType.LIST))
 	    			{
-	    				fvt = ((FactValue)((FactListValue)tempFv).getValue().get(0)).getType();
+	    				fvt = ((FactValue)((FactListValue<?>)tempFv).getValue().get(0)).getType();
 	    			}
 	    			else
 	    			{
@@ -335,46 +335,6 @@ public class InferenceEngine {
 	    		factValueTypeMap.put(nodeVariableName, fvt);
 	    		
 	    	}
-//	    	else
-//	    	{
-//	        	FactValue factValueForNodeVariable = tempFactMap.get(nodeVariableName) == null? tempInputMap.get(nodeVariableName):tempFactMap.get(nodeVariableName);
-//	        	FactValueType factValueTypeForNodeVariable = factValueForNodeVariable != null? factValueForNodeVariable.getType():null;
-//	        	FactValue factValueForNodeValue = tempFactMap.get(nodeValueString) == null? tempInputMap.get(nodeValueString):tempFactMap.get(nodeValueString);
-//	        	FactValueType factValueTypeForNodeValue = factValueForNodeValue != null? factValueForNodeValue.getType():null;
-//	        	if((factValueTypeForNodeVariable != null && factValueTypeForNodeVariable.equals(FactValueType.BOOLEAN)) || (factValueTypeForNodeValue != null && factValueTypeForNodeValue.equals(FactValueType.BOOLEAN)))
-//	        	{
-//	        		fvt = FactValueType.BOOLEAN;
-//	        	}
-//	        	else if((factValueTypeForNodeVariable != null && factValueTypeForNodeVariable.equals(FactValueType.DATE)) || (factValueTypeForNodeValue != null && factValueTypeForNodeValue.equals(FactValueType.DATE)))
-//	        	{
-//	        		fvt = FactValueType.DATE;
-//	        	}
-//	        	else if((factValueTypeForNodeVariable != null && (factValueTypeForNodeVariable.equals(FactValueType.DECIMAL) || factValueTypeForNodeVariable.equals(FactValueType.DOUBLE))) || (factValueTypeForNodeValue != null && (factValueTypeForNodeValue.equals(FactValueType.DECIMAL) || factValueTypeForNodeValue.equals(FactValueType.DOUBLE))))
-//	        	{
-//	        		fvt = FactValueType.DOUBLE;
-//	        	}
-//	        	else if((factValueTypeForNodeVariable != null && factValueTypeForNodeVariable.equals(FactValueType.HASH)) || (factValueTypeForNodeValue != null && factValueTypeForNodeValue.equals(FactValueType.HASH)))
-//	        	{
-//	        		fvt = FactValueType.HASH;
-//	        	}
-//	        	else if((factValueTypeForNodeVariable != null && factValueTypeForNodeVariable.equals(FactValueType.URL)) || (factValueTypeForNodeValue != null && factValueTypeForNodeValue.equals(FactValueType.URL)))
-//	        	{
-//	        		fvt = FactValueType.URL;
-//	        	}
-//	        	else if((factValueTypeForNodeVariable != null && factValueTypeForNodeVariable.equals(FactValueType.UUID)) || (factValueTypeForNodeValue != null && factValueTypeForNodeValue.equals(FactValueType.UUID)))
-//	        	{
-//	        		fvt = FactValueType.UUID;
-//	        	}
-//	        	else if((factValueTypeForNodeVariable != null && (factValueTypeForNodeVariable.equals(FactValueType.INTEGER) || factValueTypeForNodeVariable.equals(FactValueType.NUMBER))) || (factValueTypeForNodeValue != null && (factValueTypeForNodeValue.equals(FactValueType.INTEGER) || factValueTypeForNodeValue.equals(FactValueType.NUMBER))))
-//	        	{
-//	        		fvt = FactValueType.INTEGER;
-//	        	}
-//	        	else if((factValueTypeForNodeVariable != null && (factValueTypeForNodeVariable.equals(FactValueType.STRING)|| factValueTypeForNodeVariable.equals(FactValueType.TEXT))) || (factValueTypeForNodeValue != null && (factValueTypeForNodeValue.equals(FactValueType.STRING) || factValueTypeForNodeValue.equals(FactValueType.TEXT))))
-//	        	{
-//	        		fvt = FactValueType.STRING;
-//	        	}
-//	    	}
-//	
 	    	
 	    	return factValueTypeMap;
     }
@@ -454,10 +414,6 @@ public class InferenceEngine {
 	    			}
 	    		}
 	    	}
-	    	else if(lineType.equals(LineType.EXPR_CONCLUSION))
-	    	{
-	    		
-	    	}
 	    	else if(lineType.equals(LineType.ITERATE))
 	    	{
 	    		
@@ -523,51 +479,34 @@ public class InferenceEngine {
 	    		fv = FactValue.parseUUID((String)nodeValue);
 	    	}
 	    	
-	    	
-	    	/*
-	    	 * once an answer is given to the engine, then followings need to be done;
-	    	 *  1. The engine needs to know if the answer is for the node's variableName or the node's value(FactValue)
-	    	 *  2. set a value of a question, which is a value for a variableName or value of the node, being asked to a user in a workingMemory
-	    	 *  3. set a value of the node itself in a workingMemory.
-	    	 *  4. back propagate up until no longer forward chaining possible.
-	    	 *     
-	    	 */
-//	    	if(questionName.equals(targetNode.getVariableName()))
-//	    	{
-//	        	ast.setFact(targetNode.getVariableName(), fv);
-//	    	}
-//	    	else if(questionName.equals(targetNode.getFactValue().getValue().toString()))
-//	    	{
-//	        	ast.setFact(targetNode.getFactValue().getValue().toString(), fv);
-//	    	}
-	    	
-	   
-	    	
 	    	if(fv != null)
 	    	{
 	    		ast.setFact(questionName, fv);
-	    		ast.getSummaryList().add(questionName);
+			ast.addItemToSummaryList(questionName);// add currentRule into SummeryList as the rule determined
 
 	    		
 	    		if(targetNode.getLineType().equals(LineType.VALUE_CONCLUSION) && !((ValueConclusionLine)targetNode).getIsPlainStatementFormat())
 	    		{
 	    			FactValue selfEvalFactValue = targetNode.selfEvaluate(ast.getWorkingMemory(), this.scriptEngine);
 		    		ast.setFact(targetNode.getNodeName(), selfEvalFactValue); // add the value of targetNode itself into the workingMemory	
-		        	ast.getSummaryList().add(targetNode.getNodeName());
+				ast.addItemToSummaryList(targetNode.getNodeName());// add currentRule into SummeryList as the rule determined
 	    		}
 	    		else if(targetNode.getLineType().equals(LineType.COMPARISON))
 	    		{
 	    			FactValue rhsValue = ((ComparisonLine)targetNode).getRHS();
 	    			if((rhsValue.getType().equals(FactValueType.STRING) 
-	    					&& (nodeSet.getInputMap().containsKey(rhsValue.getValue().toString()) || nodeSet.getFactMap().containsKey(rhsValue.getValue().toString()))
 	    					&& ast.getWorkingMemory().containsKey(rhsValue.getValue().toString())) 
 	    				|| !rhsValue.getType().equals(FactValueType.STRING)
     				  )
 	    			{
 	    				FactValue selfEvalFactValue = targetNode.selfEvaluate(ast.getWorkingMemory(), this.scriptEngine);
 	    				ast.setFact(targetNode.getNodeName(), selfEvalFactValue); // add the value of targetNode itself into the workingMemory	
-			        	ast.getSummaryList().add(targetNode.getNodeName());
+					ast.addItemToSummaryList(targetNode.getNodeName());// add currentRule into SummeryList as the rule determined
 	    			}
+	    			
+	    		}
+	    		else if(targetNode.getLineType().equals(LineType.ITERATE))
+	    		{
 	    			
 	    		}
 	    	 	
@@ -589,7 +528,7 @@ public class InferenceEngine {
     			Node tempNode = nodeSortedList.get(sortedListSize - (i+1));
 			LineType lineType = tempNode.getLineType();
 			
-    			if(nodeIndex < (sortedListSize - (i+1)))
+    			if(nodeIndex < (sortedListSize - (i+1))) //case of all nodes located after the nodeIndex
     			{
     				
     				if(hasChildren(tempNode.getNodeId()))
@@ -597,26 +536,33 @@ public class InferenceEngine {
     					 if(!ast.getWorkingMemory().containsKey(tempNode.getVariableName()) 
 	    		    			   && canDetermine(tempNode, lineType)
 	    		    		   )
-	    		    	   {
-	    	    		   		ast.getSummaryList().add(tempNode.getNodeName()); // add currentRule into SummeryList as the rule determined
-	    		    	   }
+		    		    	 {
+     						ast.addItemToSummaryList(tempNode.getNodeName());// add currentRule into SummeryList as the rule determined
+		    		    	 }
     				}
     				else
     				{
     					/*
     					 * ValueConclusionLine does not need to be considered here due to the reason that
-    					 * child case of ValueConclusionLine is 'A-statement' or 'A IS IN LIST: B'
-    					 * but these two cases should not re-evaluated here if it was asked because it should be same node.
+    					 * child case of ValueConclusionLine in 'A-statement' format should be in the workingMemory if it is already asked.
     					 */
-    					if(lineType.equals(LineType.COMPARISON))
+    					if(lineType.equals(LineType.VALUE_CONCLUSION) 
+							&& !((ValueConclusionLine)tempNode).getIsPlainStatementFormat() 
+							&& ast.getWorkingMemory().containsKey(((ValueConclusionLine)tempNode).getVariableName()))
+    					{
+						FactValue fv = tempNode.selfEvaluate(ast.getWorkingMemory(), scriptEngine);
+
+    						ast.setFact(tempNode.getNodeName(), fv);
+    						ast.addItemToSummaryList(tempNode.getNodeName());// add currentRule into SummeryList as the rule determined
+    					}
+    					else if(lineType.equals(LineType.COMPARISON) 
+    							&& ast.getWorkingMemory().containsKey(((ComparisonLine)tempNode).getLHS())
+    							&& ast.getWorkingMemory().containsKey(((ComparisonLine)tempNode).getRHS().getValue().toString())) 
         				{
     						FactValue fv = tempNode.selfEvaluate(ast.getWorkingMemory(), scriptEngine);
-        					if(fv != null)
-        					{
-        						ast.setFact(tempNode.getNodeName(), fv);
-        						ast.getSummaryList().add(tempNode.getNodeName()); // add currentRule into SummeryList as the rule determined
-        					}
-        					
+
+    						ast.setFact(tempNode.getNodeName(), fv);
+    						ast.addItemToSummaryList(tempNode.getNodeName());// add currentRule into SummeryList as the rule determined
         				}
         				else if(lineType.equals(LineType.ITERATE))
         				{
@@ -625,109 +571,36 @@ public class InferenceEngine {
     				}
     				
     			}
-    			else
+    			else // case of all nodes located before the nodeIndex
     			{
+    				/*
+    				 * it the tempNode is located before the nodeIndex then there is need to check whether or not the tempNode is in the inclusiveList due to the reason that
+    				 * evaluating only relevant node could speed the propagation faster. In addition only relevant nodes can be traced by checking the inclusiveList.
+    				 */
     				if(ast.getInclusiveList().contains(tempNode.getNodeName()))
 	    	    		{
 	    	    			/*
 	    	    			 * once a user feeds an answer to the engine, the engine will propagate the entire NodeSet or Assessment base on the answer
-	    	    			 * during the back-propagation, the engine checks if current node the engine is checking;
+	    	    			 * during the back-propagation, the engine checks if current node;
 	    	    			 * 1. has been determined;
 	    	    			 * 2. has any child nodes;
-	    	    			 * 3. can be determined on the ground of various condition.
+	    	    			 * 3. can be determined with given facts in the workingMemory.
 	    	    			 * 
-	    	    			 *  once the current checking node meets the condition then add it to summaryList for summary view.
-	    	    			 * 
-	    	    			 */
-	    	    				    			
-	    		    	    
-	    		    	    	/*
-	    		    	     * following 'if' statement is to double check if the rule has any children or not.
-	    		    	     * it will be already determined by asking a question to a user if it doesn't have any children .
+    	    			     * once the current checking node meets the condition then add it to the summaryList for summary view.
 	    		    	     */
 	    		    	   if (!ast.getWorkingMemory().containsKey(tempNode.getVariableName()) 
 	    		    			   && hasChildren(tempNode.getNodeId()) 
 	    		    			   && canDetermine(tempNode, lineType)
 	    		    		  )
 	    		    	   {
-	    	    		   		ast.getSummaryList().add(tempNode.getNodeName()); // add currentRule into SummeryList as the rule determined
+	    		    		   ast.addItemToSummaryList(tempNode.getNodeName()); // add currentRule into SummeryList as the rule determined
 	    		    	   }
 	    	    		}
     			}
     		});
     		
     }
-//    public void forwardChaining(int nodeIndex)
-//    {
-//	    	/*
-//	    	 * all nodes prior to 'nodeIndex' in the nodeList(sortedList) of nodeSet should be updated once the node at a nodeIndex is being answered for following reasons;
-//	    	 * 1. regardless the nodeList is sorted with Khan's algorithm which is based on BFS, 
-//	    	 *    all nodes in the inclusiveList and prior to the node at a nodeIndex are possibly parent nodes of the node at nodeIndex; 
-//	    	 * 2. the list may be sorted based on historical statistic record, and if it is the case then the sorting is based on Deepening and Greedy algorithm with Bayesian inferencing ;
-//	    	 * 3. there could be a node sharing parents nodes or children nodes in the list
-//	    	 * And therefore, updating all nodes in the list based on a given fact is a safe way to get a next question and complete assessment.
-//	    	 */
-//	    	
-//	    	IntStream.range(0, nodeIndex+1).forEach(i -> {
-//	    		
-//	    		Node node = nodeSet.getNodeSortedList().get(nodeIndex-i);
-//	    		
-//	    		/* updating all nodes' state prior to nodeIndex in the sorted List 
-//	    		 * by setting the value of nodeVariables and nodeName of each node in workignMemory
-//	    		 * 
-//             * if the node currently being checked exists in the 'inclusiveList'
-//             * then check if the node has any children then update the current node's state based on the children's state
-//             * Note: a question will be asked if only if the being asked question is in the inclusiveLsit, however, following condition
-//             * is to do double check if the being asked question is in the inclusiveList
-//             */
-//	    		if(ast.getInclusiveList().contains(node.getNodeName()))
-//	    		{
-//	    			/*
-//	    			 * once a user feeds an answer to the engine, the engine will propagate the entire NodeSet or Assessment base on the answer
-//	    			 * during the back-propagation, the engine checks if current node the engine is checking;
-//	    			 * 1. has been determined;
-//	    			 * 2. has any child nodes;
-//	    			 * 3. can be determined on the ground of various condition.
-//	    			 * 
-//	    			 *  once the current checking node meets the condition then add it to summaryList for summary view.
-//	    			 * 
-//	    			 * TODO need to consider ITERATE line type for this back-propagation due to there would be possibilities a list for the value of ITERATE will be generated or provided
-//	    			 * during other rules back-propagation
-//	    			 */
-//	    				    			
-//		    	    	LineType currentLineType = node.getLineType();
-//		    	    	/*
-//		    	     * following 'if' statement is to double check if the rule has any children or not.
-//		    	     * it will be already determined by asking a question to a user if it doesn't have any children .
-//		    	     */
-//		    	   if (!ast.getWorkingMemory().containsKey(node.getVariableName()) 
-//		    			   && hasChildren(node.getNodeId()) 
-//		    			   && canDetermine(node, currentLineType, goalNodeId)
-//		    		  )
-//		    	   {
-//	    		   		ast.getSummaryList().add(node.getNodeName()); // add currentRule into SummeryList as the rule determined
-//		    	   }
-//	    		}
-//	    		
-//	    		 /*
-//             * following 'if' condition is to do
-//             * adding parent nodes to 'inclusiveList' if only the current node is in the 'workingMemory' list 
-//             * because only parent nodes of the node that is in 'workingMemory' list are only relevant.
-//             * this condition helps to do faster performance
-//             */
-//	    		
-//            if(ast.getWorkingMemory().containsKey(node.getVariableName()) || ast.getWorkingMemory().containsKey(node.getNodeName()))
-//            {
-//	            	/*
-//	            	 * background of following method is as listed below
-//	            	 * 1. adding child rules into inclusiveList sometimes miss out relevant nodes because some nodes have more than two parents hence tracking only child nodes
-//	            	 * would not be enough to find all relevant nodes. As result, finding a child node of a certain node and the parent node of child node will cover all relevant nodes for an assessment
-//	            	 */
-//	            	addParentIntoInclusiveList(node); // adding all parents rules into the 'inclusiveList' if there is any
-//            }
-//	    		
-//	    	}); 	
-//    }
+
     
     /*
      *this method is to find all parent rules of a given rule, and add them into the ' inclusiveList' for future reference
@@ -754,11 +627,7 @@ public class InferenceEngine {
 	    	boolean canDetermine = false;
 	    	/*
 	    	 * Any type of node/line can have either 'OR' or 'AND' type of child nodes
-	    	 * do following logic to check whether or not the node is determinable
-	    	 * 1. check the node/line type
-	    	 * 2. within the node/line type, check if it has 'OR' child nodes or 'AND' child nodes ( nodeSet.getDependencyMatrix.getOrOutDependency(node.getNodeId()).isEmpty() or .getAndOutDependency(node.getNodeId()).isEmpty()).
-	    	 *    Apparently, dependencyType contains information of 'NOT', 'KNOWN', 'MANDATORY', 'OPTIONAL', and/or 'POSSIBLE' so that dependencyType must be checked to propagate.
-	    	 * 
+	    	 *  
 	    	 * -----ValueConclusion Type
 	    	 * there will be two cases for this type
 	    	 *    V.1 the format of node is 'A -statement' so that 'TRUE' or "FALSE' value outcome case
@@ -805,17 +674,6 @@ public class InferenceEngine {
 	    	List<Integer> orToChildDependencies = nodeSet.getDependencyMatrix().getOrToChildDependencyList(node.getNodeId());
 	    	List<Integer> andToChildDependencies = nodeSet.getDependencyMatrix().getAndToChildDependencyList(node.getNodeId());
 	   
-//	    	if(node.getNodeId() == goalNodeId)
-//	    	{
-//	    		if(nodeSet.getDependencyMatrix().hasMandatoryChildNode(goalNodeId))
-//	    		{
-//	    			if(!nodeSet.getDependencyMatrix().getMandatoryToChildDependencyList(goalNodeId).stream().allMatch(i -> ast.getWorkingMemory().containsKey(nodeSet.getNodeIdMap().get(i))))
-//	    			{
-//	    				return canDetermine;
-//	    			}
-//	    		}
-//	    		
-//	    	}
 	    
     		if(LineType.VALUE_CONCLUSION.equals(lineType))
 	    	{
@@ -888,7 +746,30 @@ public class InferenceEngine {
 	    	}
 	    	else if(LineType.EXPR_CONCLUSION.equals(lineType))
 	    	{
-	    		
+	    		if(andToChildDependencies.isEmpty() && !orToChildDependencies.isEmpty()) // rule has only 'OR' child rules 
+	    		{
+	    			/*
+	    			 * the node might have a 'MANDATORY OR' child nodes so that the mandatory child nodes need being handled
+	    			 */
+	    			if(hasAnyOrChildEvaluated(node.getNodeId(), orToChildDependencies))
+	    			{
+	    				canDetermine = true;
+	    				ast.setFact(node.getNodeName(), node.selfEvaluate(ast.getWorkingMemory(), scriptEngine));
+	    				ast.addItemToSummaryList(node.getNodeName());
+	    			}
+	    		}
+	    		else if(!andToChildDependencies.isEmpty() && orToChildDependencies.isEmpty())// node has only 'AND' child nodes
+	    		{
+	    			/*
+	    			 * in this case they are all 'MANDATORY' child nodes
+	    			 */
+	    			if(hasAllAndChildEvaluated(andToChildDependencies))
+	    			{
+	    				canDetermine = true;
+	    				ast.setFact(node.getNodeName(), node.selfEvaluate(ast.getWorkingMemory(), scriptEngine));
+	    				ast.addItemToSummaryList(node.getNodeName());
+	    			}
+	    		}
 	    	}
 	    	
 	    
@@ -897,6 +778,26 @@ public class InferenceEngine {
 	    	return canDetermine;
 	}
     
+	
+	private boolean hasAnyOrChildEvaluated(int parentNodeId, List<Integer>orToChildDependencies)
+	{
+		boolean hasAnyOrChildEvaluated = orToChildDependencies.stream().anyMatch(i -> 
+																					ast.getWorkingMemory().containsKey(nodeSet.getNodeIdMap().get(i)) 
+																					|| (ast.getWorkingMemory().containsKey(nodeSet.getNodeIdMap().get(i)) 
+																							&& (nodeSet.getDependencyMatrix().getDependencyType(parentNodeId, i) & DependencyType.getMandatory()) == DependencyType.getMandatory()
+																						)
+																			   );
+		
+		return hasAnyOrChildEvaluated;
+	}
+	
+	private boolean hasAllAndChildEvaluated(List<Integer> andToChildDependencies)
+	{
+		boolean hasAllAndChildEvaluated = andToChildDependencies.stream().allMatch(i -> ast.getWorkingMemory().containsKey(nodeSet.getNodeIdMap().get(i)));
+				
+		return hasAllAndChildEvaluated;
+	}
+	
 	private void handleValuConclusionLineTrueCase(Node node, boolean isPlainStatementFormat, String nodeFactValueInString)
 	{
 		ast.setFact(node.getNodeName(), FactValue.parse(true));
@@ -911,7 +812,7 @@ public class InferenceEngine {
 			{
 				ast.setFact(node.getVariableName(), node.getFactValue());
 			}
-			ast.getSummaryList().add(node.getVariableName());
+			ast.addItemToSummaryList(node.getVariableName());
 		}
 	}
 	private void handleValueConclusionLineFalseCase(Node node, boolean isPlainStatementFormat, String nodeFactValueInString)
@@ -928,7 +829,7 @@ public class InferenceEngine {
 			{
 				ast.setFact(node.getVariableName(), FactValue.parse("NOT "+nodeFactValueInString));
 			}
-			ast.getSummaryList().add(node.getVariableName());
+			ast.addItemToSummaryList(node.getVariableName());
 		}
 	}
     
@@ -1003,7 +904,7 @@ public class InferenceEngine {
 	        				if(!ast.getWorkingMemory().containsKey("KNOWN "+nodeSet.getNodeIdMap().get(item)))
 	        				{
 	        					ast.setFact("KNOWN "+nodeSet.getNodeIdMap().get(item), FactBooleanValue.parse(true));
-		        				ast.getSummaryList().add("KNOWN "+nodeSet.getNodeIdMap().get(item));
+	        					ast.addItemToSummaryList("KNOWN "+nodeSet.getNodeIdMap().get(item));
 	        				}
 	        				
 	        			}
@@ -1021,7 +922,7 @@ public class InferenceEngine {
 	        				if(!ast.getWorkingMemory().containsKey("NOT "+nodeSet.getNodeIdMap().get(item)))
 	        				{
 	        					ast.setFact("NOT "+nodeSet.getNodeIdMap().get(item), FactBooleanValue.parse(true));
-		        				ast.getSummaryList().add("NOT "+nodeSet.getNodeIdMap().get(item));
+	        					ast.addItemToSummaryList("NOT "+nodeSet.getNodeIdMap().get(item));
 	        				}
 
 	        			}
@@ -1071,8 +972,6 @@ public class InferenceEngine {
     							&&((nodeSet.getDependencyMatrix().getDependencyType(targetNode.getNodeId(), item)&DependencyType.getNot()) != DependencyType.getNot())
     							&&((nodeSet.getDependencyMatrix().getDependencyType(targetNode.getNodeId(), item) & DependencyType.getKnown()) != DependencyType.getKnown()))
             			{
-//            				ast.setFact(nodeSet.getNodeIdMap().get(item), FactBooleanValue.parse(false));
-//            				ast.getSummaryList().add(nodeSet.getNodeIdMap().get(item));
                	 		falseAndList.add(item);
             			}
             			else if(ast.getWorkingMemory().get(nodeSet.getNodeIdMap().get(item)).getValue().equals(true)
@@ -1083,7 +982,7 @@ public class InferenceEngine {
             				if(!ast.getWorkingMemory().containsKey("NOT "+nodeSet.getNodeIdMap().get(item)))
             				{
             					ast.setFact("NOT "+nodeSet.getNodeIdMap().get(item), FactBooleanValue.parse(false));
-                				ast.getSummaryList().add("NOT "+nodeSet.getNodeIdMap().get(item));
+            					ast.addItemToSummaryList("NOT "+nodeSet.getNodeIdMap().get(item));
             				}
             				
                	 		falseAndList.add(item);
@@ -1093,7 +992,7 @@ public class InferenceEngine {
             				if(!ast.getWorkingMemory().containsKey("NOT KNOWN "+nodeSet.getNodeIdMap().get(item)))
             				{
             					ast.setFact("NOT KNOWN "+nodeSet.getNodeIdMap().get(item), FactBooleanValue.parse(false));
-                				ast.getSummaryList().add("NOT KNOWN "+nodeSet.getNodeIdMap().get(item));
+            					ast.addItemToSummaryList("NOT KNOWN "+nodeSet.getNodeIdMap().get(item));
             				}
             				
                	 		falseAndList.add(item);
@@ -1139,8 +1038,6 @@ public class InferenceEngine {
     			if(ast.getWorkingMemory().get(nodeSet.getNodeIdMap().get(item)).getValue().equals(true)
 				&&((nodeSet.getDependencyMatrix().getDependencyType(targetNode.getNodeId(), item)&DependencyType.getNot()) != DependencyType.getNot()))
     			{
-//    				ast.setFact(nodeSet.getNodeIdMap().get(item), FactBooleanValue.parse(true));
-//    				ast.getSummaryList().add(nodeSet.getNodeIdMap().get(item));
     				determinedTrueAndChildDependencies.add(item);
     			}
     			else if((nodeSet.getDependencyMatrix().getDependencyType(targetNode.getNodeId(), item)&DependencyType.getKnown()) == DependencyType.getKnown()
@@ -1149,7 +1046,7 @@ public class InferenceEngine {
     				if(!ast.getWorkingMemory().containsKey("KNOWN "+nodeSet.getNodeIdMap().get(item)))
     				{
     					ast.setFact("KNOWN "+nodeSet.getNodeIdMap().get(item), FactBooleanValue.parse(false));
-        				ast.getSummaryList().add("KNOWN "+nodeSet.getNodeIdMap().get(item));
+    					ast.addItemToSummaryList("KNOWN "+nodeSet.getNodeIdMap().get(item));
     				}
     				
     				determinedTrueAndChildDependencies.add(item);
@@ -1161,7 +1058,7 @@ public class InferenceEngine {
     				if(!ast.getWorkingMemory().containsKey("NOT "+nodeSet.getNodeIdMap().get(item)))
     				{
     					ast.setFact("NOT "+nodeSet.getNodeIdMap().get(item), FactBooleanValue.parse(false));
-        				ast.getSummaryList().add("NOT "+nodeSet.getNodeIdMap().get(item));
+    					ast.addItemToSummaryList("NOT "+nodeSet.getNodeIdMap().get(item));
     				}
     				
     				determinedTrueAndChildDependencies.add(item);
@@ -1190,7 +1087,7 @@ public class InferenceEngine {
 	    																&& !ast.getWorkingMemory().containsKey("NOT KNOWN "+nodeSet.getNodeIdMap().get(item)))
 	        														{
 	        															ast.setFact("NOT KNOWN "+nodeSet.getNodeIdMap().get(item), FactBooleanValue.parse(false));
-	        								            					ast.getSummaryList().add("NOT KNOWN "+nodeSet.getNodeIdMap().get(item));
+	        															ast.addItemToSummaryList("NOT KNOWN "+nodeSet.getNodeIdMap().get(item));
 	        														}
 	        														else if(ast.getWorkingMemory().get(nodeSet.getNodeIdMap().get(item)) != null
 	        																 &&ast.getWorkingMemory().get(nodeSet.getNodeIdMap().get(item)).getValue().equals(false)
@@ -1198,14 +1095,14 @@ public class InferenceEngine {
 	        																 && !ast.getWorkingMemory().containsKey("NOT "+nodeSet.getNodeIdMap().get(item)))
 														        {
 	        															ast.setFact("NOT "+nodeSet.getNodeIdMap().get(item), FactBooleanValue.parse(true));
-	        										    					ast.getSummaryList().add("NOT "+nodeSet.getNodeIdMap().get(item));
+	        															ast.addItemToSummaryList("NOT "+nodeSet.getNodeIdMap().get(item));
 														        }
 	        														else if(ast.getWorkingMemory().get(nodeSet.getNodeIdMap().get(item))  != null
 	        																 &&(nodeSet.getDependencyMatrix().getDependencyType(targetNode.getNodeId(), item)&DependencyType.getKnown()) == DependencyType.getKnown()
 	        																 && !ast.getWorkingMemory().containsKey("KNOWN "+nodeSet.getNodeIdMap().get(item)))
 	        														{
 	        															ast.setFact("KNOWN "+nodeSet.getNodeIdMap().get(item), FactBooleanValue.parse(true));
-	    										    						ast.getSummaryList().add("KNOWN "+nodeSet.getNodeIdMap().get(item));
+	        															ast.addItemToSummaryList("KNOWN "+nodeSet.getNodeIdMap().get(item));
 	        														}
 	        														else if(ast.getWorkingMemory().get(nodeSet.getNodeIdMap().get(item)) != null
 	        																 &&ast.getWorkingMemory().get(nodeSet.getNodeIdMap().get(item)).getValue().equals(true)
@@ -1213,7 +1110,7 @@ public class InferenceEngine {
 	        																 && !ast.getWorkingMemory().containsKey("NOT "+nodeSet.getNodeIdMap().get(item)))
 														        {
 	        															ast.setFact("NOT "+nodeSet.getNodeIdMap().get(item), FactBooleanValue.parse(false));
-	        										    					ast.getSummaryList().add("NOT "+nodeSet.getNodeIdMap().get(item));
+	        															ast.addItemToSummaryList("NOT "+nodeSet.getNodeIdMap().get(item));
 														        }
 	        														
 	        														

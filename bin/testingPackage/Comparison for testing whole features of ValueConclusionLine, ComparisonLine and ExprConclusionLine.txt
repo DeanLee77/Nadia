@@ -1,0 +1,58 @@
+person qualifies for the grant
+	AND NOT person’s name = "troy jones"
+	AND person’s dob > 01/01/1990          
+	AND person is eligible for a premium service
+
+person is eligible for a premium service
+	AND person's drinking habit = "frequent drinker"
+	AND person's account IS IN LIST: premium account type     
+	AND person’s nationality = "Australian"
+
+person's drinking habit IS "social drinker"
+	AND number of drinks the person consumes a week > 0
+	AND number of drinks the person consumes a week < 3
+
+person's drinking habit IS "frequent drinker"  
+	AND number of drinks the person consumes a week > 3
+	AND number of drinks the person consumes a week < 7
+
+person's drinking habit IS "heavy drinker" 
+	AND number of drinks the person consumes a week > 7 
+
+
+number of drinks the person consumes a week IS CALC ( number of drinks the person consumes an hour * hours of drinks a day * 5)
+	NEEDS number of drinks the person consumes an hour
+	NEEDS hours of drinks a day 
+	
+person's nationality IS “Australian”
+	OR NOT Rule one
+	OR MANDATORY Rule two
+
+Rule one
+	AND person's citizenship status = "canceled"
+	AND MANDATORY person's legally yearly period of stay in Australia <= 20 
+	AND NOT person's permanent residentship status = "canceled"
+
+Rule two
+	AND citizenship testing of person's parents
+		OR one of person's parents is Australian
+		OR both of person's parents are Australian
+		OR MANDATORY all grand parents of the person were Australian
+	AND the person was born in Australia
+	AND we have person's name and dob
+		AND KNOWN person's name
+		AND KNOWN person's dob  
+	AND we have the person's passport
+	AND person's name IS IN LIST: name list
+	AND person made it to Las Vegas
+		AND NOT the person missed the flight  
+
+we have the person's passport
+	AND person has an Australian passport
+		AND person passport type = "Australian"
+		AND person passport issued country = "Australia"
+		AND person age >18
+		AND a number of countries the person has travelled so far >= 40
+	AND MANDATORY person has not lost the passport
+		OR current location of person's passport = the place the person normally locate the passport
+		OR NOT person's passport is in a police station

@@ -18,7 +18,8 @@ import ruleParser.Tokens;
 
 public class ExprConclusionLine extends Node{
 
-	
+	private FactValue equation;
+
 	public ExprConclusionLine(String parentText, Tokens tokens) {
 		super(parentText, tokens);
 	}
@@ -30,10 +31,14 @@ public class ExprConclusionLine extends Node{
 		variableName = tempArray[0].trim();
 		int indexOfCInTokensStringList = tokens.tokensStringList.indexOf("C");
 		this.setValue(tokens.tokensStringList.get(indexOfCInTokensStringList).trim(), tokens.tokensList.get(indexOfCInTokensStringList).trim());
+		this.equation = this.value;
 	}
 
 	
-	
+	public FactValue getEquation()
+	{
+		return this.equation;
+	}
 	
 	@Override
 	public LineType getLineType()
@@ -48,7 +53,7 @@ public class ExprConclusionLine extends Node{
 		 * calculation can only handle int, double(long) and difference in years between two dates at the moment.
 		 * if difference in days or months is required then new 'keyword' must be introduced such as 'Diff Years', 'Diff Days', or 'Diff Months'
 		 */
-		String valueOfFactValue = (String)this.getFactValue().getValue();
+		String euqationInString = this.equation.getValue().toString();
 		Pattern pattern = Pattern.compile("[-+/*()0-9?:;,.\"](\\s*)");
 		Pattern datePattern = Pattern.compile("([0-2]?[0-9]|3[0-1])/(0?[0-9]|1[0-2])/([0-9][0-9])?[0-9][0-9]|([0-9][0-9])?[0-9][0-9]/(0?[0-9]|1[0-2])/([0-2]?[0-9]|3[0-1])");
 
@@ -61,12 +66,12 @@ public class ExprConclusionLine extends Node{
 		 *  
 		 */
 		
-		String script = valueOfFactValue;
+		String script = euqationInString;
 		final String tempScript = script;
 
-		if( valueOfFactValue.matches(pattern.toString()))
+		if( euqationInString.matches(pattern.toString()))
 		{
-			Arrays.asList(valueOfFactValue.split(pattern.toString())).stream().forEachOrdered(item -> {
+			Arrays.asList(euqationInString.split(pattern.toString())).stream().forEachOrdered(item -> {
 				tempScript.replaceAll(item.trim(), workingMemory.get(item.trim()).toString().trim());
 			});
 		}

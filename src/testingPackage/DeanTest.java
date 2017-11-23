@@ -59,6 +59,10 @@ public class DeanTest {
 		
 		FactIntegerValue fiv = FactIntegerValue.parse(12);
 		System.out.println(fiv.getValue().toString());
+		
+		String exString = "number of drinks the person consumes a week IS CALC ( (number of drinks the person consumes an hour * hours of drinks a day+(one day/two day))*5)";
+		Tokens tks = Tokenizer.getTokens(exString);
+		System.out.println(tks.tokensString);
 //		RuleSetReader ilr = new RuleSetReader();
 //		ilr.setStreamSource(TopoSortingTest.class.getResourceAsStream("testing NOT and KNOWN.txt"));
 //		RuleSetParser isf = new RuleSetParser();		
