@@ -91,15 +91,16 @@ public class RuleSetParser implements IScanFeeder {
 						case 1:  //valueConclusionMatcher case
 							data = new ValueConclusionLine(parentText, tokens);
 							
-							if(matcher.group(2) != null || tokens.tokensString.equals("L"))
+							if(matcher.group(2) != null 
+								|| (tokens.tokensString.equals("L") || tokens.tokensString.equals("LM") || tokens.tokensString.equals("ML") || tokens.tokensString.equals("M")))
 							{
 								String variableName = data.getVariableName();
 								Node tempNode = data;
 								/*
-								 * following lines are to look for any nodes having a its nodeName with 'needs ' word or any operators due to the reason that
+								 * following lines are to look for any nodes having a its nodeName with any operators due to the reason that
 								 * the node could be used to define a node previously used as a child node for other nodes
 								 */
-								List<String> possibleParentNodeKeyList = nodeSet.getNodeMap().keySet().stream().filter(key -> key.matches("(.[^\\(]+)?(\\s[<>=]+\\s?)?(WANTS |NEEDS )?("+variableName+")(\\s[<>=]+)*(.[^\\)(IS)]+)*")).collect(Collectors.toList());
+								List<String> possibleParentNodeKeyList = nodeSet.getNodeMap().keySet().stream().filter(key -> key.matches("(.+)?(\\s[<>=]+\\s?)?("+variableName+")(\\s[<>=]+)*(.(?!(IS)))*(.*(IS IN LIST).*)*")).collect(Collectors.toList());
 								if(!possibleParentNodeKeyList.isEmpty())
 								{
 									possibleParentNodeKeyList.stream().forEachOrdered(item -> {
@@ -118,11 +119,11 @@ public class RuleSetParser implements IScanFeeder {
 							String variableName = data.getVariableName();
 							Node tempNode = data;
 							/*
-							 * following lines are to look for any nodes having a its nodeName with 'needs ' word or any operators but not having a word of 'IS' keyword due to the reason that
+							 * following lines are to look for any nodes having a its nodeName with any operators but not having a word of 'IS' keyword due to the reason that
 							 * the node could be used to define a node previously used as a child node for other nodes.
 							 * However, it is excluding nodes having 'IS' keyword because if it has the keyword then it should have child nodes to define the node otherwise the entire rule set has NOT been written in correct way
 							 */
-							List<String> possibleParentNodeKeyList = nodeSet.getNodeMap().keySet().stream().filter(key -> key.matches("(.+)?(\\\\s[<>=]+\\\\s?)?(WANTS |NEEDS )?("+variableName+")(\\s*[<>=]*)(\\s+.[^(IS)]*)*")).collect(Collectors.toList());
+							List<String> possibleParentNodeKeyList = nodeSet.getNodeMap().keySet().stream().filter(key -> key.matches("(.+)?(\\s[<>=]+\\s?)?("+variableName+")(\\s[<>=]+)*(.(?!(IS)))*(.*(IS IN LIST).*)*")).collect(Collectors.toList());
 							if(!possibleParentNodeKeyList.isEmpty())
 							{
 								possibleParentNodeKeyList.stream().forEachOrdered(item -> {
@@ -236,6 +237,8 @@ public class RuleSetParser implements IScanFeeder {
 				
 				Pattern p;
 				Matcher matcher;
+				Node tempNode;
+				List<String> possibleChildNodeKeyList;
 				
 				for(int i = 0; i < matchPatterns.length; i++) {
 					p = matchPatterns[i];
@@ -251,6 +254,16 @@ public class RuleSetParser implements IScanFeeder {
 							case 0:  // valueConclusionMatcher case
 								data = new ValueConclusionLine(childText, tokens);
 								
+								tempNode = data;
+								possibleChildNodeKeyList = nodeSet.getNodeMap().keySet().stream().filter(key -> key.matches("(^"+tempNode.getVariableName()+")(.(IS(?!(\\sIN LIST))).*)*")).collect(Collectors.toList());
+														
+								if(!possibleChildNodeKeyList.isEmpty())
+								{
+									possibleChildNodeKeyList.stream().forEachOrdered(item -> {
+										this.dependencyList.add(new Dependency(tempNode, nodeSet.getNodeMap().get(item), DependencyType.getOr())); //Dependency Type :OR
+									});
+								}
+								
 								if(data.getFactValue().getValue().equals("WARNING"))
 								{
 									handleWarning(parentText);
@@ -259,13 +272,14 @@ public class RuleSetParser implements IScanFeeder {
 							case 1:  // comparisonMatcher case
 								data = new ComparisonLine(childText, tokens);
 								
-								FactValueType nodeValueType = data.getFactValue().getType();
-								String valueString = data.getFactValue().getValue().toString();
-								String variableName = data.getVariableName();
-								Node tempNode = data;
-								List<String> possibleChildNodeKeyList = nodeValueType.equals(FactValueType.STRING)? 
-														nodeSet.getNodeMap().keySet().stream().filter(key -> key.matches("(^"+variableName+"\\s*)(\\sIS(.(?!IN LIST))*)*")|| key.matches("(^"+valueString+"\\s*)(\\sIS(.(?!IN LIST))*)*")).collect(Collectors.toList()):
-														nodeSet.getNodeMap().keySet().stream().filter(key -> key.matches("(^"+variableName+"\\s*)(\\sIS(.(?!IN LIST))*)*")).collect(Collectors.toList());
+								FactValueType rhsType = ((ComparisonLine)data).getRHS().getType();
+								String rhsString = ((ComparisonLine)data).getRHS().getValue().toString();
+								String lhsString = ((ComparisonLine)data).getLHS();
+								tempNode = data;
+								possibleChildNodeKeyList = rhsType.equals(FactValueType.STRING)? 
+														nodeSet.getNodeMap().keySet().stream().filter(key -> key.matches("(^"+lhsString+")(.(IS(?!(\\sIN LIST))).*)*")|| key.matches("(^"+rhsString+")(.(IS(?!(\\sIN LIST))).*)*")).collect(Collectors.toList())
+														:
+														nodeSet.getNodeMap().keySet().stream().filter(key -> key.matches("(^"+lhsString+")(.(IS(?!(\\sIN LIST))).*)*")).collect(Collectors.toList());
 
 								if(!possibleChildNodeKeyList.isEmpty())
 								{

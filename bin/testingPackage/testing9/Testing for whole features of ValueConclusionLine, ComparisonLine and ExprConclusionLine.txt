@@ -1,12 +1,29 @@
+FIXED name list AS LIST
+	ITEM John Smith
+	ITEM Dean Tudir
+	ITEM Agness Huge
+	ITEM Sugar Sweet
+	ITEM Tim Armond
+	ITEM Lolly T.Sweet
+FIXED premium account type AS LIST
+	ITEM HAHAHOHO
+	ITEM HASHBRWON
+	ITEM GITHUB
+	ITEM ENGINE
+INPUT person's dob AS DATE
+INPUT the place the person normally locate the passport AS TEXT
+INPUT number of drinks the person consumes an hour AS NUMBER
+INPUT hours of drinks a day AS NUMBER =
+
 person qualifies for the grant
-	AND NOT person’s name = "troy jones"
-	AND person’s dob > 01/01/1990          
+	AND NOT person's name = "troy jones"
+	AND person's dob > 01/01/1990          
 	AND person is eligible for a premium service
 
 person is eligible for a premium service
 	AND person's drinking habit = "frequent drinker"
 	AND person's account IS IN LIST: premium account type     
-	AND person’s nationality = "Australian"
+	AND person's nationality = "Australian"
 
 person's drinking habit IS "social drinker"
 	AND number of drinks the person consumes a week > 0
@@ -20,11 +37,11 @@ person's drinking habit IS "heavy drinker"
 	AND number of drinks the person consumes a week > 7 
 
 
-number of drinks the person consumes a week IS CALC ( number of drinks the person consumes an hour * hours of drinks a day * 5)
+number of drinks the person consumes a week IS CALC ( number of drinks the person consumes an hour * hours of drinks a day * (5-1))
 	NEEDS number of drinks the person consumes an hour
 	NEEDS hours of drinks a day 
 	
-person's nationality IS “Australian”
+person's nationality IS "Australian"
 	OR NOT Rule one
 	OR MANDATORY Rule two
 

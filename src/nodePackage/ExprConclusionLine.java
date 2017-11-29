@@ -67,13 +67,21 @@ public class ExprConclusionLine extends Node{
 		 */
 		
 		String script = euqationInString;
-		final String tempScript = script;
+		String tempScript = script;
 
-		if( euqationInString.matches(pattern.toString()))
+		if( pattern.matcher(euqationInString).find())
 		{
-			Arrays.asList(euqationInString.split(pattern.toString())).stream().forEachOrdered(item -> {
-				tempScript.replaceAll(item.trim(), workingMemory.get(item.trim()).toString().trim());
-			});
+			String[] tempArray = euqationInString.split(pattern.toString());
+			int tempArrayLength = tempArray.length;
+			String tempItem;
+			for(int i = 0; i < tempArrayLength ; i++)
+			{
+				tempItem = tempArray[i];
+				if(!tempItem.trim().isEmpty())
+				{
+					tempScript = tempScript.replaceAll(tempItem.trim(), workingMemory.get(tempItem.trim()).getValue().toString().trim());
+				}
+			}
 		}
 		
 		Matcher dateMatcher = datePattern.matcher(tempScript);

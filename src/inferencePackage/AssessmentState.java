@@ -22,12 +22,14 @@ import nodePackage.*;
 public class AssessmentState {
 	private HashMap<String, FactValue> workingMemory;
 	private List<String> inclusiveList;
+	private List<String> exclusiveList;
 	private List<String> summaryList;
 	public AssessmentState()
 	{
 		this.workingMemory = new HashMap<>();
 		this.inclusiveList = new ArrayList<>();  // this is to capture all relevant rules 
 		this.summaryList = new ArrayList<>(); // this is to store all determined rules within assessment in order.
+		this.exclusiveList = new ArrayList<>();// this is to capture all trimmed rules 
 	}
 	/*
 	 * this method is to get workingMemory 
@@ -84,6 +86,41 @@ public class AssessmentState {
 		return isInTheList;
 	}
 	
+	public void addItemToSummaryList(String node)
+	{
+		if(!this.summaryList.contains(node))
+		{
+			this.summaryList.add(node);
+		}
+	}
+	public List<String> getSummaryList()
+	{
+		return this.summaryList;
+	}
+	public void setSummaryList(List<String> summaryList)
+	{
+		this.summaryList = summaryList;
+	}
+	
+	// exclusiveList
+	public List<String> getExclusiveList()
+	{
+		return this.exclusiveList;
+	}
+	public void setExclusiveList(List<String> exclusiveList)
+	{
+		this.exclusiveList = exclusiveList;
+	}
+	public boolean isInExlusiveList(String name)
+	{
+		boolean isInTheList = false;
+		if(this.exclusiveList.contains(name))
+		{
+			isInTheList = true;
+		}
+		return isInTheList;
+	}
+	
 	
 	/*
 	 * this method is to set a rule as a fact in the workingMemory 
@@ -106,23 +143,4 @@ public class AssessmentState {
 		workingMemory.remove(name);
 	}
 	
-	
-	//Below lines are all SummaryList related
-	
-	public void addItemToSummaryList(String node)
-	{
-		if(!this.workingMemory.containsKey(node))
-		{
-			this.summaryList.add(node);
-		}
-	}
-	public List<String> getSummaryList()
-	{
-		return this.summaryList;
-	}
-	public void setSummaryList(List<String> summaryList)
-	{
-		this.summaryList = summaryList;
-	}
-
 }

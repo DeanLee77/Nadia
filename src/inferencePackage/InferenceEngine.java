@@ -690,7 +690,7 @@ public class InferenceEngine {
 	    			if(isAnyOrDependencyTrue(node, orToChildDependencies)) //TRUE case
 	    			{
 	    				int nodeId = node.getNodeId();
-    				    if(nodeSet.getDependencyMatrix().hasMandatoryChildNode(nodeId))
+    				    if(nodeSet.getDependencyMatrix().hasMandatoryChildNode(nodeId) && !allMandatoryChildNodesDetermined(nodeId))
     					{
     						if(!nodeSet.getDependencyMatrix().getMandatoryToChildDependencyList(nodeId).stream().allMatch(i -> ast.getWorkingMemory().containsKey(nodeSet.getNodeIdMap().get(i))))
     						{
@@ -778,7 +778,13 @@ public class InferenceEngine {
 	    	return canDetermine;
 	}
     
-	
+	private boolean allMandatoryChildNodesDetermined(int nodeId)
+	{
+		return nodeSet.getDependencyMatrix().getMandatoryToChildDependencyList(nodeId).stream()
+										 										    .allMatch((item) ->
+																					 				ast.getWorkingMemory().containsKey(nodeSet.getNodeIdMap().get(item))
+																					 	 	 );
+	}
 	private boolean hasAnyOrChildEvaluated(int parentNodeId, List<Integer>orToChildDependencies)
 	{
 		boolean hasAnyOrChildEvaluated = orToChildDependencies.stream().anyMatch(i -> 
@@ -872,15 +878,16 @@ public class InferenceEngine {
     */
     public void addChildRuleIntoInclusiveList(Node node)
     {
-	    	List<Integer> childrenListOfNode = nodeSet.getDependencyMatrix().getToChildDependencyList(node.getNodeId());
-	    	childrenListOfNode.stream().forEachOrdered(item -> {
-	    		String childNodeName = nodeSet.getNodeMap().get(nodeSet.getNodeIdMap().get(item)).getNodeName();
-	    		if(!ast.getInclusiveList().contains(childNodeName))
-	    		{
-	    			ast.getInclusiveList().add(childNodeName);
-	    		}
-	    	});
-        
+
+	 	List<Integer> childrenListOfNode = nodeSet.getDependencyMatrix().getToChildDependencyList(node.getNodeId());
+    	    	childrenListOfNode.stream().forEachOrdered(item -> {
+    	    		String childNodeName = nodeSet.getNodeMap().get(nodeSet.getNodeIdMap().get(item)).getNodeName();
+    	    		if(!ast.getInclusiveList().contains(childNodeName) && !ast.getExclusiveList().contains(childNodeName))
+    	    		{
+    	    			ast.getInclusiveList().add(childNodeName);
+    	    		}
+    	    	});
+
     }
 
 
@@ -953,6 +960,10 @@ public class InferenceEngine {
 	    	if((dpType & mandatoryDependencyType) != mandatoryDependencyType)
 	    	{
 	    		ast.getInclusiveList().remove(childNode.getNodeName());
+	    		if(!ast.getExclusiveList().contains(childNode.getNodeName()))
+    			{
+	    			ast.getExclusiveList().add(childNode.getNodeName());
+    			}
 	    	}
     }
     
