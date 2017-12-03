@@ -4,6 +4,8 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -177,21 +179,20 @@ public class InferenceEngine {
 	  	             * Step2. does the rule currently being been checked have child rules? 
 	  	             *     if yes then add the child rules into the inclusiveList
 	  	             */
-	  	            if (!hasChildren(node.getNodeId()) && ast.getInclusiveList().contains(node.getNodeName()) && !canEvaluate(node))
+	    				nodeSet.getDependencyMatrix().getToChildDependencyList(node.getNodeId());
+	  	            if(!hasChildren(node.getNodeId()) && ast.getInclusiveList().contains(node.getNodeName()) 
+	  	            			&& !canEvaluate(node) && !areAllParentsInExclusiveList(node))
 	  	            {
 		  	            	ass.setNodeToBeAsked(node);
 		  	            	int indexOfRuleToBeAsked = i;
 		  	            	System.out.println("indexOfRuleToBeAsked : "+indexOfRuleToBeAsked);
 		  	            	return ass.getNodeToBeAsked();
 	  	            }
-		            else
+		            else if(hasChildren(node.getNodeId()) && !ast.getWorkingMemory().containsKey(node.getVariableName()) 
+	            			&& !ast.getWorkingMemory().containsKey(node.getNodeName()) && ast.getInclusiveList().contains(node.getNodeName()) 
+	            			&& !areAllParentsInExclusiveList(node))
 		            {
-		            	
-			            	if(hasChildren(node.getNodeId()) && !ast.getWorkingMemory().containsKey(node.getVariableName()) 
-			            			&& !ast.getWorkingMemory().containsKey(node.getNodeName()) && ast.getInclusiveList().contains(node.getNodeName()))
-			            	{
-			            		addChildRuleIntoInclusiveList(node);
-			            	}
+		            		addChildRuleIntoInclusiveList(node);
 		            }
 	  	       }
 	    	} 	
@@ -227,7 +228,8 @@ public class InferenceEngine {
     				questionList.add(nodeToBeAsked.getFactValue().getValue().toString());
     			}
     		}
-	    	
+    		
+	    	questionList.stream().forEachOrdered(item->ast.getInclusiveList().add(item));
 	    	return questionList;
     }
     
@@ -420,6 +422,12 @@ public class InferenceEngine {
 	    	}
 	    	return canEvaluate;
     }
+    
+    private boolean areAllParentsInExclusiveList(Node node)
+    {
+    		List<Integer> parentsList = nodeSet.getDependencyMatrix().getFromParentDependencyList(node.getNodeId());
+    		return parentsList.isEmpty()? false: parentsList.stream().allMatch((item) ->ast.getExclusiveList().contains(nodeSet.getNodeIdMap().get(item)));
+    }
 
     /* 
      * this method is to add fact or set a node as a fact by using AssessmentState.setFact() method. it also is used to feed an answer to a being asked node.
@@ -530,14 +538,16 @@ public class InferenceEngine {
 			
     			if(nodeIndex < (sortedListSize - (i+1))) //case of all nodes located after the nodeIndex
     			{
-    				
     				if(hasChildren(tempNode.getNodeId()))
     				{
-    					 if(!ast.getWorkingMemory().containsKey(tempNode.getVariableName()) 
-	    		    			   && canDetermine(tempNode, lineType)
+    					 if(!ast.getWorkingMemory().containsKey(tempNode.getNodeName())
+	    		    			   	 && canDetermine(tempNode, lineType)
 	    		    		   )
 		    		    	 {
-     						ast.addItemToSummaryList(tempNode.getNodeName());// add currentRule into SummeryList as the rule determined
+    						 if(!lineType.equals(LineType.EXPR_CONCLUSION))
+    						 {
+    	     						ast.addItemToSummaryList(tempNode.getNodeName());// add currentRule into SummeryList as the rule determined
+    						 }
 		    		    	 }
     				}
     				else
@@ -588,12 +598,15 @@ public class InferenceEngine {
 	    	    			 * 
     	    			     * once the current checking node meets the condition then add it to the summaryList for summary view.
 	    		    	     */
-	    		    	   if (!ast.getWorkingMemory().containsKey(tempNode.getVariableName()) 
-	    		    			   && hasChildren(tempNode.getNodeId()) 
+	    		    	   if (!ast.getWorkingMemory().containsKey(tempNode.getNodeName()) 
+	    		    			   && hasChildren(tempNode.getNodeId())
 	    		    			   && canDetermine(tempNode, lineType)
 	    		    		  )
 	    		    	   {
-	    		    		   ast.addItemToSummaryList(tempNode.getNodeName()); // add currentRule into SummeryList as the rule determined
+	    		    		   if(!lineType.equals(LineType.EXPR_CONCLUSION))
+	    		    		   {
+	    		    			   ast.addItemToSummaryList(tempNode.getNodeName()); // add currentRule into SummeryList as the rule determined
+	    		    		   }
 	    		    	   }
 	    	    		}
     			}
@@ -621,7 +634,25 @@ public class InferenceEngine {
         }
     }
     
-    
+    public boolean hasAllMandatoryChildAnswered(int nodeId)
+    {    		
+    		List<Integer> mandatoryChildDependencyList = nodeSet.getDependencyMatrix().getMandatoryToChildDependencyList(nodeId);
+    		boolean hasAllMandatoryChildAnswered = false;
+    		if(!mandatoryChildDependencyList.isEmpty())
+    		{
+    			hasAllMandatoryChildAnswered = mandatoryChildDependencyList.parallelStream()
+																	 .allMatch(childId->
+																					    	(ast.getWorkingMemory().containsKey(nodeSet.getNodeIdMap().get(childId))
+																					    	     && hasAllMandatoryChildAnswered(childId ))
+																			  );
+    		}
+    		else if(mandatoryChildDependencyList.isEmpty())
+    		{
+    			hasAllMandatoryChildAnswered = true;
+    		}
+    		
+    		return hasAllMandatoryChildAnswered;
+    }
 	public boolean canDetermine(Node node, LineType lineType)
 	{
 	    	boolean canDetermine = false;
@@ -674,85 +705,94 @@ public class InferenceEngine {
 	    	List<Integer> orToChildDependencies = nodeSet.getDependencyMatrix().getOrToChildDependencyList(node.getNodeId());
 	    	List<Integer> andToChildDependencies = nodeSet.getDependencyMatrix().getAndToChildDependencyList(node.getNodeId());
 	   
+	    	
 	    
     		if(LineType.VALUE_CONCLUSION.equals(lineType))
 	    	{
-	    		
-	    		boolean isPlainStatementFormat = ((ValueConclusionLine)node).getIsPlainStatementFormat();
-	    		String nodeFactValueInString = node.getFactValue().getValue().toString();
-	    		
-	    		/*
-	    		 * isAnyOrDependencyTrue() method contains trimming off method to cut off any 'UNDETERMINED' state 'OR' child nodes. 
-	    		 */
-	    		if(andToChildDependencies.isEmpty() && !orToChildDependencies.isEmpty()) // rule has only 'OR' child rules 
+	    		if(node.getNodeName().contains("IS IN LIST") 
+	    				&& ast.getWorkingMemory().containsKey(node.getVariableName()) 
+	    				&& ast.getWorkingMemory().containsKey(node.getFactValue().getValue().toString()))
 	    		{
-	    			
-	    			if(isAnyOrDependencyTrue(node, orToChildDependencies)) //TRUE case
-	    			{
-	    				int nodeId = node.getNodeId();
-    				    if(nodeSet.getDependencyMatrix().hasMandatoryChildNode(nodeId) && !allMandatoryChildNodesDetermined(nodeId))
-    					{
-    						if(!nodeSet.getDependencyMatrix().getMandatoryToChildDependencyList(nodeId).stream().allMatch(i -> ast.getWorkingMemory().containsKey(nodeSet.getNodeIdMap().get(i))))
-    						{
-    							return canDetermine;
-    						}
-    					}
-	    				canDetermine = true;
-	    				
-	    				handleValuConclusionLineTrueCase(node, isPlainStatementFormat, nodeFactValueInString);
-	    				
-	    			}
-	    			else if(isAllRelevantChildDependencyDetermined(node, orToChildDependencies) && !isAnyOrDependencyTrue(node, orToChildDependencies)) //FALSE case
-	    			{
-	    				canDetermine = true;
-	    				
-	    				handleValueConclusionLineFalseCase(node, isPlainStatementFormat, nodeFactValueInString);
-	    				
-	    			}
+	    			ast.setFact(node.getNodeName(), node.selfEvaluate(ast.getWorkingMemory(), scriptEngine));
+	    			canDetermine = true; 
 	    		}
-	    		else if(!andToChildDependencies.isEmpty() && orToChildDependencies.isEmpty())// node has only 'AND' child nodes
+	    		else
 	    		{
-	    			if(isAllRelevantChildDependencyDetermined(node, andToChildDependencies) && isAllAndDependencyTrue(node, andToChildDependencies)) // TRUE case
-				{
-	    				canDetermine = true;
-	    				
-	    				handleValuConclusionLineTrueCase(node, isPlainStatementFormat, nodeFactValueInString);
-    					
-				}
-	    			/*
-	    			 * 'isAnyAndDependencyFalse()' contains a trimming off dependency method 
-	    			 * due to the fact that all undetermined 'AND' child nodes need to be trimmed off when any 'AND' node is evaluated as 'NO'
-               	 * , which does not influence on determining a parent rule's evaluation.
-               	 * 
-	    			 */
-	    			else if(isAnyAndDependencyFalse(node, andToChildDependencies)) //FALSE case
-	    			{
-	    				int nodeId = node.getNodeId();
-    				    if(nodeSet.getDependencyMatrix().hasMandatoryChildNode(nodeId))
-    					{
-    						if(!nodeSet.getDependencyMatrix().getMandatoryToChildDependencyList(nodeId).stream().allMatch(i -> ast.getWorkingMemory().containsKey(nodeSet.getNodeIdMap().get(i))))
-    						{
-    							return canDetermine;
-    						}
-    					}
-	    				canDetermine = true;
-	    				
-	    				handleValueConclusionLineFalseCase(node, isPlainStatementFormat, nodeFactValueInString);
-    					
-	    			}
-			
-	    		}
-	    		
+	    			boolean isPlainStatementFormat = ((ValueConclusionLine)node).getIsPlainStatementFormat();
+		    		String nodeFactValueInString = node.getFactValue().getValue().toString();
+		    		
+		    		/*
+		    		 * isAnyOrDependencyTrue() method contains trimming off method to cut off any 'UNDETERMINED' state 'OR' child nodes. 
+		    		 */
+		    		if(andToChildDependencies.isEmpty() && !orToChildDependencies.isEmpty()) // rule has only 'OR' child rules 
+		    		{
+		    			
+		    			if(isAnyOrDependencyTrue(node, orToChildDependencies)) //TRUE case
+		    			{
+		    				int nodeId = node.getNodeId();
+		    				System.out.println("here");
+	    				    if(nodeSet.getDependencyMatrix().hasMandatoryChildNode(nodeId) && !hasAllMandatoryChildAnswered(nodeId))
+	    					{
+							return canDetermine;
+	    					}
+		    				canDetermine = true;
+		    				
+		    				handleValuConclusionLineTrueCase(node, isPlainStatementFormat, nodeFactValueInString);
+		    				
+		    			}
+		    			else if(isAllRelevantChildDependencyDetermined(node, orToChildDependencies) && !isAnyOrDependencyTrue(node, orToChildDependencies)) //FALSE case
+		    			{
+		    				canDetermine = true;
+		    				
+		    				handleValueConclusionLineFalseCase(node, isPlainStatementFormat, nodeFactValueInString);
+		    				
+		    			}
+		    		}
+		    		else if(!andToChildDependencies.isEmpty() && orToChildDependencies.isEmpty())// node has only 'AND' child nodes
+		    		{
+		    			if(isAllRelevantChildDependencyDetermined(node, andToChildDependencies) && isAllAndDependencyTrue(node, andToChildDependencies)) // TRUE case
+					{
+		    				canDetermine = true;
+		    				
+		    				handleValuConclusionLineTrueCase(node, isPlainStatementFormat, nodeFactValueInString);
+	    					
+					}
+		    			/*
+		    			 * 'isAnyAndDependencyFalse()' contains a trimming off dependency method 
+		    			 * due to the fact that all undetermined 'AND' child nodes need to be trimmed off when any 'AND' node is evaluated as 'NO'
+	               	 * , which does not influence on determining a parent rule's evaluation.
+	               	 * 
+		    			 */
+		    			else if(isAnyAndDependencyFalse(node, andToChildDependencies)) //FALSE case
+		    			{
+		    				int nodeId = node.getNodeId();
+	    				    if(nodeSet.getDependencyMatrix().hasMandatoryChildNode(nodeId))
+	    					{
+	    						if(!hasAllMandatoryChildAnswered(nodeId))
+	    						{
+	    							return canDetermine;
+	    						}
+	    					}
+		    				canDetermine = true;
+		    				
+		    				handleValueConclusionLineFalseCase(node, isPlainStatementFormat, nodeFactValueInString);	    					
+		    			}				
+		    		}
+	    		}	    		
 	    	}
-	    	else if(LineType.EXPR_CONCLUSION.equals(lineType))
-	    	{
-	    		if(andToChildDependencies.isEmpty() && !orToChildDependencies.isEmpty()) // rule has only 'OR' child rules 
+    		else if(LineType.COMPARISON.equals(lineType))
+    		{
+    			if(andToChildDependencies.isEmpty() && !orToChildDependencies.isEmpty()) // rule has only 'OR' child rules 
 	    		{
 	    			/*
 	    			 * the node might have a 'MANDATORY OR' child nodes so that the mandatory child nodes need being handled
 	    			 */
 	    			if(hasAnyOrChildEvaluated(node.getNodeId(), orToChildDependencies))
 	    			{
+	    				if(!hasAllMandatoryChildAnswered(node.getNodeId()))
+	    				{
+	    					return canDetermine = false;
+	    				}
 	    				canDetermine = true;
 	    				ast.setFact(node.getNodeName(), node.selfEvaluate(ast.getWorkingMemory(), scriptEngine));
 	    				ast.addItemToSummaryList(node.getNodeName());
@@ -765,33 +805,79 @@ public class InferenceEngine {
 	    			 */
 	    			if(hasAllAndChildEvaluated(andToChildDependencies))
 	    			{
+	    				if(!hasAllMandatoryChildAnswered(node.getNodeId()))
+	    				{
+	    					return canDetermine = false;
+	    				}
 	    				canDetermine = true;
 	    				ast.setFact(node.getNodeName(), node.selfEvaluate(ast.getWorkingMemory(), scriptEngine));
 	    				ast.addItemToSummaryList(node.getNodeName());
 	    			}
 	    		}
+    			
+    		}
+	    	else if(LineType.EXPR_CONCLUSION.equals(lineType))
+	    	{
+	    		if(andToChildDependencies.isEmpty() && !orToChildDependencies.isEmpty()) // rule has only 'OR' child rules 
+	    		{
+	    			/*
+	    			 * the node might have a 'MANDATORY OR' child nodes so that the mandatory child nodes need being handled
+	    			 */
+	    			if(hasAnyOrChildEvaluated(node.getNodeId(), orToChildDependencies))
+	    			{
+	    				if(!hasAllMandatoryChildAnswered(node.getNodeId()))
+	    				{
+	    					return canDetermine = false;
+	    				}
+	    				canDetermine = true;
+	    				ast.setFact(node.getVariableName(), node.selfEvaluate(ast.getWorkingMemory(), scriptEngine));
+	    				ast.addItemToSummaryList(node.getVariableName());
+	    			}
+	    		}
+	    		else if(!andToChildDependencies.isEmpty() && orToChildDependencies.isEmpty())// node has only 'AND' child nodes
+	    		{
+	    			/*
+	    			 * in this case they are all 'MANDATORY' child nodes
+	    			 */
+	    			if(hasAllAndChildEvaluated(andToChildDependencies))
+	    			{
+	    				if(!hasAllMandatoryChildAnswered(node.getNodeId()))
+	    				{
+	    					return canDetermine = false;
+	    				}
+	    				canDetermine = true;
+	    				ast.setFact(node.getVariableName(), node.selfEvaluate(ast.getWorkingMemory(), scriptEngine));
+	    				ast.addItemToSummaryList(node.getVariableName());
+	    			}
+	    		}
+	    		else
+	    		{
+	    			if(hasAnyOrChildEvaluated(node.getNodeId(), orToChildDependencies) && hasAllAndChildEvaluated(andToChildDependencies))
+	    			{
+	    				if(!hasAllMandatoryChildAnswered(node.getNodeId()))
+	    				{
+	    					return canDetermine = false;
+	    				}
+	    				canDetermine = true;
+	    				ast.setFact(node.getVariableName(), node.selfEvaluate(ast.getWorkingMemory(), scriptEngine));
+	    				ast.addItemToSummaryList(node.getVariableName());
+	    			}
+	    		}
 	    	}
-	    	
-	    
-	    	
-	    	
+ 	
 	    	return canDetermine;
 	}
     
-	private boolean allMandatoryChildNodesDetermined(int nodeId)
-	{
-		return nodeSet.getDependencyMatrix().getMandatoryToChildDependencyList(nodeId).stream()
-										 										    .allMatch((item) ->
-																					 				ast.getWorkingMemory().containsKey(nodeSet.getNodeIdMap().get(item))
-																					 	 	 );
-	}
+	
 	private boolean hasAnyOrChildEvaluated(int parentNodeId, List<Integer>orToChildDependencies)
 	{
+		
 		boolean hasAnyOrChildEvaluated = orToChildDependencies.stream().anyMatch(i -> 
-																					ast.getWorkingMemory().containsKey(nodeSet.getNodeIdMap().get(i)) 
-																					|| (ast.getWorkingMemory().containsKey(nodeSet.getNodeIdMap().get(i)) 
+																					(ast.getWorkingMemory().containsKey(nodeSet.getNodeByNodeId(i).getVariableName())
 																							&& (nodeSet.getDependencyMatrix().getDependencyType(parentNodeId, i) & DependencyType.getMandatory()) == DependencyType.getMandatory()
-																						)
+																					)
+																					|| 
+																					ast.getWorkingMemory().containsKey(nodeSet.getNodeByNodeId(i).getVariableName()) 
 																			   );
 		
 		return hasAnyOrChildEvaluated;
@@ -799,7 +885,7 @@ public class InferenceEngine {
 	
 	private boolean hasAllAndChildEvaluated(List<Integer> andToChildDependencies)
 	{
-		boolean hasAllAndChildEvaluated = andToChildDependencies.stream().allMatch(i -> ast.getWorkingMemory().containsKey(nodeSet.getNodeIdMap().get(i)));
+		boolean hasAllAndChildEvaluated = andToChildDependencies.stream().allMatch(i -> ast.getWorkingMemory().containsKey(nodeSet.getNodeByNodeId(i).getVariableName()));
 				
 		return hasAllAndChildEvaluated;
 	}
@@ -941,10 +1027,12 @@ public class InferenceEngine {
 	        	{
 	        		isAnyOrDependencyTrue = true;
 	        		orChildDependencies.stream().forEachOrdered(i -> {
+	        			System.out.println("i: "+i);
 	        			trueOrChildList.stream().forEachOrdered(n -> {
+	        				System.out.println("n: "+n);
 	        				if(i != n)
 	        				{
-	        					trimDependency(node, nodeSet.getNodeMap().get(nodeSet.getNodeIdMap().get(i)));
+	        					trimDependency(node, i);
 	        				}
 	        			});
 	        		});
@@ -953,18 +1041,31 @@ public class InferenceEngine {
         return isAnyOrDependencyTrue;
     }
 
-	public void trimDependency(Node parentNode, Node childNode)
+	public void trimDependency(Node parentNode, int childNodeId)
     {
-	    	int dpType = nodeSet.getDependencyMatrix().getDependencyMatrixArray()[parentNode.getNodeId()][childNode.getNodeId()];
-	    	int mandatoryDependencyType = DependencyType.getMandatory();
-	    	if((dpType & mandatoryDependencyType) != mandatoryDependencyType)
+		int parentNodeId = parentNode.getNodeId();
+		int dpType = nodeSet.getDependencyMatrix().getDependencyMatrixArray()[parentNodeId][childNodeId];
+		int mandatoryDependencyType = DependencyType.getMandatory();
+		
+		if(((dpType & mandatoryDependencyType) != mandatoryDependencyType) 
+				&& !ast.getWorkingMemory().containsKey(nodeSet.getNodeIdMap().get(childNodeId)))
 	    	{
-	    		ast.getInclusiveList().remove(childNode.getNodeName());
-	    		if(!ast.getExclusiveList().contains(childNode.getNodeName()))
+	    		ast.getInclusiveList().remove(nodeSet.getNodeIdMap().get(childNodeId));
+	    		if(!ast.getExclusiveList().contains(nodeSet.getNodeIdMap().get(childNodeId)))
     			{
-	    			ast.getExclusiveList().add(childNode.getNodeName());
+	    			ast.getExclusiveList().add(nodeSet.getNodeIdMap().get(childNodeId));
     			}
+	    		List<Integer> childDependencyListOfChildNode = nodeSet.getDependencyMatrix().getToChildDependencyList(childNodeId);
+	    		if(!childDependencyListOfChildNode.isEmpty())
+	    		{
+	    			childDependencyListOfChildNode.stream().forEach(item->{
+	    				trimDependency(nodeSet.getNodeByNodeId(childNodeId),item);
+	    			});
+	    		}
 	    	}
+		
+		
+	    
     }
     
     public boolean isAnyAndDependencyFalse(Node node, List<Integer> andChildDependencies)
@@ -1018,7 +1119,7 @@ public class InferenceEngine {
 	    	        		falseAndList.stream().forEachOrdered(f -> {
 	    	        			if(i != f)
 	    	        			{
-	    	        				trimDependency(node, nodeSet.getNodeMap().get(nodeSet.getNodeIdMap().get(i)));
+	    	        				trimDependency(node, i);
 	    	        			}
 	    	        		});
 	    	        	});
@@ -1041,7 +1142,6 @@ public class InferenceEngine {
         targetNode = node;
 
         	List<Integer> determinedTrueAndChildDependencies = new ArrayList<>();
-
         andChildDependencies.stream().forEachOrdered(item -> {
         	if(ast.isInclusiveList(nodeSet.getNodeIdMap().get(item))
 	        && ast.getWorkingMemory().containsKey(nodeSet.getNodeIdMap().get(item)) )

@@ -215,6 +215,7 @@ public class Testing_Whole_Features_Of_ValueConclusionLine_ComparisonLine_and_Ex
 		InferenceEngine ie = new InferenceEngine(isf.getNodeSet());
 		Assessment ass = new Assessment(isf.getNodeSet(), isf.getNodeSet().getNodeSortedList().get(0).getNodeName());
 		int i = 0;
+
 		while(ie.getAssessmentState().getWorkingMemory().get(isf.getNodeSet().getNodeSortedList().get(0).getNodeName())==null)
 		{
 			
@@ -222,12 +223,13 @@ public class Testing_Whole_Features_Of_ValueConclusionLine_ComparisonLine_and_Ex
 			HashMap<String,FactValueType> questionFvtMap = ie.findTypeOfElementToBeAsked(nextQuestionNode);
 			
 			FactValueType fvt = null;
-			String answer;
+			String answer = "";
 			
 			for(String question: ie.getQuestionsFromNodeToBeAsked(nextQuestionNode))
 			{
 				System.out.println("questionFvt :"+questionFvtMap.get(question));
 				System.out.println("Question: " + question+"?");
+				
 				if(question.equals("person's name"))
 				{
 					answer = "John Smith";
@@ -304,10 +306,10 @@ public class Testing_Whole_Features_Of_ValueConclusionLine_ComparisonLine_and_Ex
 //				{
 //					answer = "false";
 //				}
-//				else if(question.equals("the person was born in Australia"))
-//				{
-//					answer = "false";
-//				}
+				else if(question.equals("the person was born in Australia"))
+				{
+					answer = "true";
+				}
 				else if(i < 3)
 				{
 					answer = "true";
@@ -321,7 +323,7 @@ public class Testing_Whole_Features_Of_ValueConclusionLine_ComparisonLine_and_Ex
 				ie.feedAnswerToNode(nextQuestionNode, question, answer, questionFvtMap.get(question));
 				i++;
 			}
-
+			
 			
 		}
 

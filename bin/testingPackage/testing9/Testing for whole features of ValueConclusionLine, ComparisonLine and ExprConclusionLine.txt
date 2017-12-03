@@ -13,7 +13,7 @@ FIXED premium account type AS LIST
 INPUT person's dob AS DATE
 INPUT the place the person normally locate the passport AS TEXT
 INPUT number of drinks the person consumes an hour AS NUMBER
-INPUT hours of drinks a day AS NUMBER =
+INPUT hours of drinks a day AS NUMBER 
 
 person qualifies for the grant
 	AND NOT person's name = "troy jones"

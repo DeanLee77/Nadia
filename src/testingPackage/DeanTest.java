@@ -89,6 +89,9 @@ public class DeanTest {
 		Matcher mat = pattern.matcher(strr);
 		System.out.println("matching: "+mat.find());
 		
+		String testStr = "this IS IN LIST that";
+		System.out.println(testStr.contains("IS IN LIST"));
+		
 //		RuleSetReader ilr = new RuleSetReader();
 //		ilr.setStreamSource(TopoSortingTest.class.getResourceAsStream("testing NOT and KNOWN.txt"));
 //		RuleSetParser isf = new RuleSetParser();		
