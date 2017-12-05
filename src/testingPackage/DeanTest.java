@@ -1,8 +1,13 @@
 package testingPackage;
 
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import javax.script.ScriptEngine;
+import javax.script.ScriptEngineManager;
+import javax.script.ScriptException;
 
 import factValuePackage.FactBooleanValue;
 import factValuePackage.FactIntegerValue;
@@ -59,6 +64,34 @@ public class DeanTest {
 		
 		FactIntegerValue fiv = FactIntegerValue.parse(12);
 		System.out.println(fiv.getValue().toString());
+		
+		String exString = "number of drinks the person consumes a week IS CALC ( (number of drinks the person consumes an hour * hours of drinks a day+(one day/two day))*5)";
+		Tokens tks = Tokenizer.getTokens(exString);
+		System.out.println(tks.tokensString);
+		
+		LocalDate date1 = LocalDate.of(2001, 11, 1);
+		LocalDate date2 = LocalDate.of(2001, 10, 31);
+		System.out.println(date1.isAfter(date2));
+		String script = "var localDate = Java.type(\"java.time.LocalDate\"); localDate.of(1994,12,11).isAfter(localDate.of(1990,1,1));";
+		String script1 = "new Date(2017,11,1) > new Date(2017,10,31);";
+		ScriptEngineManager factory = new ScriptEngineManager();
+		ScriptEngine engine = factory.getEngineByName("nashorn");
+		try {
+			System.out.println("result: "+engine.eval(script));
+			
+		} catch (ScriptException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		Pattern pattern = Pattern.compile("[-+/*()0-9?:;,.\"](\\s*)");
+		
+		String strr = "( number of drinks the person consumes an hour * hours of drinks a day * (5-1))";
+		Matcher mat = pattern.matcher(strr);
+		System.out.println("matching: "+mat.find());
+		
+		String testStr = "this IS IN LIST that";
+		System.out.println(testStr.contains("IS IN LIST"));
+		
 //		RuleSetReader ilr = new RuleSetReader();
 //		ilr.setStreamSource(TopoSortingTest.class.getResourceAsStream("testing NOT and KNOWN.txt"));
 //		RuleSetParser isf = new RuleSetParser();		

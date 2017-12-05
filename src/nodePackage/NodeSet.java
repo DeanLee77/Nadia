@@ -93,6 +93,11 @@ public class NodeSet {
 		return nodeMap.get(nodeName);
 	}
 	
+	public Node getNodeByNodeId(int nodeId)
+	{
+		return getNode(getNodeIdMap().get(nodeId));
+	}
+	
 	 public int findNodeIndex(String nodeName)
     {
         int nodeIndex = IntStream.range(0, getNodeSortedList().size()).filter(i -> getNodeSortedList().get(i).getNodeName().equals(nodeName)).toArray()[0];

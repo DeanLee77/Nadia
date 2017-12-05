@@ -1,5 +1,6 @@
 package nodePackage;
 
+import java.time.LocalDate;
 import java.util.HashMap;
 
 import javax.script.ScriptEngine;
@@ -89,7 +90,7 @@ public class ComparisonLine extends Node{
 		
 		FactValue workingMemoryLhsValue = workingMemory.containsKey(this.variableName)?workingMemory.get(this.variableName):null;
 		FactValue workingMemoryRhsValue = this.getRHS().getType().equals(FactValueType.STRING)?
-											workingMemory.get(this.getFactValue().getValue().toString())
+											workingMemory.get(this.getRHS().getValue().toString())
 											:
 											this.getRHS();
 		
@@ -112,14 +113,23 @@ public class ComparisonLine extends Node{
 		 */
 		if((workingMemoryLhsValue!= null && workingMemoryLhsValue.getType().equals(FactValueType.DATE)) || (workingMemoryRhsValue!= null && workingMemoryRhsValue.getType().equals(FactValueType.DATE)))
 		{
-			if(workingMemoryRhsValue != null && workingMemoryLhsValue != null)
+			switch(this.operator)
 			{
-				script = "var localDate = java.time.LocalDate; localDate.of("+((FactDateValue)workingMemoryLhsValue).getValue().getYear()+","+((FactDateValue)workingMemoryLhsValue).getValue().getMonthValue()+","+((FactDateValue)workingMemoryLhsValue).getValue().getDayOfMonth()+") "+operator+" localDate.of("+((FactDateValue)workingMemoryRhsValue).getValue().getYear()+","+((FactDateValue)workingMemoryRhsValue).getValue().getMonthValue()+","+((FactDateValue)workingMemoryRhsValue).getValue().getDayOfMonth()+");" ;
+				case ">":
+					return FactValue.parse(((LocalDate)workingMemoryLhsValue.getValue()).isAfter(((LocalDate)workingMemoryRhsValue.getValue())));
+				case ">=":
+					return FactValue.parse(((LocalDate)workingMemoryLhsValue.getValue()).isAfter(((LocalDate)workingMemoryRhsValue.getValue())) && ((LocalDate)workingMemoryLhsValue.getValue()).isEqual(((LocalDate)workingMemoryRhsValue.getValue())));
+				case "<":
+					return FactValue.parse(((LocalDate)workingMemoryLhsValue.getValue()).isBefore(((LocalDate)workingMemoryRhsValue.getValue())));
+				case "<=":
+					return FactValue.parse(((LocalDate)workingMemoryLhsValue.getValue()).isBefore(((LocalDate)workingMemoryRhsValue.getValue())) && ((LocalDate)workingMemoryLhsValue.getValue()).isEqual(((LocalDate)workingMemoryRhsValue.getValue())));
 			}
-			else if(workingMemoryRhsValue == null)
-			{
-				script = "var localDate = java.time.LocalDate; localDate.of("+((FactDateValue)workingMemoryLhsValue).getValue().getYear()+","+((FactDateValue)workingMemoryLhsValue).getValue().getMonthValue()+","+((FactDateValue)workingMemoryLhsValue).getValue().getDayOfMonth()+") "+operator+" localDate.of("+((FactDateValue)this.getFactValue()).getValue().getYear()+","+((FactDateValue)this.getFactValue()).getValue().getMonthValue()+","+((FactDateValue)this.getFactValue()).getValue().getDayOfMonth()+");" ;
-			}
+//			script = "new Date("+((FactDateValue)workingMemoryLhsValue).getValue().getYear()+"/"+((FactDateValue)workingMemoryLhsValue).getValue().getMonthValue()+"/"+((FactDateValue)workingMemoryLhsValue).getValue().getDayOfMonth()+")"+operator+"new Date("+((FactDateValue)workingMemoryRhsValue).getValue().getYear()+"/"+((FactDateValue)workingMemoryRhsValue).getValue().getMonthValue()+"/"+((FactDateValue)workingMemoryRhsValue).getValue().getDayOfMonth()+");" ;
+		}
+		else if(workingMemoryLhsValue.getType().equals(FactValueType.DECIMAL) || workingMemoryLhsValue.getType().equals(FactValueType.DOUBLE) 
+				|| workingMemoryLhsValue.getType().equals(FactValueType.INTEGER) || workingMemoryLhsValue.getType().equals(FactValueType.NUMBER))
+		{
+			script = workingMemoryLhsValue.getValue().toString()+operator+workingMemoryRhsValue.getValue().toString() ;
 		}
 		else
 		{
