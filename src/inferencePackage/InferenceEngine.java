@@ -163,7 +163,7 @@ public class InferenceEngine {
 	    	/*
 	    	 * Default goal rule of a rule set which is a parameter of InferenceEngine will be evaluated by forwardChaining when any rule is evaluated within the rule set
 	    	 */
-	    	if(ast.getWorkingMemory().get(ass.getGoalNode().getNodeName())== null)
+	    	if(ast.getWorkingMemory().get(ass.getGoalNode().getNodeName())== null || !ast.allMandatoryNodeDetermined())
 	    	{
 	    		for (int i = ass.getGoalNodeIndex(); i < nodeSet.getNodeSortedList().size(); i++)
 	  	       {
@@ -187,7 +187,8 @@ public class InferenceEngine {
 	    					{
 	    						
 	    						parentDependencyList.parallelStream().forEachOrdered(parentId -> {
-	    							if((nodeSet.getDependencyMatrix().getDependencyType(parentId, nodeId)&DependencyType.getMandatory()) == DependencyType.getMandatory())
+	    							if((nodeSet.getDependencyMatrix().getDependencyType(parentId, nodeId)&DependencyType.getMandatory()) == DependencyType.getMandatory()
+	    									&& !ast.isInclusiveList(node.getNodeName()))
 	    							{
 	    								ast.addItemToMandatoryList(node.getNodeName());
 	    							}
@@ -196,7 +197,7 @@ public class InferenceEngine {
 	    				}
 	    				
 	  	            if(!hasChildren(nodeId) && ast.getInclusiveList().contains(node.getNodeName()) 
-	  	            			&& !canEvaluate(node) && !areAllParentsInExclusiveList(node))
+	  	            			&& !canEvaluate(node))
 	  	            {
 		  	            	ass.setNodeToBeAsked(node);
 		  	            	int indexOfRuleToBeAsked = i;
@@ -204,8 +205,7 @@ public class InferenceEngine {
 		  	            	return ass.getNodeToBeAsked();
 	  	            }
 		            else if(hasChildren(nodeId) && !ast.getWorkingMemory().containsKey(node.getVariableName()) 
-	            			&& !ast.getWorkingMemory().containsKey(node.getNodeName()) && ast.getInclusiveList().contains(node.getNodeName()) 
-	            			&& !areAllParentsInExclusiveList(node))
+	            			&& !ast.getWorkingMemory().containsKey(node.getNodeName()) && ast.getInclusiveList().contains(node.getNodeName()))
 		            {
 		            		addChildRuleIntoInclusiveList(node);
 		            }
@@ -438,11 +438,6 @@ public class InferenceEngine {
 	    	return canEvaluate;
     }
     
-    private boolean areAllParentsInExclusiveList(Node node)
-    {
-    		List<Integer> parentsList = nodeSet.getDependencyMatrix().getFromParentDependencyList(node.getNodeId());
-    		return parentsList.isEmpty()? false: parentsList.stream().allMatch((item) ->ast.getExclusiveList().contains(nodeSet.getNodeIdMap().get(item)));
-    }
 
     /* 
      * this method is to add fact or set a node as a fact by using AssessmentState.setFact() method. it also is used to feed an answer to a being asked node.
@@ -557,7 +552,8 @@ public class InferenceEngine {
 			{
 				
 				parentDependencyList.parallelStream().forEachOrdered(parentId -> {
-					if((nodeSet.getDependencyMatrix().getDependencyType(parentId, tempNodeId)&DependencyType.getMandatory()) == DependencyType.getMandatory())
+					if((nodeSet.getDependencyMatrix().getDependencyType(parentId, tempNodeId)&DependencyType.getMandatory()) == DependencyType.getMandatory()
+							&& !ast.isInclusiveList(tempNode.getNodeName()))
 					{
 						ast.addItemToMandatoryList(tempNode.getNodeName());
 					}
@@ -1056,9 +1052,7 @@ public class InferenceEngine {
 	        	{
 	        		isAnyOrDependencyTrue = true;
 	        		orChildDependencies.stream().forEachOrdered(i -> {
-	        			System.out.println("i: "+i);
 	        			trueOrChildList.stream().forEachOrdered(n -> {
-	        				System.out.println("n: "+n);
 	        				if(i != n)
 	        				{
 	        					trimDependency(node, i);
@@ -1076,25 +1070,30 @@ public class InferenceEngine {
 		int dpType = nodeSet.getDependencyMatrix().getDependencyMatrixArray()[parentNodeId][childNodeId];
 		int mandatoryDependencyType = DependencyType.getMandatory();
 		List<Integer> parentDependencyList = nodeSet.getDependencyMatrix().getFromParentDependencyList(childNodeId);
-		if(parentDependencyList.stream().allMatch(parentId -> (parentId != parentNode.getNodeId() && ast.getExclusiveList().contains(nodeSet.getNodeByNodeId(parentId).getNodeName()))))
-		{
-			if(((dpType & mandatoryDependencyType) != mandatoryDependencyType) 
-					&& !ast.getWorkingMemory().containsKey(nodeSet.getNodeIdMap().get(childNodeId)))
-		    	{
-		    		ast.getInclusiveList().remove(nodeSet.getNodeIdMap().get(childNodeId));
-		    		if(!ast.getExclusiveList().contains(nodeSet.getNodeIdMap().get(childNodeId)))
-	    			{
-		    			ast.getExclusiveList().add(nodeSet.getNodeIdMap().get(childNodeId));
-	    			}
-		    		List<Integer> childDependencyListOfChildNode = nodeSet.getDependencyMatrix().getToChildDependencyList(childNodeId);
-		    		if(!childDependencyListOfChildNode.isEmpty())
-		    		{
-		    			childDependencyListOfChildNode.stream().forEach(item->{
-		    				trimDependency(nodeSet.getNodeByNodeId(childNodeId),item);
-		    			});
-		    		}
-		    	}
-		}
+		
+		if((parentDependencyList.size()>1 																		      				// the child has more than one parent,
+				&& parentDependencyList.parallelStream()																				// all parents have been determined
+								       .allMatch(parent -> ast.getWorkingMemory().containsKey(nodeSet.getNodeIdMap().get(parent)))
+			    && parentDependencyList.parallelStream()																				//the child has no Mandatory dependency parents
+								       .noneMatch(parent -> (nodeSet.getDependencyMatrix().getDependencyMatrixArray()[parent][childNodeId]&mandatoryDependencyType)==mandatoryDependencyType))
+			||
+			(parentDependencyList.size() == 1                                    													    // the child has only one parent
+			&& ((dpType & mandatoryDependencyType) != mandatoryDependencyType) ))   													// the dependency is not 'MANDATORY'
+	    	{
+	    		ast.getInclusiveList().remove(nodeSet.getNodeIdMap().get(childNodeId));
+	    		if(!ast.getExclusiveList().contains(nodeSet.getNodeIdMap().get(childNodeId)))
+    			{
+	    			ast.getExclusiveList().add(nodeSet.getNodeIdMap().get(childNodeId));
+    			}
+	    		List<Integer> childDependencyListOfChildNode = nodeSet.getDependencyMatrix().getToChildDependencyList(childNodeId);
+	    		if(!childDependencyListOfChildNode.isEmpty())
+	    		{
+	    			childDependencyListOfChildNode.stream().forEach(item->{
+	    				trimDependency(nodeSet.getNodeByNodeId(childNodeId),item);
+	    			});
+	    		}
+	    	}
+		
     }
     
     public boolean isAnyAndDependencyFalse(Node node, List<Integer> andChildDependencies)
