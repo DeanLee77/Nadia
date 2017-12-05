@@ -179,8 +179,23 @@ public class InferenceEngine {
 	  	             * Step2. does the rule currently being been checked have child rules? 
 	  	             *     if yes then add the child rules into the inclusiveList
 	  	             */
-	    				nodeSet.getDependencyMatrix().getToChildDependencyList(node.getNodeId());
-	  	            if(!hasChildren(node.getNodeId()) && ast.getInclusiveList().contains(node.getNodeName()) 
+	    				int nodeId = node.getNodeId();
+	    				if(i != ass.getGoalNodeIndex())
+	    				{
+	    					List<Integer> parentDependencyList = nodeSet.getDependencyMatrix().getFromParentDependencyList(nodeId);
+	    					if(!parentDependencyList.isEmpty())
+	    					{
+	    						
+	    						parentDependencyList.parallelStream().forEachOrdered(parentId -> {
+	    							if((nodeSet.getDependencyMatrix().getDependencyType(parentId, nodeId)&DependencyType.getMandatory()) == DependencyType.getMandatory())
+	    							{
+	    								ast.addItemToMandatoryList(node.getNodeName());
+	    							}
+	    						});
+	    					}
+	    				}
+	    				
+	  	            if(!hasChildren(nodeId) && ast.getInclusiveList().contains(node.getNodeName()) 
 	  	            			&& !canEvaluate(node) && !areAllParentsInExclusiveList(node))
 	  	            {
 		  	            	ass.setNodeToBeAsked(node);
@@ -188,7 +203,7 @@ public class InferenceEngine {
 		  	            	System.out.println("indexOfRuleToBeAsked : "+indexOfRuleToBeAsked);
 		  	            	return ass.getNodeToBeAsked();
 	  	            }
-		            else if(hasChildren(node.getNodeId()) && !ast.getWorkingMemory().containsKey(node.getVariableName()) 
+		            else if(hasChildren(nodeId) && !ast.getWorkingMemory().containsKey(node.getVariableName()) 
 	            			&& !ast.getWorkingMemory().containsKey(node.getNodeName()) && ast.getInclusiveList().contains(node.getNodeName()) 
 	            			&& !areAllParentsInExclusiveList(node))
 		            {
@@ -536,6 +551,19 @@ public class InferenceEngine {
     			Node tempNode = nodeSortedList.get(sortedListSize - (i+1));
 			LineType lineType = tempNode.getLineType();
 			
+			int tempNodeId = tempNode.getNodeId();
+			List<Integer> parentDependencyList = nodeSet.getDependencyMatrix().getFromParentDependencyList(tempNodeId);
+			if(!parentDependencyList.isEmpty())
+			{
+				
+				parentDependencyList.parallelStream().forEachOrdered(parentId -> {
+					if((nodeSet.getDependencyMatrix().getDependencyType(parentId, tempNodeId)&DependencyType.getMandatory()) == DependencyType.getMandatory())
+					{
+						ast.addItemToMandatoryList(tempNode.getNodeName());
+					}
+				});
+			}
+
     			if(nodeIndex < (sortedListSize - (i+1))) //case of all nodes located after the nodeIndex
     			{
     				if(hasChildren(tempNode.getNodeId()))
@@ -587,6 +615,7 @@ public class InferenceEngine {
     				 * it the tempNode is located before the nodeIndex then there is need to check whether or not the tempNode is in the inclusiveList due to the reason that
     				 * evaluating only relevant node could speed the propagation faster. In addition only relevant nodes can be traced by checking the inclusiveList.
     				 */
+    				
     				if(ast.getInclusiveList().contains(tempNode.getNodeName()))
 	    	    		{
 	    	    			/*
@@ -636,6 +665,7 @@ public class InferenceEngine {
     
     public boolean hasAllMandatoryChildAnswered(int nodeId)
     {    		
+
     		List<Integer> mandatoryChildDependencyList = nodeSet.getDependencyMatrix().getMandatoryToChildDependencyList(nodeId);
     		boolean hasAllMandatoryChildAnswered = false;
     		if(!mandatoryChildDependencyList.isEmpty())
@@ -730,7 +760,6 @@ public class InferenceEngine {
 		    			if(isAnyOrDependencyTrue(node, orToChildDependencies)) //TRUE case
 		    			{
 		    				int nodeId = node.getNodeId();
-		    				System.out.println("here");
 	    				    if(nodeSet.getDependencyMatrix().hasMandatoryChildNode(nodeId) && !hasAllMandatoryChildAnswered(nodeId))
 	    					{
 							return canDetermine;
@@ -1046,26 +1075,26 @@ public class InferenceEngine {
 		int parentNodeId = parentNode.getNodeId();
 		int dpType = nodeSet.getDependencyMatrix().getDependencyMatrixArray()[parentNodeId][childNodeId];
 		int mandatoryDependencyType = DependencyType.getMandatory();
-		
-		if(((dpType & mandatoryDependencyType) != mandatoryDependencyType) 
-				&& !ast.getWorkingMemory().containsKey(nodeSet.getNodeIdMap().get(childNodeId)))
-	    	{
-	    		ast.getInclusiveList().remove(nodeSet.getNodeIdMap().get(childNodeId));
-	    		if(!ast.getExclusiveList().contains(nodeSet.getNodeIdMap().get(childNodeId)))
-    			{
-	    			ast.getExclusiveList().add(nodeSet.getNodeIdMap().get(childNodeId));
-    			}
-	    		List<Integer> childDependencyListOfChildNode = nodeSet.getDependencyMatrix().getToChildDependencyList(childNodeId);
-	    		if(!childDependencyListOfChildNode.isEmpty())
-	    		{
-	    			childDependencyListOfChildNode.stream().forEach(item->{
-	    				trimDependency(nodeSet.getNodeByNodeId(childNodeId),item);
-	    			});
-	    		}
-	    	}
-		
-		
-	    
+		List<Integer> parentDependencyList = nodeSet.getDependencyMatrix().getFromParentDependencyList(childNodeId);
+		if(parentDependencyList.stream().allMatch(parentId -> (parentId != parentNode.getNodeId() && ast.getExclusiveList().contains(nodeSet.getNodeByNodeId(parentId).getNodeName()))))
+		{
+			if(((dpType & mandatoryDependencyType) != mandatoryDependencyType) 
+					&& !ast.getWorkingMemory().containsKey(nodeSet.getNodeIdMap().get(childNodeId)))
+		    	{
+		    		ast.getInclusiveList().remove(nodeSet.getNodeIdMap().get(childNodeId));
+		    		if(!ast.getExclusiveList().contains(nodeSet.getNodeIdMap().get(childNodeId)))
+	    			{
+		    			ast.getExclusiveList().add(nodeSet.getNodeIdMap().get(childNodeId));
+	    			}
+		    		List<Integer> childDependencyListOfChildNode = nodeSet.getDependencyMatrix().getToChildDependencyList(childNodeId);
+		    		if(!childDependencyListOfChildNode.isEmpty())
+		    		{
+		    			childDependencyListOfChildNode.stream().forEach(item->{
+		    				trimDependency(nodeSet.getNodeByNodeId(childNodeId),item);
+		    			});
+		    		}
+		    	}
+		}
     }
     
     public boolean isAnyAndDependencyFalse(Node node, List<Integer> andChildDependencies)

@@ -126,6 +126,11 @@ public class ComparisonLine extends Node{
 			}
 //			script = "new Date("+((FactDateValue)workingMemoryLhsValue).getValue().getYear()+"/"+((FactDateValue)workingMemoryLhsValue).getValue().getMonthValue()+"/"+((FactDateValue)workingMemoryLhsValue).getValue().getDayOfMonth()+")"+operator+"new Date("+((FactDateValue)workingMemoryRhsValue).getValue().getYear()+"/"+((FactDateValue)workingMemoryRhsValue).getValue().getMonthValue()+"/"+((FactDateValue)workingMemoryRhsValue).getValue().getDayOfMonth()+");" ;
 		}
+		else if(workingMemoryLhsValue.getType().equals(FactValueType.DECIMAL) || workingMemoryLhsValue.getType().equals(FactValueType.DOUBLE) 
+				|| workingMemoryLhsValue.getType().equals(FactValueType.INTEGER) || workingMemoryLhsValue.getType().equals(FactValueType.NUMBER))
+		{
+			script = workingMemoryLhsValue.getValue().toString()+operator+workingMemoryRhsValue.getValue().toString() ;
+		}
 		else
 		{
 			if(workingMemoryRhsValue != null && workingMemoryLhsValue != null)
