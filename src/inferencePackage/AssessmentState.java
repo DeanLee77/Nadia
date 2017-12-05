@@ -22,12 +22,16 @@ import nodePackage.*;
 public class AssessmentState {
 	private HashMap<String, FactValue> workingMemory;
 	private List<String> inclusiveList;
+	private List<String> exclusiveList;
 	private List<String> summaryList;
+	private List<String> mandatoryList;
 	public AssessmentState()
 	{
 		this.workingMemory = new HashMap<>();
 		this.inclusiveList = new ArrayList<>();  // this is to capture all relevant rules 
 		this.summaryList = new ArrayList<>(); // this is to store all determined rules within assessment in order.
+		this.exclusiveList = new ArrayList<>();// this is to capture all trimmed rules 
+		this.mandatoryList = new ArrayList<>();
 	}
 	/*
 	 * this method is to get workingMemory 
@@ -84,7 +88,65 @@ public class AssessmentState {
 		return isInTheList;
 	}
 	
+	public void addItemToSummaryList(String node)
+	{
+		if(!this.summaryList.contains(node))
+		{
+			this.summaryList.add(node);
+		}
+	}
+	public List<String> getSummaryList()
+	{
+		return this.summaryList;
+	}
+	public void setSummaryList(List<String> summaryList)
+	{
+		this.summaryList = summaryList;
+	}
 	
+	// exclusiveList
+	public List<String> getExclusiveList()
+	{
+		return this.exclusiveList;
+	}
+	public void setExclusiveList(List<String> exclusiveList)
+	{
+		this.exclusiveList = exclusiveList;
+	}
+	public boolean isInExlusiveList(String name)
+	{
+		boolean isInTheList = false;
+		if(this.exclusiveList.contains(name))
+		{
+			isInTheList = true;
+		}
+		return isInTheList;
+	}
+	
+	//mandatoryList
+	public List<String> getMandatoryList()
+	{
+		return this.mandatoryList;
+	}
+	public void setMandatoryList(List<String> mandatoryList)
+	{
+		this.mandatoryList = mandatoryList;
+	}
+	public void addItemToMandatoryList(String nodeName)
+	{
+		if(!this.mandatoryList.contains(nodeName))
+		{
+			this.mandatoryList.add(nodeName);
+		}
+	}
+	public boolean isInMandatoryList(String nodeName)
+	{
+		return this.mandatoryList.contains(nodeName);
+	}
+	public boolean allMandatoryNodeDetermined()
+	{
+		return this.mandatoryList.parallelStream().allMatch(nodeName -> this.workingMemory.containsKey(nodeName));
+	}
 	/*
 	 * this method is to set a rule as a fact in the workingMemory 
 	 * before this method is called, nodeName should be given and look up nodeMap in NodeSet to find variableName of the node
@@ -106,20 +168,4 @@ public class AssessmentState {
 		workingMemory.remove(name);
 	}
 	
-	
-	//Below lines are all SummaryList related
-	
-	public void addItemToSummaryList(String node)
-	{
-		this.summaryList.add(node);
-	}
-	public List<String> getSummaryList()
-	{
-		return this.summaryList;
-	}
-	public void setSummaryList(List<String> summaryList)
-	{
-		this.summaryList = summaryList;
-	}
-
 }

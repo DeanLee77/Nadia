@@ -1,5 +1,6 @@
 package nodePackage;
 
+import java.time.LocalDate;
 import java.util.HashMap;
 
 import javax.script.ScriptEngine;
@@ -26,22 +27,25 @@ public class ComparisonLine extends Node{
 	public void initialisation(String childText, Tokens tokens) {
 
 		/*
-		 * this line pattern is as (^U)([ML]+)(O)([MLNoDaDeHaUrlId]*$)
+		 * this line pattern is as (^[ML]+)(O)([MLNoDaDeHaUrlId]*$)
 		 */
-		StringBuilder sb = new StringBuilder();
-		tokens.tokensList.subList(1, tokens.tokensList.size()).stream().forEachOrdered((s)->sb.append(s+" "));
-		this.nodeName = childText;
 		
-		int operatorIndex = tokens.tokensStringList.indexOf("O");
-		sb.setLength(0);
-		tokens.tokensList.subList(1, operatorIndex).stream().forEachOrdered((s)-> sb.append(s+" "));
-		this.variableName = sb.toString().trim();	
-		this.lhs = variableName;
+		this.nodeName = childText;		
 		/*
 		 * In javascript engine '=' operator means assigning a value, hence if the operator is '=' then it needs to be replaced with '=='. 
 		 */
+		int operatorIndex = tokens.tokensStringList.indexOf("O");
 		this.operator = tokens.tokensList.get(operatorIndex).matches("=")?"==":tokens.tokensList.get(operatorIndex);
 		
+		if(operator.equals("=="))
+		{
+			this.variableName = childText.split("=")[0].trim();
+		}
+		else
+		{
+			this.variableName = childText.split(this.operator)[0].trim();
+		}
+		this.lhs = variableName;
 		
 		int tokensStringListSize = tokens.tokensStringList.size();
 		String lastToken = tokens.tokensList.get(tokensStringListSize-1);
@@ -84,8 +88,11 @@ public class ComparisonLine extends Node{
 		 * 
 		 */		
 		
-		FactValue workingMemoryLhsValue = workingMemory.get(this.variableName);
-		FactValue workingMemoryRhsValue = workingMemory.get(this.getFactValue().getValue().toString());
+		FactValue workingMemoryLhsValue = workingMemory.containsKey(this.variableName)?workingMemory.get(this.variableName):null;
+		FactValue workingMemoryRhsValue = this.getRHS().getType().equals(FactValueType.STRING)?
+											workingMemory.get(this.getRHS().getValue().toString())
+											:
+											this.getRHS();
 		
 		String script = "";
 		
@@ -104,16 +111,25 @@ public class ComparisonLine extends Node{
 		/*
 		 * if it is about date comparison then string of 'script' needs rewriting
 		 */
-		if(workingMemoryLhsValue.getType().equals(FactValueType.DATE) || workingMemoryRhsValue.getType().equals(FactValueType.DATE))
+		if((workingMemoryLhsValue!= null && workingMemoryLhsValue.getType().equals(FactValueType.DATE)) || (workingMemoryRhsValue!= null && workingMemoryRhsValue.getType().equals(FactValueType.DATE)))
 		{
-			if(workingMemoryRhsValue != null && workingMemoryLhsValue != null)
+			switch(this.operator)
 			{
-				script = "var localDate = java.time.LocalDate; localDate.of("+((FactDateValue)workingMemoryLhsValue).getValue().getYear()+","+((FactDateValue)workingMemoryLhsValue).getValue().getMonthValue()+","+((FactDateValue)workingMemoryLhsValue).getValue().getDayOfMonth()+") "+operator+" localDate.of("+((FactDateValue)workingMemoryRhsValue).getValue().getYear()+","+((FactDateValue)workingMemoryRhsValue).getValue().getMonthValue()+","+((FactDateValue)workingMemoryRhsValue).getValue().getDayOfMonth()+");" ;
+				case ">":
+					return FactValue.parse(((LocalDate)workingMemoryLhsValue.getValue()).isAfter(((LocalDate)workingMemoryRhsValue.getValue())));
+				case ">=":
+					return FactValue.parse(((LocalDate)workingMemoryLhsValue.getValue()).isAfter(((LocalDate)workingMemoryRhsValue.getValue())) && ((LocalDate)workingMemoryLhsValue.getValue()).isEqual(((LocalDate)workingMemoryRhsValue.getValue())));
+				case "<":
+					return FactValue.parse(((LocalDate)workingMemoryLhsValue.getValue()).isBefore(((LocalDate)workingMemoryRhsValue.getValue())));
+				case "<=":
+					return FactValue.parse(((LocalDate)workingMemoryLhsValue.getValue()).isBefore(((LocalDate)workingMemoryRhsValue.getValue())) && ((LocalDate)workingMemoryLhsValue.getValue()).isEqual(((LocalDate)workingMemoryRhsValue.getValue())));
 			}
-			else if(workingMemoryRhsValue == null)
-			{
-				script = "var localDate = java.time.LocalDate; localDate.of("+((FactDateValue)workingMemoryLhsValue).getValue().getYear()+","+((FactDateValue)workingMemoryLhsValue).getValue().getMonthValue()+","+((FactDateValue)workingMemoryLhsValue).getValue().getDayOfMonth()+") "+operator+" localDate.of("+((FactDateValue)this.getFactValue()).getValue().getYear()+","+((FactDateValue)this.getFactValue()).getValue().getMonthValue()+","+((FactDateValue)this.getFactValue()).getValue().getDayOfMonth()+");" ;
-			}
+//			script = "new Date("+((FactDateValue)workingMemoryLhsValue).getValue().getYear()+"/"+((FactDateValue)workingMemoryLhsValue).getValue().getMonthValue()+"/"+((FactDateValue)workingMemoryLhsValue).getValue().getDayOfMonth()+")"+operator+"new Date("+((FactDateValue)workingMemoryRhsValue).getValue().getYear()+"/"+((FactDateValue)workingMemoryRhsValue).getValue().getMonthValue()+"/"+((FactDateValue)workingMemoryRhsValue).getValue().getDayOfMonth()+");" ;
+		}
+		else if(workingMemoryLhsValue.getType().equals(FactValueType.DECIMAL) || workingMemoryLhsValue.getType().equals(FactValueType.DOUBLE) 
+				|| workingMemoryLhsValue.getType().equals(FactValueType.INTEGER) || workingMemoryLhsValue.getType().equals(FactValueType.NUMBER))
+		{
+			script = workingMemoryLhsValue.getValue().toString()+operator+workingMemoryRhsValue.getValue().toString() ;
 		}
 		else
 		{
@@ -121,22 +137,22 @@ public class ComparisonLine extends Node{
 			{
 				script = "'"+workingMemoryLhsValue.getValue().toString()+"' "+operator+" '"+workingMemoryRhsValue.getValue().toString()+"'" ;
 			}
-			else if(workingMemoryRhsValue == null && workingMemoryLhsValue != null)
-			{
-				script = "'"+workingMemoryLhsValue.getValue().toString()+"' "+operator+" '"+this.getFactValue().getValue().toString()+"'" ;
+			
+		}
+		boolean result;
+		FactValue fv = null;
+		if(workingMemoryRhsValue != null && workingMemoryLhsValue != null)
+		{
+			try {
+				result = (boolean) nashorn.eval(script);
+				fv = FactValue.parse(result);
+			} catch (ScriptException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
 		}
-		FactValue fv = null;
 		
-		try {
-			boolean result = (boolean) nashorn.eval(script);
-			fv = (nodeOption & DependencyType.getNot())== DependencyType.getNot()? FactValue.parse(!result):FactValue.parse(result);
-			
-		} catch (ScriptException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
+				
 		return fv;
 	}
 }

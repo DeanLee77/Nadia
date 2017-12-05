@@ -1,17 +1,18 @@
 package testingPackage;
 
+import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-import java.util.*;
+
+import javax.script.ScriptEngine;
+import javax.script.ScriptEngineManager;
+import javax.script.ScriptException;
 
 import factValuePackage.FactBooleanValue;
+import factValuePackage.FactIntegerValue;
 import factValuePackage.FactValue;
 import nodePackage.DependencyType;
-import ruleParser.RuleSetParser;
-import ruleParser.RuleSetReader;
-import ruleParser.RuleSetScanner;
 import ruleParser.Tokenizer;
 import ruleParser.Tokens;
 
@@ -28,9 +29,10 @@ public class DeanTest {
 		System.out.println((dp&(DependencyType.getNot()|DependencyType.getKnown())) == (DependencyType.getNot()|DependencyType.getKnown()));
 		
 		String str = "\"double quoted\"";
-		Pattern p = Pattern.compile("(\")(.*)(\")");
+		Pattern p = Pattern.compile("([\"\'])(.*)([\"\'])");
 		Matcher m = p.matcher(str);
 		m.find();
+		System.out.println("str: "+str);
 		System.out.println(m.group(2));
 		
 		Pattern pt = Pattern.compile("^[\\d\\-()\\s\\+\\\\]*$");
@@ -60,10 +62,36 @@ public class DeanTest {
 		hm2.put("h6", "h6");
 		System.out.println("hm size: "+hm.size());
 		
-		List<Integer> list = new ArrayList<>(3);
-		list.add(1);
-		System.out.println("list size:"+list.size());
-		IntStream.range(0, list.size()).forEach(i -> System.out.println("haha"+i));
+		FactIntegerValue fiv = FactIntegerValue.parse(12);
+		System.out.println(fiv.getValue().toString());
+		
+		String exString = "number of drinks the person consumes a week IS CALC ( (number of drinks the person consumes an hour * hours of drinks a day+(one day/two day))*5)";
+		Tokens tks = Tokenizer.getTokens(exString);
+		System.out.println(tks.tokensString);
+		
+		LocalDate date1 = LocalDate.of(2001, 11, 1);
+		LocalDate date2 = LocalDate.of(2001, 10, 31);
+		System.out.println(date1.isAfter(date2));
+		String script = "var localDate = Java.type(\"java.time.LocalDate\"); localDate.of(1994,12,11).isAfter(localDate.of(1990,1,1));";
+		String script1 = "new Date(2017,11,1) > new Date(2017,10,31);";
+		ScriptEngineManager factory = new ScriptEngineManager();
+		ScriptEngine engine = factory.getEngineByName("nashorn");
+		try {
+			System.out.println("result: "+engine.eval(script));
+			
+		} catch (ScriptException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		Pattern pattern = Pattern.compile("[-+/*()0-9?:;,.\"](\\s*)");
+		
+		String strr = "( number of drinks the person consumes an hour * hours of drinks a day * (5-1))";
+		Matcher mat = pattern.matcher(strr);
+		System.out.println("matching: "+mat.find());
+		
+		String testStr = "this IS IN LIST that";
+		System.out.println(testStr.contains("IS IN LIST"));
+		
 //		RuleSetReader ilr = new RuleSetReader();
 //		ilr.setStreamSource(TopoSortingTest.class.getResourceAsStream("testing NOT and KNOWN.txt"));
 //		RuleSetParser isf = new RuleSetParser();		

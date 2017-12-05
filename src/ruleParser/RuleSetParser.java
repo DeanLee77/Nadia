@@ -48,7 +48,7 @@ public class RuleSetParser implements IScanFeeder {
 	final Pattern META_PATTERN_MATCHER = Pattern.compile("(^U)([MLU]*)([(No)(Da)ML(De)(Ha)(U(rl)?)(Id)]*$)");
 	final Pattern VALUE_MATCHER = Pattern.compile("(^[LM]+)(U)?([MLQ(No)(Da)(De)(Ha)(Url)(Id)]*$)(?!C)");
 	final Pattern EXPRESSION_CONCLUSION_MATCHER = Pattern.compile("(^[LM(Da)]+)(U)(C)");
-	final Pattern COMPARISON_MATCHER = Pattern.compile("(^U)([MLU(Da)]+)(O)([MLU(No)(Da)(De)(Ha)(Url)(Id)]*$)");
+	final Pattern COMPARISON_MATCHER = Pattern.compile("(^[MLU(Da)]+)(O)([MLUQ(No)(Da)(De)(Ha)(Url)(Id)]*$)");
 	final Pattern ITERATE_MATCHER = Pattern.compile("(^U)([MLU(No)(Da)]+)(I)([MLU]+$)");
 	final Pattern WARNING_MATCHER = Pattern.compile("WARNING");
 	LineType matchTypes[] = LineType.values();
@@ -68,7 +68,7 @@ public class RuleSetParser implements IScanFeeder {
 			 
 			Tokens tokens = Tokenizer.getTokens(parentText);
 			
-			Pattern matchPatterns[] = {META_PATTERN_MATCHER, VALUE_MATCHER, WARNING_MATCHER};
+			Pattern matchPatterns[] = {META_PATTERN_MATCHER, VALUE_MATCHER, EXPRESSION_CONCLUSION_MATCHER, WARNING_MATCHER};
 			Pattern p;
 			Matcher matcher;
 			for(int i = 0; i < matchPatterns.length; i++) {
@@ -82,6 +82,7 @@ public class RuleSetParser implements IScanFeeder {
 							break;
 						case 0:  //metaMatcher case
 							data = new MetadataLine(parentText, tokens);
+							
 							if(data.getFactValue().getValue().equals("WARNING"))
 							{
 								handleWarning(parentText);
@@ -89,23 +90,46 @@ public class RuleSetParser implements IScanFeeder {
 							break;
 						case 1:  //valueConclusionMatcher case
 							data = new ValueConclusionLine(parentText, tokens);
-							if(matcher.group(2) != null || tokens.tokensString.equals("L"))
+							
+							if(matcher.group(2) != null 
+								|| (tokens.tokensString.equals("L") || tokens.tokensString.equals("LM") || tokens.tokensString.equals("ML") || tokens.tokensString.equals("M")))
 							{
 								String variableName = data.getVariableName();
 								Node tempNode = data;
 								/*
-								 * following lines are to look for any nodes having a its nodeName with 'needs ' word or any operators due to the reason that
+								 * following lines are to look for any nodes having a its nodeName with any operators due to the reason that
 								 * the node could be used to define a node previously used as a child node for other nodes
 								 */
-								List<String> possibleParentNodeKeyList = nodeSet.getNodeMap().keySet().stream().filter(key -> key.matches("(.[^\\(]+)?(\\s[<>=]+\\s?)?(WANTS |NEEDS )?("+variableName+")(\\s[<>=]+)*(.[^\\)(IS)]+)*")).collect(Collectors.toList());
+								List<String> possibleParentNodeKeyList = nodeSet.getNodeMap().keySet().stream().filter(key -> key.matches("(.+)?(\\s[<>=]+\\s?)?("+variableName+")(\\s[<>=]+)*(.(?!(IS)))*(.*(IS IN LIST).*)*")).collect(Collectors.toList());
 								if(!possibleParentNodeKeyList.isEmpty())
 								{
 									possibleParentNodeKeyList.stream().forEachOrdered(item -> {
-										this.dependencyList.add(new Dependency(nodeSet.getNodeMap().get(item), tempNode, DependencyType.getOr()|DependencyType.getMandatory())); //Dependency Type :MANDATORY OR 
+										this.dependencyList.add(new Dependency(nodeSet.getNodeMap().get(item), tempNode, DependencyType.getOr())); //Dependency Type :OR
 									});
 								}
-							}					
+							}	
+							if(data.getFactValue().getValue().equals("WARNING"))
+							{
+								handleWarning(parentText);
+							}
+							break;
+						case 2: //exprConclusionMatcher case 
+							data = new ExprConclusionLine(parentText, tokens);
 							
+							String variableName = data.getVariableName();
+							Node tempNode = data;
+							/*
+							 * following lines are to look for any nodes having a its nodeName with any operators but not having a word of 'IS' keyword due to the reason that
+							 * the node could be used to define a node previously used as a child node for other nodes.
+							 * However, it is excluding nodes having 'IS' keyword because if it has the keyword then it should have child nodes to define the node otherwise the entire rule set has NOT been written in correct way
+							 */
+							List<String> possibleParentNodeKeyList = nodeSet.getNodeMap().keySet().stream().filter(key -> key.matches("(.+)?(\\s[<>=]+\\s?)?("+variableName+")(\\s[<>=]+)*(.(?!(IS)))*(.*(IS IN LIST).*)*")).collect(Collectors.toList());
+							if(!possibleParentNodeKeyList.isEmpty())
+							{
+								possibleParentNodeKeyList.stream().forEachOrdered(item -> {
+									this.dependencyList.add(new Dependency(nodeSet.getNodeMap().get(item), tempNode, DependencyType.getOr())); //Dependency Type :OR
+								});
+							}
 							if(data.getFactValue().getValue().equals("WARNING"))
 							{
 								handleWarning(parentText);
@@ -171,7 +195,7 @@ public class RuleSetParser implements IScanFeeder {
 			}
 			handleListItem(parentText, childText, metaType);
 		}
-		else  // is 'A-statement' child line
+		else  // is 'A-statement', 'A IS B', 'A <= B', or 'A IS CALC (B * C)' child line
 		{
 			if(firstKeywordsGroup.matches("^(AND\\s?)(.*)")) 
 			{
@@ -180,6 +204,14 @@ public class RuleSetParser implements IScanFeeder {
 			else if(firstKeywordsGroup.matches("^(OR\\s?)(.*)"))
 			{
 				dependencyType = handleNotKnownManOptPos(firstKeywordsGroup, DependencyType.getOr()); // 4-OR | 1-KNOWN? 2-NOT? 64-MANDATORY? 32-OPTIONALLY? 16-POSSIBLY? 
+			}
+			else if(firstKeywordsGroup.matches("^(WANTS)"))
+			{
+				dependencyType = DependencyType.getOr(); // 4-OR
+			}
+			else if(firstKeywordsGroup.matches("^(NEEDS)"))
+			{
+				dependencyType = DependencyType.getMandatory() | DependencyType.getAnd();  //  8-AND | 64-MANDATORY
 			}
 			
 			
@@ -200,11 +232,13 @@ public class RuleSetParser implements IScanFeeder {
 			{
 //				valueConclusionMatcher =Pattern.compile("(^U)([LMU(Da)(No)(De)(Ha)(Url)(Id)]+$)"); // child statement for ValueConclusionLine starts with AND(OR), AND MANDATORY(OPTIONALLY, POSSIBLY) or AND (MANDATORY) (NOT) KNOWN
 							
-				Pattern matchPatterns[] = { VALUE_MATCHER, WARNING_MATCHER};
+				Pattern matchPatterns[] = { VALUE_MATCHER, COMPARISON_MATCHER, WARNING_MATCHER};
 				
 				
 				Pattern p;
 				Matcher matcher;
+				Node tempNode;
+				List<String> possibleChildNodeKeyList;
 				
 				for(int i = 0; i < matchPatterns.length; i++) {
 					p = matchPatterns[i];
@@ -214,17 +248,52 @@ public class RuleSetParser implements IScanFeeder {
 					{
 						switch(i)
 						{
-							case 3:
+							case 3:  // warningMatcher case
 								handleWarning(childText);
 								break;
-							case 0:
+							case 0:  // valueConclusionMatcher case
 								data = new ValueConclusionLine(childText, tokens);
+								
+								tempNode = data;
+								possibleChildNodeKeyList = nodeSet.getNodeMap().keySet().stream().filter(key -> key.matches("(^"+tempNode.getVariableName()+")(.(IS(?!(\\sIN LIST))).*)*")).collect(Collectors.toList());
+														
+								if(!possibleChildNodeKeyList.isEmpty())
+								{
+									possibleChildNodeKeyList.stream().forEachOrdered(item -> {
+										this.dependencyList.add(new Dependency(tempNode, nodeSet.getNodeMap().get(item), DependencyType.getOr())); //Dependency Type :OR
+									});
+								}
 								
 								if(data.getFactValue().getValue().equals("WARNING"))
 								{
 									handleWarning(parentText);
 								}
 								break;
+							case 1:  // comparisonMatcher case
+								data = new ComparisonLine(childText, tokens);
+								
+								FactValueType rhsType = ((ComparisonLine)data).getRHS().getType();
+								String rhsString = ((ComparisonLine)data).getRHS().getValue().toString();
+								String lhsString = ((ComparisonLine)data).getLHS();
+								tempNode = data;
+								possibleChildNodeKeyList = rhsType.equals(FactValueType.STRING)? 
+														nodeSet.getNodeMap().keySet().stream().filter(key -> key.matches("(^"+lhsString+")(.(IS(?!(\\sIN LIST))).*)*")|| key.matches("(^"+rhsString+")(.(IS(?!(\\sIN LIST))).*)*")).collect(Collectors.toList())
+														:
+														nodeSet.getNodeMap().keySet().stream().filter(key -> key.matches("(^"+lhsString+")(.(IS(?!(\\sIN LIST))).*)*")).collect(Collectors.toList());
+
+								if(!possibleChildNodeKeyList.isEmpty())
+								{
+									possibleChildNodeKeyList.stream().forEachOrdered(item -> {
+										this.dependencyList.add(new Dependency(tempNode, nodeSet.getNodeMap().get(item), DependencyType.getOr())); //Dependency Type :OR
+									});
+								}
+								
+								if(data.getFactValue().getValue().equals("WARNING"))
+								{
+									handleWarning(parentText);
+								}
+								break;
+								
 						}
 						data.setNodeLine(lineNumber);
 						this.nodeSet.getNodeMap().put(data.getNodeName(), data);
