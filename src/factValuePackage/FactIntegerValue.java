@@ -20,7 +20,7 @@ public class FactIntegerValue extends FactValue {
 
 	@Override
 	public FactValueType getType() {
-		return FactValueType.NUMBER;
+		return FactValueType.INTEGER;
 	}
 
 

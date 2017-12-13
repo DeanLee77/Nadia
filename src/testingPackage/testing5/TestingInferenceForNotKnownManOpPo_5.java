@@ -1,14 +1,9 @@
-package testingPackage;
+package testingPackage.testing5;
 
 import java.io.BufferedReader;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
-import java.util.Scanner;
-import java.util.stream.Stream;
 
 import factValuePackage.FactValue;
 import factValuePackage.FactValueType;
@@ -20,12 +15,12 @@ import ruleParser.RuleSetReader;
 import ruleParser.RuleSetScanner;
 import testingUtilPackage.NodeObject_For_Inference_Test;
 
-public class WeddingPlanner_Inference_Test {
+public class TestingInferenceForNotKnownManOpPo_5 {
 
 	public static void main(String[] args) throws IOException {
 		
 		HashMap<String, NodeObject_For_Inference_Test> nameMap = new HashMap<>();
-		BufferedReader br = new BufferedReader(new InputStreamReader(WeddingPlanner_Inference_Test.class.getResourceAsStream("Wedding_Planner Inference Test.txt")));
+		BufferedReader br = new BufferedReader(new InputStreamReader(TestingInferenceForNotKnownManOpPo_5.class.getResourceAsStream("testing NOT, KNOWN, Mandatory, Possibly, and Optionally inference.txt")));
 		String line;
 		while((line = br.readLine()) != null)
 		{
@@ -36,12 +31,14 @@ public class WeddingPlanner_Inference_Test {
 		}
 		br.close();
 		
+
 		RuleSetReader ilr = new RuleSetReader();
-		ilr.setStreamSource(WeddingPlanner_Inference_Test.class.getResourceAsStream("Wedding Planner.txt"));
+		ilr.setStreamSource(TestingInferenceForNotKnownManOpPo_5.class.getResourceAsStream("testing NOT, KNOWN, Mandatory, Possibly, and Optionally.txt"));
 		RuleSetParser isf = new RuleSetParser();		
 		RuleSetScanner rsc = new RuleSetScanner(ilr,isf);
 		rsc.scanRuleSet();
 		rsc.establishNodeSet();
+		
 		InferenceEngine ie = new InferenceEngine(isf.getNodeSet());
 		Assessment ass = new Assessment(isf.getNodeSet(), isf.getNodeSet().getNodeSortedList().get(0).getNodeName());
 //		Scanner scan = new Scanner(System.in);
@@ -50,16 +47,28 @@ public class WeddingPlanner_Inference_Test {
 		{
 			
 			Node nextQuestionNode = ie.getNextQuestion(ass);
-			FactValueType questionFvt = ie.findTypeOfElementToBeAsked(nextQuestionNode);
-			System.out.println("questionFvt :"+questionFvt);
+			HashMap<String,FactValueType> questionFvtMap = ie.findTypeOfElementToBeAsked(nextQuestionNode);
+			
 			FactValueType fvt = null;
 			String answer;
 			
 			for(String question: ie.getQuestionsFromNodeToBeAsked(nextQuestionNode))
 			{
+				System.out.println("questionFvt :"+questionFvtMap.get(question));
 				System.out.println("Question: " + question+"?");
-
-				if(i < 3)
+				if(i == 0)
+				{
+					answer = "false";
+				}
+				else if(question.equals("person's dob"))
+				{
+					answer = "false";
+				}
+				else if(question.equals("the person was born in Australia"))
+				{
+					answer = "false";
+				}
+				else if(i < 3)
 				{
 					answer = "true";
 				}
@@ -68,23 +77,19 @@ public class WeddingPlanner_Inference_Test {
 					answer = nameMap.get(question).getValue();
 				}
 				System.out.println("Answer: "+answer);
-//				String answer = scan.nextLine();			
 				
-				ie.feedAnswerToNode(nextQuestionNode, question, answer, questionFvt);
+				ie.feedAnswerToNode(nextQuestionNode, question, answer, questionFvtMap.get(question));
 				i++;
 			}
 
 			
 		}
-//		Stream<String> keyList = ie.getAssessmentState().getWorkingMemory().keySet().stream();
-//		keyList.forEach(key -> {
-//			System.out.println(key+" : "+ie.getAssessmentState().getWorkingMemory().get(key).getValue().toString());
-//		});
+
 		HashMap<String, FactValue> workingMemory = ie.getAssessmentState().getWorkingMemory();
 		ie.getAssessmentState().getSummaryList().stream().forEachOrdered(node ->{
 			System.out.println(node+" : "+workingMemory.get(node).getValue().toString());
 		});
 		
-//		scan.close();
 	}
+
 }

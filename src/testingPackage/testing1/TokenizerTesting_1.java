@@ -1,4 +1,4 @@
-package testingPackage;
+package testingPackage.testing1;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -8,13 +8,13 @@ import java.io.InputStreamReader;
 import ruleParser.Tokenizer;
 import ruleParser.Tokens;
 
-public class TokenizerTesting {
+public class TokenizerTesting_1 {
 
 	public static void main(String[] args) throws IOException {
 		// TODO Auto-generated method stub
 		String fileName = "Tokenizer_Testing.txt";
 
-		BufferedReader br = new BufferedReader(new InputStreamReader(TokenizerTesting.class.getResourceAsStream(fileName)));
+		BufferedReader br = new BufferedReader(new InputStreamReader(TokenizerTesting_1.class.getResourceAsStream(fileName)));
 
 			String line;
 			String textString = "";
