@@ -16,6 +16,7 @@ public class IterateLine extends Node {
 
 	private String numberOfTarget;
 	private NodeSet iterateNodeSet;
+	
 
 	
 
@@ -64,7 +65,14 @@ public class IterateLine extends Node {
 	}
 	@Override
 	public void initialisation(String parentText, Tokens tokens) {
-		// TODO Auto-generated method stub
+		this.numberOfTarget = tokens.tokensList.get(0);
+		this.variableName = tokens.tokensList.get(1);
+		
+		int tokensStringListSize = tokens.tokensStringList.size();
+		String lastToken = tokens.tokensList.get(tokensStringListSize-1); //this is a givenListName.
+		String lastTokenString = tokens.tokensStringList.get(tokensStringListSize-1);
+		this.setValue(lastTokenString, lastToken);
+		
 		
 	}
 
