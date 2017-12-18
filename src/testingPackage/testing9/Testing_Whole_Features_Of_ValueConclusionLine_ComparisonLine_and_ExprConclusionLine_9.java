@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.stream.IntStream;
 
+import factValuePackage.FactListValue;
 import factValuePackage.FactValue;
 import factValuePackage.FactValueType;
 import inferencePackage.Assessment;
@@ -329,7 +330,13 @@ public class Testing_Whole_Features_Of_ValueConclusionLine_ComparisonLine_and_Ex
 
 		HashMap<String, FactValue> workingMemory = ie.getAssessmentState().getWorkingMemory();
 		ie.getAssessmentState().getSummaryList().stream().forEachOrdered(node ->{
-			System.out.println(node+" : "+workingMemory.get(node).getValue().toString());
+			if(workingMemory.get(node).getType().equals(FactValueType.LIST))
+			{
+				((FactListValue<?>)workingMemory.get(node)).getValue().stream().forEach(item-> System.out.println(node+" : "+item));
+			}
+			{
+				System.out.println(node+" : "+workingMemory.get(node).getValue().toString());
+			}
 		});	
 
 	}

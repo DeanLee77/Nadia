@@ -28,11 +28,13 @@ public abstract class FactValue {
 		return new FactDoubleValue(d);
 	}
 	
+	@SuppressWarnings("rawtypes")
 	public static FactBooleanValue<?> parse(boolean b)
 	{
 		return new FactBooleanValue(b);
 	}
 	
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public static FactListValue<?> parse(List<FactValue> l)
 	{
 		return new FactListValue(l);

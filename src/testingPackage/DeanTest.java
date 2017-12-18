@@ -92,6 +92,9 @@ public class DeanTest {
 		String testStr = "this IS IN LIST that";
 		System.out.println(testStr.contains("IS IN LIST"));
 		
+		String exString1 = "NONE person's health condition ITERATE: LIST OF person’s health check-up history";
+		Tokens tks1 = Tokenizer.getTokens(exString1);
+		
 //		RuleSetReader ilr = new RuleSetReader();
 //		ilr.setStreamSource(TopoSortingTest.class.getResourceAsStream("testing NOT and KNOWN.txt"));
 //		RuleSetParser isf = new RuleSetParser();		

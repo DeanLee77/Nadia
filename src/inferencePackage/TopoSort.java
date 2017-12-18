@@ -94,7 +94,7 @@ public class TopoSort {
 			for(int parentCol = 0; parentCol < sizeOfMatrix; parentCol++)
 			{
 				
-				if(dependencyMatrix[parentCol][childRow] == 0 && parentCol != childRow) // don't count when parentCol == childRow due to it is where nodeOption (KNOWN or NOT) is stored. 
+				if(dependencyMatrix[parentCol][childRow] == 0 && parentCol != childRow) // don't count when parentCol == childRow due to the reason that there shouldn't be value at the index. 
 				{
 					count++;
 				}
@@ -103,7 +103,7 @@ public class TopoSort {
 					continue;
 				}
 			}
-			if(count == sizeOfMatrix-1) //exclude its own dependency due to it is nodeOption
+			if(count == sizeOfMatrix-1) //exclude its own dependency 
 			{
 				String tempNodeName = nodeIdMap.get(childRow);
 				if(tempNodeName != null)

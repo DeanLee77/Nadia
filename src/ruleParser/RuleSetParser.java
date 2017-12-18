@@ -49,7 +49,7 @@ public class RuleSetParser implements IScanFeeder {
 	final Pattern VALUE_MATCHER = Pattern.compile("(^[LM]+)(U)?([MLQ(No)(Da)(De)(Ha)(Url)(Id)]*$)(?!C)");
 	final Pattern EXPRESSION_CONCLUSION_MATCHER = Pattern.compile("(^[LM(Da)]+)(U)(C)");
 	final Pattern COMPARISON_MATCHER = Pattern.compile("(^[MLU(Da)]+)(O)([MLUQ(No)(Da)(De)(Ha)(Url)(Id)]*$)");
-	final Pattern ITERATE_MATCHER = Pattern.compile("(^U)([MLU(No)(Da)]+)(I)([MLU]+$)");
+	final Pattern ITERATE_MATCHER = Pattern.compile("(^[MLU(No)(Da)]+)(I)([MLU]+$)");
 	final Pattern WARNING_MATCHER = Pattern.compile("WARNING");
 	LineType matchTypes[] = LineType.values();
 	NodeSet nodeSet = new NodeSet();
@@ -232,7 +232,7 @@ public class RuleSetParser implements IScanFeeder {
 			{
 //				valueConclusionMatcher =Pattern.compile("(^U)([LMU(Da)(No)(De)(Ha)(Url)(Id)]+$)"); // child statement for ValueConclusionLine starts with AND(OR), AND MANDATORY(OPTIONALLY, POSSIBLY) or AND (MANDATORY) (NOT) KNOWN
 							
-				Pattern matchPatterns[] = { VALUE_MATCHER, COMPARISON_MATCHER, WARNING_MATCHER};
+				Pattern matchPatterns[] = { VALUE_MATCHER, COMPARISON_MATCHER, ITERATE_MATCHER, WARNING_MATCHER};
 				
 				
 				Pattern p;
@@ -288,6 +288,13 @@ public class RuleSetParser implements IScanFeeder {
 									});
 								}
 								
+								if(data.getFactValue().getValue().equals("WARNING"))
+								{
+									handleWarning(parentText);
+								}
+								break;
+							case 2:  // comparisonMatcher case
+								data = new IterateLine(childText, tokens);
 								if(data.getFactValue().getValue().equals("WARNING"))
 								{
 									handleWarning(parentText);
