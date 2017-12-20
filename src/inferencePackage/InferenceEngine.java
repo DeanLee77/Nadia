@@ -214,6 +214,11 @@ public class InferenceEngine {
 	    	return ass.getNodeToBeAsked();
     }
     
+    public Node getNextQuestion(Node iterateLine)
+    {
+    	
+    }
+    
     public List<String> getQuestionsFromNodeToBeAsked(Node nodeToBeAsked)
     {
     		List<String> questionList = new ArrayList<>();
