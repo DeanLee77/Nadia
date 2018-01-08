@@ -17,6 +17,7 @@ INPUT hours of drinks a day AS NUMBER
 INPUT enlistment date AS DATE
 INPUT discharge date AS DATE
 INPUT discharge type AS TEXT
+INPUT number of services AS NUMBER
 FIXED Special service AS LIST
 	ITEM Angular force
 	ITEM React force
@@ -85,7 +86,9 @@ we have the person's passport
 	AND MANDATORY person has not lost the passport
 		OR current location of person's passport = the place the person normally locate the passport
 		OR NOT person's passport is in a police station	
-person must meet military service criteria	AND NOT ALL service ITERATE: LIST OF service history 		OR one			AND enlistment date >= 01/07/1951			AND discharge date <= 6/12/1972			AND NOT service type IS IN LIST: Special service		OR two			AND enlistment date >= 22/05/1986			AND yearly period of service by 6/04/1994 >= 3				AND yearly period of service by 6/04/1994 IS CALC (enlistment date - 6/04/1994)					NEEDS enlistment date			AND NOT service type IS IN LIST: Special service			AND discharge date >= 07/04/1994			AND discharge date <= 30/06/2004		OR three			AND enlistment date >= 22/05/1986			AND yearly period of service < 3
-				AND yearly period of service IS CALC (discharge date - enlistment date)
-					NEEDS discharge date
-					NEEDS enlistment date			AND NOT discharge type = "medical discharge"			AND NOT service type IS IN LIST: Special service		OR four			AND enlistment date >= 07/04/1994			AND NOT service type IS IN LIST: Special service		OR five			AND service type = “Steam force”			AND enlistment date >= 01/07/1951			AND discharge date >= 30/06/2004
+person must meet military service criteria	AND NOT ALL service ITERATE: LIST OF service history
+		AND number of services
+		AND iterate rules			OR one				AND enlistment date >= 01/07/1951				AND discharge date <= 6/12/1972				AND NOT service type IS IN LIST: Special service			OR two				AND enlistment date >= 22/05/1986				AND yearly period of service by 6/04/1994 >= 3					AND yearly period of service by 6/04/1994 IS CALC (enlistment date - 6/04/1994)						NEEDS enlistment date				AND NOT service type IS IN LIST: Special service				AND discharge date >= 07/04/1994				AND discharge date <= 30/06/2004			OR three				AND enlistment date >= 22/05/1986				AND yearly period of service < 3
+					AND yearly period of service IS CALC (discharge date - enlistment date)
+						NEEDS discharge date
+						NEEDS enlistment date				AND NOT discharge type = "medical discharge"				AND NOT service type IS IN LIST: Special service			OR four				AND enlistment date >= 07/04/1994				AND NOT service type IS IN LIST: Special service			OR five				AND service type = “Steam force”				AND enlistment date >= 01/07/1951				AND discharge date >= 30/06/2004

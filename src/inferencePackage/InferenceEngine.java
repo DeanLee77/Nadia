@@ -20,6 +20,7 @@ public class InferenceEngine {
 	private NodeSet nodeSet;
 	private Node targetNode;
     private AssessmentState ast;
+    private Assessment ass;
     private List<Node> nodeFactList;
     private ScriptEngine scriptEngine = new ScriptEngineManager().getEngineByName("nashorn");
  
@@ -70,8 +71,14 @@ public class InferenceEngine {
     	
     }
     
-    
-    
+    public void setAssessment(Assessment ass)
+    {
+    		this.ass = ass;
+    }
+    public Assessment getAssessment()
+    {
+    		return this.ass;
+    }
     /*
      * this method is to extract all variableName of Nodes, and put them into a List<String>
      * it may be useful to display and ask a user to select which information they do have even before starting Inference process
@@ -195,11 +202,29 @@ public class InferenceEngine {
 	    						});
 	    					}
 	    				}
-	    				
-	  	            if(!hasChildren(nodeId) && ast.getInclusiveList().contains(node.getNodeName()) 
+	    				if(node.getLineType().equals(LineType.ITERATE))
+	    				{	
+	    					String givenListName = this.ast.getWorkingMemory().get(((IterateLine)node).getGivenListName()).getValue().toString().trim();
+	    					if(!givenListName.equals(null))
+	    					{
+	    						((IterateLine)node).iterateFeedAnswers(givenListName, this.nodeSet, this.ast);
+	    					}
+	    					else
+	    					{
+	    						while(this.ast.getWorkingMemory().containsKey(node.getNodeName()))
+		    					{
+		    						ass.setNodeToBeAsked(node);
+			    					int indexOfRuleToBeAsked = i;
+				  	            	System.out.println("indexOfRuleToBeAsked : "+indexOfRuleToBeAsked);
+				  	            	
+		    						return ((IterateLine)node).getIterateNextQuestion(this.nodeSet, this.ast);
+		    					}
+	    					}	    					
+	    				}
+	    				else if(!hasChildren(nodeId) && ast.getInclusiveList().contains(node.getNodeName()) 
 	  	            			&& !canEvaluate(node))
 	  	            {
-		  	            	ass.setNodeToBeAsked(node);
+	  	            		ass.setNodeToBeAsked(node);
 		  	            	int indexOfRuleToBeAsked = i;
 		  	            	System.out.println("indexOfRuleToBeAsked : "+indexOfRuleToBeAsked);
 		  	            	return ass.getNodeToBeAsked();
@@ -214,10 +239,6 @@ public class InferenceEngine {
 	    	return ass.getNodeToBeAsked();
     }
     
-    public Node getNextQuestion(Node iterateLine)
-    {
-    	
-    }
     
     public List<String> getQuestionsFromNodeToBeAsked(Node nodeToBeAsked)
     {
@@ -252,6 +273,7 @@ public class InferenceEngine {
 	    	questionList.stream().forEachOrdered(item->ast.getInclusiveList().add(item));
 	    	return questionList;
     }
+    
     
     public HashMap<String,FactValueType> findTypeOfElementToBeAsked(Node node)
     {
@@ -502,7 +524,7 @@ public class InferenceEngine {
 	    		fv = FactValue.parseUUID((String)nodeValue);
 	    	}
 	    	
-	    	if(fv != null)
+	    	if(fv != null && !this.ass.getNodeToBeAsked().getLineType().equals(LineType.ITERATE))
 	    	{
 	    		ast.setFact(questionName, fv);
 			ast.addItemToSummaryList(questionName);// add currentRule into SummeryList as the rule determined
@@ -528,16 +550,17 @@ public class InferenceEngine {
 	    			}
 	    			
 	    		}
-	    		else if(targetNode.getLineType().equals(LineType.ITERATE))
-	    		{
-	    			
-	    		}
+	    		
 	    	 	
 	    		/*
 	        	 * once any rules are set as fact and stored into the workingMemory, back-propagation(forward-chaining) needs to be done
 	        	 */
 	    		backPropagating(nodeSet.findNodeIndex(targetNode.getNodeName()));
 	        
+	    	}
+	    	else if(this.ass.getNodeToBeAsked().getLineType().equals(LineType.ITERATE))
+	    	{
+    			((IterateLine)targetNode).iterateFeedAnswers(targetNode, questionName, nodeValue, nodeValueType, this.nodeSet);
 	    	}
     }
     
@@ -582,8 +605,8 @@ public class InferenceEngine {
     				else
     				{
     					/*
-    					 * ValueConclusionLine does not need to be considered here due to the reason that
-    					 * child case of ValueConclusionLine in 'A-statement' format should be in the workingMemory if it is already asked.
+    					 * ValueConclusionLine in 'A-statement' format does not need to be considered here due to the reason that
+    					 * the case should be in the workingMemory if it is already asked.
     					 */
     					if(lineType.equals(LineType.VALUE_CONCLUSION) 
 							&& !((ValueConclusionLine)tempNode).getIsPlainStatementFormat() 

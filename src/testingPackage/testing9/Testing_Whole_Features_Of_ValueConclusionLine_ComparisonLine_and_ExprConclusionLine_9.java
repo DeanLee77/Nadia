@@ -18,7 +18,6 @@ import nodePackage.Node;
 import ruleParser.RuleSetParser;
 import ruleParser.RuleSetReader;
 import ruleParser.RuleSetScanner;
-import testingPackage.testing8.Testing_Whole_Features_Of_ValueConclusionLIne_and_ComparisonLine_8;
 import testingUtilPackage.NodeObject_For_Inference_Test;
 
 public class Testing_Whole_Features_Of_ValueConclusionLine_ComparisonLine_and_ExprConclusionLine_9 {
@@ -214,13 +213,13 @@ public class Testing_Whole_Features_Of_ValueConclusionLine_ComparisonLine_and_Ex
 		}
 		
 		InferenceEngine ie = new InferenceEngine(isf.getNodeSet());
-		Assessment ass = new Assessment(isf.getNodeSet(), isf.getNodeSet().getNodeSortedList().get(0).getNodeName());
+		ie.setAssessment(new Assessment(isf.getNodeSet(), isf.getNodeSet().getNodeSortedList().get(0).getNodeName()));
 		int i = 0;
 
 		while(ie.getAssessmentState().getWorkingMemory().get(isf.getNodeSet().getNodeSortedList().get(0).getNodeName())==null || !ie.getAssessmentState().allMandatoryNodeDetermined())
 		{
 			
-			Node nextQuestionNode = ie.getNextQuestion(ass);
+			Node nextQuestionNode = ie.getNextQuestion(ie.getAssessment());
 			HashMap<String,FactValueType> questionFvtMap = ie.findTypeOfElementToBeAsked(nextQuestionNode);
 			
 			FactValueType fvt = null;

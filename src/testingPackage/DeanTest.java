@@ -1,13 +1,20 @@
 package testingPackage;
 
+import java.io.IOException;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import factValuePackage.FactBooleanValue;
 import factValuePackage.FactIntegerValue;
@@ -19,6 +26,32 @@ import ruleParser.Tokens;
 public class DeanTest {
 
 	public static void main(String[] args) {
+		
+		String jsonString = "{\"service\":[{\"1st service\":{\"type1\":\"type1\", \"type2\":\"type2\"}},{\"2nd service\":{\"type1\":\"type3\",\"type2\":\"type4\"}}]}";
+		String jsonString1 = "{\"service\":{\"1st service\":{\"type1\":\"type1\", \"type2\":\"type2\"}}}";
+		ObjectMapper mapper = new ObjectMapper();
+	    try {
+	    		JsonNode actualObj1 = mapper.readTree(jsonString1);
+			Iterator<JsonNode> serviceListIterator1 = actualObj1.path("service").elements();
+			List<JsonNode> serviceList1 = new ArrayList<>();
+			serviceListIterator1.forEachRemaining(serviceList1::add);
+			System.out.println(serviceList1.size());
+			System.out.println(serviceList1.get(0));
+			System.out.println(actualObj1.get("service"));
+
+			
+			JsonNode actualObj = mapper.readTree(jsonString);
+			Iterator<JsonNode> serviceListIterator = actualObj.path("service").elements();
+			List<JsonNode> serviceList = new ArrayList<>();
+			serviceListIterator.forEachRemaining(serviceList::add);
+			System.out.println(serviceList.size());
+			System.out.println(serviceList.get(1).get("2nd service").get("type1").asText());
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+	    		
 		FactBooleanValue fbv = FactValue.parse(true);
 		System.out.println("fbv: "+fbv.getValue());
 	
@@ -61,6 +94,9 @@ public class DeanTest {
 		HashMap<String, String> hm2 = hm;
 		hm2.put("h6", "h6");
 		System.out.println("hm size: "+hm.size());
+		testingMap(hm2);
+		System.out.println("hm size2: "+hm.size());
+		
 		
 		FactIntegerValue fiv = FactIntegerValue.parse(12);
 		System.out.println(fiv.getValue().toString());
@@ -100,7 +136,14 @@ public class DeanTest {
 //		RuleSetParser isf = new RuleSetParser();		
 //		RuleSetScanner rsc = new RuleSetScanner(ilr,isf);
 //		rsc.scanRuleSet();
+		System.out.println("lastIndexOf: "+testStr.lastIndexOf("ST"));
+		System.out.println("substring: "+testStr.substring(0, testStr.lastIndexOf("IS IN")+"IS IN".length()));
 		
+	}
+	
+	public static void testingMap(HashMap<String, String> testingMap)
+	{
+		testingMap.put("hm7", "hm7");
 	}
 
 }
