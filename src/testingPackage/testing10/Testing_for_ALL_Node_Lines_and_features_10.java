@@ -1,4 +1,4 @@
-package testingPackage.testing9;
+package testingPackage.testing10;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -14,23 +14,24 @@ import factValuePackage.FactValueType;
 import inferencePackage.Assessment;
 import inferencePackage.InferenceEngine;
 import nodePackage.ComparisonLine;
+import nodePackage.IterateLine;
+import nodePackage.LineType;
 import nodePackage.Node;
 import ruleParser.RuleSetParser;
 import ruleParser.RuleSetReader;
 import ruleParser.RuleSetScanner;
 import testingUtilPackage.NodeObject_For_Inference_Test;
 
-public class Testing_Whole_Features_Of_ValueConclusionLine_ComparisonLine_and_ExprConclusionLine_9 {
-
-	public static void main(String[] args) throws IOException {
+public class Testing_for_ALL_Node_Lines_and_features_10 {
+	public static void main(String[]args) throws IOException {
 		RuleSetReader ilr = new RuleSetReader();
-		ilr.setStreamSource(Testing_Whole_Features_Of_ValueConclusionLine_ComparisonLine_and_ExprConclusionLine_9.class.getResourceAsStream("Testing for whole features of ValueConclusionLine, ComparisonLine and ExprConclusionLine.txt"));
+		ilr.setStreamSource(Testing_for_ALL_Node_Lines_and_features_10.class.getResourceAsStream("Testing for ALL Node Lines and features.txt"));
 		RuleSetParser isf = new RuleSetParser();		
 		RuleSetScanner rsc = new RuleSetScanner(ilr,isf);
 		rsc.scanRuleSet();
 		rsc.establishNodeSet();
 		
-		BufferedReader br = new BufferedReader(new InputStreamReader(Testing_Whole_Features_Of_ValueConclusionLine_ComparisonLine_and_ExprConclusionLine_9.class.getResourceAsStream("Comparison for testing whole features of ValueConclusionLine, ComparisonLine and ExprConclusionLine.txt")));
+		BufferedReader br = new BufferedReader(new InputStreamReader(Testing_for_ALL_Node_Lines_and_features_10.class.getResourceAsStream("Comparison Testing for ALL Node Lines and features.txt")));
 		String line;
 		List<String> nodeListMock = new ArrayList<>();
 		String[] tempArray;
@@ -202,6 +203,40 @@ public class Testing_Whole_Features_Of_ValueConclusionLine_ComparisonLine_and_Ex
 			{
 				comparisonTempList.add(i);
 			}
+			else if(actualNode.getNodeName().equals("ALL service ITERATE: LIST OF service history")
+					&&mockNode.equals(actualNode.getNodeName())
+					&&actualNode.getLineType().equals(LineType.ITERATE)
+					&&((IterateLine)actualNode).getNumberOfTarget().equals("ALL")
+					&&((IterateLine)actualNode).getGivenListName().equals("service history")
+					&&actualNode.getFactValue().getType().equals(FactValueType.STRING)
+					)
+			{
+				comparisonTempList.add(i);
+			}
+			else if(actualNode.getNodeName().equals("enlistment date >= 01/07/1951")
+					&&mockNode.equals(actualNode.getNodeName())
+					&&actualNode.getLineType().equals(LineType.COMPARISON)
+					&&actualNode.getFactValue().getType().equals(FactValueType.DATE)
+					)
+			{
+				comparisonTempList.add(i);
+			}
+			else if(actualNode.getNodeName().equals("discharge date <= 6/12/1972")
+					&&mockNode.equals(actualNode.getNodeName())
+					&&actualNode.getLineType().equals(LineType.COMPARISON)
+					&&actualNode.getFactValue().getType().equals(FactValueType.DATE)
+					)
+			{
+				comparisonTempList.add(i);
+			}
+			else if(actualNode.getNodeName().equals("service type IS IN LIST: Special service")
+					&&mockNode.equals(actualNode.getNodeName())
+					&&actualNode.getLineType().equals(LineType.VALUE_CONCLUSION)
+					&&actualNode.getFactValue().getType().equals(FactValueType.DATE)
+					)
+			{
+				comparisonTempList.add(i);
+			}
 			else if(mockNode.equals(actualNode.getNodeName()))
 			{
 				comparisonTempList.add(i);
@@ -213,13 +248,13 @@ public class Testing_Whole_Features_Of_ValueConclusionLine_ComparisonLine_and_Ex
 		}
 		
 		InferenceEngine ie = new InferenceEngine(isf.getNodeSet());
-		ie.setAssessment(new Assessment(isf.getNodeSet(), isf.getNodeSet().getNodeSortedList().get(0).getNodeName()));
+		Assessment ass = new Assessment(isf.getNodeSet(), isf.getNodeSet().getNodeSortedList().get(0).getNodeName());
 		int i = 0;
 
 		while(ie.getAssessmentState().getWorkingMemory().get(isf.getNodeSet().getNodeSortedList().get(0).getNodeName())==null || !ie.getAssessmentState().allMandatoryNodeDetermined())
 		{
 			
-			Node nextQuestionNode = ie.getNextQuestion(ie.getAssessment());
+			Node nextQuestionNode = ie.getNextQuestion(ass);
 			HashMap<String,FactValueType> questionFvtMap = ie.findTypeOfElementToBeAsked(nextQuestionNode);
 			
 			FactValueType fvt = null;
@@ -230,7 +265,59 @@ public class Testing_Whole_Features_Of_ValueConclusionLine_ComparisonLine_and_Ex
 				System.out.println("questionFvt :"+questionFvtMap.get(question));
 				System.out.println("Question: " + question+"?");
 				
-				if(question.equals("person's name"))
+				if(question.equals("1st service discharge type"))
+				{
+					answer = "Medical";
+				}
+				else if(question.equals("2nd service discharge type"))
+				{
+					answer = "Dishonor";
+				}
+				else if(question.equals("3rd service discharge type"))
+				{
+					answer = "Voluntary";
+				}
+				else if(question.equals("3rd service service type"))
+				{
+					answer = "Turongga";
+				}
+				else if(question.equals("2nd service service type"))
+				{
+					answer = "Angular force";
+				}
+				else if(question.equals("1st service service type"))
+				{
+					answer = "SAP";
+				}
+				else if(question.equals("3rd service discharge date"))
+				{
+					answer = "5/12/1993";
+				}
+				else if(question.equals("2nd service discharge date"))
+				{
+					answer = "5/12/2003";
+				}
+				else if(question.equals("1st service discharge date"))
+				{
+					answer = "5/12/1970";
+				}
+				else if(question.equals("3rd service enlistment date"))
+				{
+					answer = "2/07/1995";
+				}
+				else if(question.equals("2nd service enlistment date"))
+				{
+					answer = "2/07/1995";
+				}
+				else if(question.equals("1st service enlistment date"))
+				{
+					answer = "2/07/1955";
+				}
+				else if(question.equals("number of services"))
+				{
+					answer = "3";
+				}
+				else if(question.equals("person's name"))
 				{
 					answer = "John Smith";
 				}
@@ -320,7 +407,7 @@ public class Testing_Whole_Features_Of_ValueConclusionLine_ComparisonLine_and_Ex
 				}
 				System.out.println("Answer: "+answer);
 				
-				ie.feedAnswerToNode(nextQuestionNode, question, answer, questionFvtMap.get(question));
+				ie.feedAnswerToNode(nextQuestionNode, question, answer, questionFvtMap.get(question), ass);
 				i++;
 			}
 			
@@ -328,16 +415,17 @@ public class Testing_Whole_Features_Of_ValueConclusionLine_ComparisonLine_and_Ex
 		}
 
 		HashMap<String, FactValue> workingMemory = ie.getAssessmentState().getWorkingMemory();
-		ie.getAssessmentState().getSummaryList().stream().forEachOrdered(node ->{
+		
+		
+		ie.generateSortedSummaryList().stream().forEachOrdered(node ->{
 			if(workingMemory.get(node).getType().equals(FactValueType.LIST))
 			{
-				((FactListValue<?>)workingMemory.get(node)).getValue().stream().forEach(item-> System.out.println(node+" : "+item));
+				((FactListValue<?>)workingMemory.get(node)).getValue().stream().forEach(item-> System.out.println("List Value - "+node+" : "+item));
 			}
 			{
 				System.out.println(node+" : "+workingMemory.get(node).getValue().toString());
 			}
 		});	
-
 	}
 
 }

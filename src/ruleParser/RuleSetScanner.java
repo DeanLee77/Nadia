@@ -79,7 +79,7 @@ public class RuleSetScanner {
 	           			String tempFirstKeywordsGroup = lineTrimed.replace(tempLineTrimed, "").trim();													
 	           			parentStack.push(tempLineTrimed.trim()); // due to lineTrimed string contains keywords such as "AND", "OR", "AND KNOWN" or "OR KNOWN" so that it needs removing those keywords for the 'parentStack'
 		
-		           		// is an indented child
+		           		// is an indented child	           			
 	           			scanFeeder.handleChild(parent, tempLineTrimed, tempFirstKeywordsGroup,lineNumber);	
                     }
 

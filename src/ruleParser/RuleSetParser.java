@@ -49,7 +49,7 @@ public class RuleSetParser implements IScanFeeder {
 	final Pattern VALUE_MATCHER = Pattern.compile("(^[LM]+)(U)?([MLQ(No)(Da)(De)(Ha)(Url)(Id)]*$)(?!C)");
 	final Pattern EXPRESSION_CONCLUSION_MATCHER = Pattern.compile("(^[LM(Da)]+)(U)(C)");
 	final Pattern COMPARISON_MATCHER = Pattern.compile("(^[MLU(Da)]+)(O)([MLUQ(No)(Da)(De)(Ha)(Url)(Id)]*$)");
-	final Pattern ITERATE_MATCHER = Pattern.compile("(^U)([MLU(No)(Da)]+)(I)([MLU]+$)");
+	final Pattern ITERATE_MATCHER = Pattern.compile("(^[MLU(No)(Da)]+)(I)([MLU]+$)");
 	final Pattern WARNING_MATCHER = Pattern.compile("WARNING");
 	LineType matchTypes[] = LineType.values();
 	NodeSet nodeSet = new NodeSet();
@@ -119,8 +119,8 @@ public class RuleSetParser implements IScanFeeder {
 							String variableName = data.getVariableName();
 							Node tempNode = data;
 							/*
-							 * following lines are to look for any nodes having a its nodeName with any operators but not having a word of 'IS' keyword due to the reason that
-							 * the node could be used to define a node previously used as a child node for other nodes.
+							 * following lines are to look for any nodes having a its nodeName with any operators due to the reason that
+							 * the exprConclusion node could be used to define another node as a child node for other nodes if the variableName of exprConclusion node is mentioned somewhere else.
 							 * However, it is excluding nodes having 'IS' keyword because if it has the keyword then it should have child nodes to define the node otherwise the entire rule set has NOT been written in correct way
 							 */
 							List<String> possibleParentNodeKeyList = nodeSet.getNodeMap().keySet().stream().filter(key -> key.matches("(.+)?(\\s[<>=]+\\s?)?("+variableName+")(\\s[<>=]+)*(.(?!(IS)))*(.*(IS IN LIST).*)*")).collect(Collectors.toList());
@@ -163,6 +163,7 @@ public class RuleSetParser implements IScanFeeder {
 		}			
 	}
 
+	@SuppressWarnings("unlikely-arg-type")
 	@Override
 	public void handleChild(String parentText, String childText, String firstKeywordsGroup, int lineNumber) {
 		/*
@@ -232,7 +233,7 @@ public class RuleSetParser implements IScanFeeder {
 			{
 //				valueConclusionMatcher =Pattern.compile("(^U)([LMU(Da)(No)(De)(Ha)(Url)(Id)]+$)"); // child statement for ValueConclusionLine starts with AND(OR), AND MANDATORY(OPTIONALLY, POSSIBLY) or AND (MANDATORY) (NOT) KNOWN
 							
-				Pattern matchPatterns[] = { VALUE_MATCHER, COMPARISON_MATCHER, WARNING_MATCHER};
+				Pattern matchPatterns[] = { VALUE_MATCHER, COMPARISON_MATCHER, ITERATE_MATCHER, EXPRESSION_CONCLUSION_MATCHER, WARNING_MATCHER};
 				
 				
 				Pattern p;
@@ -248,7 +249,7 @@ public class RuleSetParser implements IScanFeeder {
 					{
 						switch(i)
 						{
-							case 3:  // warningMatcher case
+							case 4:  // warningMatcher case
 								handleWarning(childText);
 								break;
 							case 0:  // valueConclusionMatcher case
@@ -287,6 +288,27 @@ public class RuleSetParser implements IScanFeeder {
 										this.dependencyList.add(new Dependency(tempNode, nodeSet.getNodeMap().get(item), DependencyType.getOr())); //Dependency Type :OR
 									});
 								}
+								
+								if(data.getFactValue().getValue().equals("WARNING"))
+								{
+									handleWarning(parentText);
+								}
+								break;
+							case 2:  // comparisonMatcher case
+								data = new IterateLine(childText, tokens);
+								if(data.getFactValue().getValue().equals("WARNING"))
+								{
+									handleWarning(parentText);
+								}
+								break;
+							case 3: //exprConclusionMatcher case
+								data = new ExprConclusionLine(childText, tokens);
+								
+								/*
+								 * In this case, there is no mechanism to find possible parent nodes.
+								 * I have brought 'local variable' concept for this case due to it may massed up with structuring node dependency tree with topological sort
+								 * If ExprConclusion node is used as a child, then it means that this node is a local node which has to be strictly bound to its parent node only.  
+								 */
 								
 								if(data.getFactValue().getValue().equals("WARNING"))
 								{

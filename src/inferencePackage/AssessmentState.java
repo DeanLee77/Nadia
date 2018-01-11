@@ -4,7 +4,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import factValuePackage.FactListValue;
 import factValuePackage.FactValue;
+import factValuePackage.FactValueType;
 import nodePackage.*;
 
 
@@ -155,7 +157,24 @@ public class AssessmentState {
 
 	public void setFact(String nodeVariableName, FactValue value)
 	{
-		workingMemory.put(nodeVariableName, value);
+		if(workingMemory.containsKey(nodeVariableName))
+		{
+			FactValue tempFv = workingMemory.get(nodeVariableName);
+
+			if(tempFv.getType().equals(FactValueType.LIST))
+			{
+				((FactListValue<?>)tempFv).getValue().add(tempFv);
+			}
+			else
+			{
+				FactListValue<?> flv = FactValue.parse(new ArrayList<FactValue>());
+				flv.getValue().add(tempFv);
+			}
+		}
+		else
+		{
+			workingMemory.put(nodeVariableName, value);
+		}
 	}
 	
 	public FactValue getFact(String name)

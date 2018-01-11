@@ -33,6 +33,10 @@ public class NodeSet {
 	{
 		return this.dependencyMatrix;
 	}
+	public void setDependencyMatrix(DependencyMatrix dm)
+	{
+		this.dependencyMatrix = dm;
+	}
 	public void setDependencyMatrix(int[][] dependencyMatrix)
 	{
 		this.dependencyMatrix = new DependencyMatrix(dependencyMatrix);
@@ -78,6 +82,10 @@ public class NodeSet {
 		return this.inputMap;
 	}
 	
+	public void setFactMap(HashMap<String, FactValue> factMap)
+	{
+		this.factMap = factMap;
+	}
 	public HashMap<String, FactValue> getFactMap()
 	{
 		return this.factMap;
