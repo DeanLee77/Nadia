@@ -118,11 +118,11 @@ public class ComparisonLine extends Node{
 				case ">":
 					return FactValue.parse(((LocalDate)workingMemoryLhsValue.getValue()).isAfter(((LocalDate)workingMemoryRhsValue.getValue())));
 				case ">=":
-					return FactValue.parse(((LocalDate)workingMemoryLhsValue.getValue()).isAfter(((LocalDate)workingMemoryRhsValue.getValue())) && ((LocalDate)workingMemoryLhsValue.getValue()).isEqual(((LocalDate)workingMemoryRhsValue.getValue())));
+					return FactValue.parse(((LocalDate)workingMemoryLhsValue.getValue()).isAfter(((LocalDate)workingMemoryRhsValue.getValue())) || ((LocalDate)workingMemoryLhsValue.getValue()).isEqual(((LocalDate)workingMemoryRhsValue.getValue())));
 				case "<":
 					return FactValue.parse(((LocalDate)workingMemoryLhsValue.getValue()).isBefore(((LocalDate)workingMemoryRhsValue.getValue())));
 				case "<=":
-					return FactValue.parse(((LocalDate)workingMemoryLhsValue.getValue()).isBefore(((LocalDate)workingMemoryRhsValue.getValue())) && ((LocalDate)workingMemoryLhsValue.getValue()).isEqual(((LocalDate)workingMemoryRhsValue.getValue())));
+					return FactValue.parse(((LocalDate)workingMemoryLhsValue.getValue()).isBefore(((LocalDate)workingMemoryRhsValue.getValue())) || ((LocalDate)workingMemoryLhsValue.getValue()).isEqual(((LocalDate)workingMemoryRhsValue.getValue())));
 			}
 //			script = "new Date("+((FactDateValue)workingMemoryLhsValue).getValue().getYear()+"/"+((FactDateValue)workingMemoryLhsValue).getValue().getMonthValue()+"/"+((FactDateValue)workingMemoryLhsValue).getValue().getDayOfMonth()+")"+operator+"new Date("+((FactDateValue)workingMemoryRhsValue).getValue().getYear()+"/"+((FactDateValue)workingMemoryRhsValue).getValue().getMonthValue()+"/"+((FactDateValue)workingMemoryRhsValue).getValue().getDayOfMonth()+");" ;
 		}

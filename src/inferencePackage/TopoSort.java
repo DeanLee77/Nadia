@@ -5,8 +5,11 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
-import nodePackage.*;
+import nodePackage.DependencyType;
+import nodePackage.Node;
+import nodePackage.Record;
 
 
 public class TopoSort {
@@ -31,7 +34,8 @@ public class TopoSort {
 		{
 			Node node = SList.remove(0);
 			sortedNodeList.add(node);
-			int nodeId = node.getNodeId();
+			Integer nodeId = node.getNodeId();
+			
 			
 			for(int i = 0; i < sizeOfMatrix; i++)
 			{
@@ -94,7 +98,7 @@ public class TopoSort {
 			for(int parentCol = 0; parentCol < sizeOfMatrix; parentCol++)
 			{
 				
-				if(dependencyMatrix[parentCol][childRow] == 0 && parentCol != childRow) // don't count when parentCol == childRow due to it is where nodeOption (KNOWN or NOT) is stored. 
+				if(dependencyMatrix[parentCol][childRow] == 0 && parentCol != childRow) // don't count when parentCol == childRow due to the reason that there shouldn't be value at the index. 
 				{
 					count++;
 				}
@@ -103,7 +107,7 @@ public class TopoSort {
 					continue;
 				}
 			}
-			if(count == sizeOfMatrix-1) //exclude its own dependency due to it is nodeOption
+			if(count == sizeOfMatrix-1) //exclude its own dependency 
 			{
 				String tempNodeName = nodeIdMap.get(childRow);
 				if(tempNodeName != null)
@@ -130,6 +134,134 @@ public class TopoSort {
 		return copyOfDependencyMatrix;
 	}
 	
+	/*
+     * this topological sort method uses DFS(Depth First Search)
+     * At this point of time (10th Feb 2018), this method is strictly for sorting child nodes of IterateLine 
+     * The reason for using this method is only for child nodes of IterateLine is that if there is a child node of local variable type
+     * then the sorted order will NOT be appropriate to produce a next question.
+     * 
+     * For instance, if IterateLine node has a rule as following.
+     * ------------------------------------------------------------
+     * ALL service ITERATE: LIST OF service history
+	 *	AND number of services
+	 *	AND iterate rules
+	 *		OR one
+	 *			AND enlistment date >= 01/07/1951
+	 *			AND discharge date <= 6/12/1972
+	 *			AND NOT service type IS IN LIST: Special service
+	 *		OR two
+	 *			AND enlistment date >= 22/05/1986
+	 *			AND yearly period of service by 6/04/1994 >= 3
+	 *				AND yearly period of service by 6/04/1994 IS CALC (enlistment date - 6/04/1994)
+	 *					NEEDS enlistment date
+	 *			AND NOT service type IS IN LIST: Special service
+	 *			AND discharge date >= 07/04/1994
+	 *			AND discharge date <= 30/06/2004
+	 *------------------------------------------------------------
+	 * and number of service is '2', then the sorted order will be as follows.
+	 * 
+	 * ------------------------------------------------------------
+	 * 	ALL service ITERATE: LIST OF service history
+	 *	number of services
+	 *	1st service iterate rules
+	 *	2nd service iterate rules
+	 *	1st service one
+	 *	1st service two
+	 *	2nd service one
+	 *	2nd service two
+	 *	1st service enlistment date >= 01/07/1951
+	 *	1st service discharge date <= 6/12/1972
+	 *	1st service enlistment date >= 22/05/1986
+	 *	1st service yearly period of service by 6/04/1994 >= 3
+	 *	1st service service type IS IN LIST: Special service
+	 *	1st service enlistment date >= 07/04/1994
+	 *	1st service discharge date >= 30/06/2004
+	 *	2nd service enlistment date >= 01/07/1951
+	 *	2nd service discharge date <= 6/12/1972
+	 *	2nd service enlistment date >= 22/05/1986
+	 *	2nd service yearly period of service by 6/04/1994 >= 3
+	 *	2nd service service type IS IN LIST: Special service
+	 *	2nd service enlistment date >= 07/04/1994
+	 *	2nd service discharge date >= 30/06/2004
+	 *	1st service yearly period of service by 6/04/1994 IS CALC (enlistment date - 6/04/1994)
+	 *	2nd service yearly period of service by 6/04/1994 IS CALC (enlistment date - 6/04/1994)
+	 *	1st service enlistment date
+	 *	2nd service enlistment date
+	 *------------------------------------------------------------
+	 * And therefore, there would cause 1st service question and 2nd service question mixed
+	 * 
+	 *    !!!!!!!!!!!!!!   I M P O R T A N T  !!!!!!!!!!!!!!!!!!!!
+	 *    
+	 *    This method does NOT have a mechanism to check if it is DAG or not yet.
+	 *    
+     */
+	public static List<Node> dfsTopoSort(HashMap<String, Node> nodeMap, HashMap<Integer, String> nodeIdMap, int[][] dependencyMatrix)
+	{
+		List<Node> sortedList = new ArrayList<>();
+		
+		int[][] copyOfDependencyMatrix = createCopyOfDependencyMatrix(dependencyMatrix, dependencyMatrix[0].length);
+		List<Node> S = fillingSList(nodeMap, nodeIdMap, new ArrayList<Node>(), copyOfDependencyMatrix);
+		List<Integer> visitedList = new ArrayList<>();
+		while(!S.isEmpty())
+        {
+	        	Node node = S.remove(0);
+	        
+	        	sortedList.add(node);
+	        	visitedList.add(node.getNodeId());
+			Integer nodeId = node.getNodeId();
+			
+			List<Integer> childIdList = new ArrayList<>();
+			IntStream.range(0, copyOfDependencyMatrix.length).forEach(i->{
+				if(copyOfDependencyMatrix[nodeId][i] != 0)
+				{
+					childIdList.add(i);
+				}
+			}); 
+            childIdList.stream().forEachOrdered(id->{
+            		Node currentNode = nodeMap.get(nodeIdMap.get(id));
+            		if(!visitedList.contains(id))
+        			{
+            			sortedList.add(currentNode);
+            			visitedList.add(id);
+        			}
+//            		else
+//            		{
+//            			sortedList.remove(currentNode);
+//            			sortedList.add(currentNode); // move the current node to at the last due to it is linked to the latest defined node.
+//            		}
+        			deepening(nodeMap, nodeIdMap, copyOfDependencyMatrix, sortedList, visitedList, id);
+
+            }); 
+        }
+		
+		return sortedList;
+	}
+	
+	public static void deepening(HashMap<String, Node>nodeMap, HashMap<Integer, String> nodeIdMap, int[][] dependencyMatrix, List<Node> sortedList, List<Integer> visitedList, Integer childId)
+	{
+		List<Integer> childIdList = new ArrayList<>();
+		IntStream.range(0, dependencyMatrix.length).forEach(i->{
+			if(dependencyMatrix[childId][i] != 0)
+			{
+				childIdList.add(i);
+			}
+		});         
+		
+		childIdList.stream().forEachOrdered(id->{
+			Node currentNode = nodeMap.get(nodeIdMap.get(id));
+	    		if(!visitedList.contains(id))
+			{
+	    			sortedList.add(currentNode);
+	    			visitedList.add(id);
+			}
+//	    		else
+//	    		{
+//	    			sortedList.remove(currentNode);
+//	    			sortedList.add(currentNode); // move the current node to at the last due to it is linked to the latest defined node.
+//	    		}
+			deepening(nodeMap, nodeIdMap, dependencyMatrix, sortedList, visitedList, id);
+        }); 
+	}
 	/*
 	 * this class is another version of topological sort.
 	 * the first version of topological sort used Kahn's algorithm which is based on Breadth First Search(BFS)
@@ -327,6 +459,8 @@ public class TopoSort {
         
         return highlyPossible;
     }
+    
+    
 
 }
 

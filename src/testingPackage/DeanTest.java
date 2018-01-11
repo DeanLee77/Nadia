@@ -1,7 +1,12 @@
 package testingPackage;
 
+import java.io.IOException;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -9,16 +14,59 @@ import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import factValuePackage.FactBooleanValue;
 import factValuePackage.FactIntegerValue;
 import factValuePackage.FactValue;
 import nodePackage.DependencyType;
+import nodePackage.Node;
+import nodePackage.ValueConclusionLine;
 import ruleParser.Tokenizer;
 import ruleParser.Tokens;
 
 public class DeanTest {
 
 	public static void main(String[] args) {
+		
+		List<Node> lst = new ArrayList<>();
+		
+		lst.add(new ValueConclusionLine("haha",Tokenizer.getTokens("haha")));
+		System.out.println(lst.get(0).getNodeName());
+		lst.remove(lst.get(0));
+		System.out.println(lst.size());
+		
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("d/MM/yyyy");
+		LocalDate today = LocalDate.now();
+		String now = (today).format(formatter);
+		System.out.println(now);
+		
+		String jsonString = "{\"service\":[{\"1st service\":{\"type1\":\"type1\", \"type2\":\"type2\"}},{\"2nd service\":{\"type1\":\"type3\",\"type2\":\"type4\"}}]}";
+		String jsonString1 = "{\"service\":{\"1st service\":{\"type1\":\"type1\", \"type2\":\"type2\"}}}";
+		ObjectMapper mapper = new ObjectMapper();
+	    try {
+	    		JsonNode actualObj1 = mapper.readTree(jsonString1);
+			Iterator<JsonNode> serviceListIterator1 = actualObj1.path("service").elements();
+			List<JsonNode> serviceList1 = new ArrayList<>();
+			serviceListIterator1.forEachRemaining(serviceList1::add);
+			System.out.println(serviceList1.size());
+			System.out.println(serviceList1.get(0));
+			System.out.println(actualObj1.get("service"));
+
+			
+			JsonNode actualObj = mapper.readTree(jsonString);
+			Iterator<JsonNode> serviceListIterator = actualObj.path("service").elements();
+			List<JsonNode> serviceList = new ArrayList<>();
+			serviceListIterator.forEachRemaining(serviceList::add);
+			System.out.println(serviceList.size());
+			System.out.println(serviceList.get(1).get("2nd service").get("type1").asText());
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+	    		
 		FactBooleanValue fbv = FactValue.parse(true);
 		System.out.println("fbv: "+fbv.getValue());
 	
@@ -61,6 +109,9 @@ public class DeanTest {
 		HashMap<String, String> hm2 = hm;
 		hm2.put("h6", "h6");
 		System.out.println("hm size: "+hm.size());
+		testingMap(hm2);
+		System.out.println("hm size2: "+hm.size());
+		
 		
 		FactIntegerValue fiv = FactIntegerValue.parse(12);
 		System.out.println(fiv.getValue().toString());
@@ -74,10 +125,11 @@ public class DeanTest {
 		System.out.println(date1.isAfter(date2));
 		String script = "var localDate = Java.type(\"java.time.LocalDate\"); localDate.of(1994,12,11).isAfter(localDate.of(1990,1,1));";
 		String script1 = "new Date(2017,11,1) > new Date(2017,10,31);";
+		String script2 = "var localDate = java.time.LocalDate; var chronoUnit = java.time.temporal.ChronoUnit; var diffYears = chronoUnit.YEARS.between(localDate.of(1955,7,02), localDate.of(1994,4,6)); diffYears;";
 		ScriptEngineManager factory = new ScriptEngineManager();
 		ScriptEngine engine = factory.getEngineByName("nashorn");
 		try {
-			System.out.println("result: "+engine.eval(script));
+			System.out.println("result: "+engine.eval(script2));
 			
 		} catch (ScriptException e) {
 			// TODO Auto-generated catch block
@@ -92,12 +144,22 @@ public class DeanTest {
 		String testStr = "this IS IN LIST that";
 		System.out.println(testStr.contains("IS IN LIST"));
 		
+		String exString1 = "NONE person's health condition ITERATE: LIST OF person’s health check-up history";
+		Tokens tks1 = Tokenizer.getTokens(exString1);
+		
 //		RuleSetReader ilr = new RuleSetReader();
 //		ilr.setStreamSource(TopoSortingTest.class.getResourceAsStream("testing NOT and KNOWN.txt"));
 //		RuleSetParser isf = new RuleSetParser();		
 //		RuleSetScanner rsc = new RuleSetScanner(ilr,isf);
 //		rsc.scanRuleSet();
+		System.out.println("lastIndexOf: "+testStr.lastIndexOf("ST"));
+		System.out.println("substring: "+testStr.substring(0, testStr.lastIndexOf("IS IN")+"IS IN".length()));
 		
+	}
+	
+	public static void testingMap(HashMap<String, String> testingMap)
+	{
+		testingMap.put("hm7", "hm7");
 	}
 
 }

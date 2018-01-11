@@ -57,6 +57,7 @@ public abstract class Node {
 	{
 		return this.nodeName;
 	}
+	
 	public Tokens getTokens()
 	{
 		return this.tokens;
@@ -66,11 +67,15 @@ public abstract class Node {
 	{
 		return variableName;
 	}
+	public void setNodeVariable(String newVariableName)
+	{
+		this.variableName = newVariableName;
+	}
+	
 	public FactValue getFactValue()
 	{
 		return this.value;
 	}
-	
 	protected void setValue(String lastTokenString, String lastToken)
 	{
 		switch(lastTokenString)
