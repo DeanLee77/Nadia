@@ -2,6 +2,7 @@ package testingPackage;
 
 import java.io.IOException;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -20,12 +21,26 @@ import factValuePackage.FactBooleanValue;
 import factValuePackage.FactIntegerValue;
 import factValuePackage.FactValue;
 import nodePackage.DependencyType;
+import nodePackage.Node;
+import nodePackage.ValueConclusionLine;
 import ruleParser.Tokenizer;
 import ruleParser.Tokens;
 
 public class DeanTest {
 
 	public static void main(String[] args) {
+		
+		List<Node> lst = new ArrayList<>();
+		
+		lst.add(new ValueConclusionLine("haha",Tokenizer.getTokens("haha")));
+		System.out.println(lst.get(0).getNodeName());
+		lst.remove(lst.get(0));
+		System.out.println(lst.size());
+		
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("d/MM/yyyy");
+		LocalDate today = LocalDate.now();
+		String now = (today).format(formatter);
+		System.out.println(now);
 		
 		String jsonString = "{\"service\":[{\"1st service\":{\"type1\":\"type1\", \"type2\":\"type2\"}},{\"2nd service\":{\"type1\":\"type3\",\"type2\":\"type4\"}}]}";
 		String jsonString1 = "{\"service\":{\"1st service\":{\"type1\":\"type1\", \"type2\":\"type2\"}}}";
@@ -110,10 +125,11 @@ public class DeanTest {
 		System.out.println(date1.isAfter(date2));
 		String script = "var localDate = Java.type(\"java.time.LocalDate\"); localDate.of(1994,12,11).isAfter(localDate.of(1990,1,1));";
 		String script1 = "new Date(2017,11,1) > new Date(2017,10,31);";
+		String script2 = "var localDate = java.time.LocalDate; var chronoUnit = java.time.temporal.ChronoUnit; var diffYears = chronoUnit.YEARS.between(localDate.of(1955,7,02), localDate.of(1994,4,6)); diffYears;";
 		ScriptEngineManager factory = new ScriptEngineManager();
 		ScriptEngine engine = factory.getEngineByName("nashorn");
 		try {
-			System.out.println("result: "+engine.eval(script));
+			System.out.println("result: "+engine.eval(script2));
 			
 		} catch (ScriptException e) {
 			// TODO Auto-generated catch block

@@ -36,14 +36,16 @@ public class IterateLine extends Node {
 	public IterateLine(String childText, Tokens tokens)
 	{
 		super(childText, tokens);
-		numberOfTarget = "";
-		givenListName = "";
 		givenListSize = 0;
 		
 	}
 
 	public String getGivenListName() {
 		return this.givenListName;
+	}
+	
+	public String getNumberOfTarget() {
+		return this.numberOfTarget;
 	}
 	public NodeSet createIterateNodeSet(NodeSet parentNodeSet)
 	{
@@ -61,7 +63,7 @@ public class IterateLine extends Node {
 		thisNodeMap.put(this.nodeName, this);
 		thisNodeIdMap.put(this.nodeId, this.nodeName);
 		IntStream.range(1, this.givenListSize+1).forEachOrdered(nTh -> {
-			parentDM.getToChildDependencyList(this.nodeId).parallelStream().forEach((item)->{
+			parentDM.getToChildDependencyList(this.nodeId).stream().forEach((item)->{
 				if(this.getNodeId()+1 != item) // not first question id
 				{
 					Node tempChildNode = parentNodeMap.get(parentNodeIdMap.get(item));
@@ -70,7 +72,7 @@ public class IterateLine extends Node {
 					Node tempNode = null;
 					String nextNThInString = ordinal(nTh);
 
-					if(lt.equals(LineType.VALUE_CONCLUSION) || lt.equals(LineType.EXPR_CONCLUSION))
+					if(lt.equals(LineType.VALUE_CONCLUSION))
 					{
 	    					tempNode = new ValueConclusionLine(nextNThInString+" "+this.getVariableName()+" "+tempChildNode.getNodeName(), tempChildNode.getTokens());
 					}
@@ -84,13 +86,17 @@ public class IterateLine extends Node {
 	    						tempNode.setValue(tempFv);
 	    					}
 	    				}
+	    				else if(lt.equals(LineType.EXPR_CONCLUSION))
+					{
+						tempNode = new ExprConclusionLine(nextNThInString+" "+this.getVariableName()+" "+tempChildNode.getNodeName(), tempChildNode.getTokens());
+					}
 
     				
 					thisNodeMap.put(tempNode.getNodeName(), tempNode);
 					thisNodeIdMap.put(tempNode.getNodeId(), tempNode.getNodeName());
 					tempDependencyList.add(new Dependency(this, tempNode, parentDM.getDependencyType(this.nodeId, item)));
 					
-					createIterateNodeSetAux(parentDM, parentNodeMap, parentNodeIdMap, thisNodeMap, thisNodeIdMap, tempDependencyList, item, nextNThInString);
+					createIterateNodeSetAux(parentDM, parentNodeMap, parentNodeIdMap, thisNodeMap, thisNodeIdMap, tempDependencyList, item, tempNode.getNodeId(), nextNThInString);
 
 				}
 				else // first question id
@@ -104,7 +110,6 @@ public class IterateLine extends Node {
 		});
 		
 		int numberOfRules = Node.getStaticNodeId();
-		
 		int[][] dependencyMatrix = new int[numberOfRules][numberOfRules];
 	
 		
@@ -115,48 +120,76 @@ public class IterateLine extends Node {
 			dependencyMatrix[parentId][childId] = dpType;
 		});
 		
+		
+		
 		newNodeSet.setNodeIdMap(thisNodeIdMap);
 		newNodeSet.setNodeMap(thisNodeMap);
 		newNodeSet.setDependencyMatrix(new DependencyMatrix(dependencyMatrix));
 		newNodeSet.setFactMap(parentNodeSet.getFactMap());
-		newNodeSet.setNodeSortedList(TopoSort.bfsTopoSort(thisNodeMap, thisNodeIdMap, parentDM.getDependencyMatrixArray()));
-		
+		newNodeSet.setNodeSortedList(TopoSort.dfsTopoSort(thisNodeMap, thisNodeIdMap, dependencyMatrix));
+//		newNodeSet.getNodeSortedList().stream().forEachOrdered(item->System.out.println(item.getNodeId()+"="+item.getNodeName()));
 		return newNodeSet;
 	
 	}
 	
-	public void createIterateNodeSetAux(DependencyMatrix parentDM, HashMap<String, Node> parentNodeMap, HashMap<Integer, String> parentNodeIdMap, HashMap<String, Node> thisNodeMap, HashMap<Integer, String> thisNodeIdMap, List<Dependency> tempDependencyList, int parentId, String nextNThInString)
+	public void createIterateNodeSetAux(DependencyMatrix parentDM, HashMap<String, Node> parentNodeMap, HashMap<Integer, String> parentNodeIdMap, HashMap<String, Node> thisNodeMap, HashMap<Integer, String> thisNodeIdMap, List<Dependency> tempDependencyList, int originalParentId, int modifiedParentId, String nextNThInString)
 	{
-		List<Integer> childDependencyList = parentDM.getToChildDependencyList(parentId);
+		List<Integer> childDependencyList = parentDM.getToChildDependencyList(originalParentId);
 
 		if(childDependencyList.size() > 0)
 		{
-			childDependencyList.parallelStream().forEach((item)->{
+			childDependencyList.stream().forEach((item)->{
 				Node tempChildNode = parentNodeMap.get(parentNodeIdMap.get(item));
 				LineType lt = tempChildNode.getLineType();
 				
-				Node tempNode = null;
-
-				if(lt.equals(LineType.VALUE_CONCLUSION) || lt.equals(LineType.EXPR_CONCLUSION))
+				Node tempNode = thisNodeMap.get(nextNThInString+" "+this.getVariableName()+" "+tempChildNode.getNodeName());
+				if(tempNode == null)
 				{
-						tempNode = new ValueConclusionLine(nextNThInString+" "+this.getVariableName()+" "+tempChildNode.getNodeName(), tempChildNode.getTokens());
-				}
-				else if(lt.equals(LineType.COMPARISON))
-				{
-					tempNode = new ComparisonLine(nextNThInString+" "+this.getVariableName()+" "+tempChildNode.getNodeName(), tempChildNode.getTokens());
-					FactValue tempNodeFv = ((ComparisonLine)tempNode).getRHS(); 
-					if(tempNodeFv.getType().equals(FactValueType.STRING))
+					if(lt.equals(LineType.VALUE_CONCLUSION))
 					{
-						FactValue tempFv = FactValue.parse(nextNThInString+" "+this.getVariableName()+" "+tempNodeFv);
-						tempNode.setValue(tempFv);
+							tempNode = new ValueConclusionLine(nextNThInString+" "+this.getVariableName()+" "+tempChildNode.getNodeName(), tempChildNode.getTokens());
+							
+							if(parentNodeMap.get(parentNodeIdMap.get(originalParentId)).getLineType().equals(LineType.EXPR_CONCLUSION))
+							{
+								ExprConclusionLine exprTempNode = ((ExprConclusionLine)thisNodeMap.get(thisNodeIdMap.get(modifiedParentId)));
+								String replacedString = exprTempNode.getEquation().getValue().toString().replaceAll(tempChildNode.getNodeName(), nextNThInString+" "+this.getVariableName()+" "+tempChildNode.getNodeName());
+								exprTempNode.setValue(FactValue.parse(replacedString));
+								exprTempNode.setEquation(FactValue.parse(replacedString));
+							}
+					}
+					else if(lt.equals(LineType.COMPARISON))
+					{
+						tempNode = new ComparisonLine(nextNThInString+" "+this.getVariableName()+" "+tempChildNode.getNodeName(), tempChildNode.getTokens());
+						FactValue tempNodeFv = ((ComparisonLine)tempNode).getRHS(); 
+						if(tempNodeFv.getType().equals(FactValueType.STRING))
+						{
+							FactValue tempFv = FactValue.parse(nextNThInString+" "+this.getVariableName()+" "+tempNodeFv);
+							tempNode.setValue(tempFv);
+						}
+					}
+					else if(lt.equals(LineType.EXPR_CONCLUSION))
+					{
+						tempNode = new ExprConclusionLine(nextNThInString+" "+this.getVariableName()+" "+tempChildNode.getNodeName(), tempChildNode.getTokens());
 					}
 				}
+				else
+				{
+					if(lt.equals(LineType.VALUE_CONCLUSION) && parentNodeMap.get(parentNodeIdMap.get(originalParentId)).getLineType().equals(LineType.EXPR_CONCLUSION))
+					{
+							
+						ExprConclusionLine exprTempNode = ((ExprConclusionLine)thisNodeMap.get(thisNodeIdMap.get(modifiedParentId)));
+						String replacedString = exprTempNode.getEquation().getValue().toString().replaceAll(tempChildNode.getNodeName(), nextNThInString+" "+this.getVariableName()+" "+tempChildNode.getNodeName());
+						exprTempNode.setValue(FactValue.parse(replacedString));
+						exprTempNode.setEquation(FactValue.parse(replacedString));
+					}
+				}
+				
 						
 				thisNodeMap.put(tempNode.getNodeName(), tempNode);
 				thisNodeIdMap.put(tempNode.getNodeId(), tempNode.getNodeName());
-				tempDependencyList.add(new Dependency(parentNodeMap.get(parentNodeIdMap.get(parentId)), tempNode,parentDM.getDependencyType(this.nodeId, item)));
+				tempDependencyList.add(new Dependency(thisNodeMap.get(thisNodeIdMap.get(modifiedParentId)), tempNode,parentDM.getDependencyType(originalParentId, item)));
 				
-				createIterateNodeSetAux(parentDM, parentNodeMap, parentNodeIdMap, thisNodeMap, thisNodeIdMap, tempDependencyList, item, nextNThInString);
+				createIterateNodeSetAux(parentDM, parentNodeMap, parentNodeIdMap, thisNodeMap, thisNodeIdMap, tempDependencyList, item, tempNode.getNodeId(), nextNThInString);
 			});
 		}		
 	}	
@@ -169,7 +202,7 @@ public class IterateLine extends Node {
 	/*
 	 * this method is used when a givenList exists as a string
 	 */
-	public void iterateFeedAnswers(String givenJsonString, NodeSet parentNodeSet, AssessmentState parentAst) // this method uses JSON object via jackson library
+	public void iterateFeedAnswers(String givenJsonString, NodeSet parentNodeSet, AssessmentState parentAst, Assessment ass) // this method uses JSON object via jackson library
 	{
 /*
  * 		givenJsonString has to be in same format as Example otherwise the engine would NOT be able to enable 'IterateLine' node
@@ -232,7 +265,7 @@ public class IterateLine extends Node {
 					}
 				} 
 				
-				while(!canBeSelfEvaluated(this.iterateIE.getAssessmentState().getWorkingMemory()))
+				while(!this.iterateIE.getAssessmentState().getWorkingMemory().containsKey(this.nodeName))
 				{
 					Node nextQuestionNode = getIterateNextQuestion(parentNodeSet, parentAst);
 					String answer ="";
@@ -244,8 +277,14 @@ public class IterateLine extends Node {
 								        .get(nextQuestionNode.getVariableName())
 								        .asText().trim();
 						
-						this.iterateIE.feedAnswerToNode(nextQuestionNode, question, answer, questionFvtMap.get(question));
+						this.iterateIE.feedAnswerToNode(nextQuestionNode, question, answer, questionFvtMap.get(question), this.iterateIE.getAssessment());
 					}
+					
+					HashMap<String,FactValue> iterateWorkingMemory = this.iterateIE.getAssessmentState().getWorkingMemory();
+					HashMap<String,FactValue> parentWorkingMemory = parentAst.getWorkingMemory();
+					
+					transeferFactValue(iterateWorkingMemory, parentWorkingMemory);
+					
 				}
 				
 			
@@ -258,10 +297,16 @@ public class IterateLine extends Node {
 	/*
 	 * this method is used when a givenList does NOT exist
 	 */
-	public <T> void iterateFeedAnswers(Node targetNode, String questionName, T nodeValue, FactValueType nodeValueType, NodeSet parentNodeSet)
+	public <T> void iterateFeedAnswers(Node targetNode, String questionName, T nodeValue, FactValueType nodeValueType, NodeSet parentNodeSet, AssessmentState parentAst, Assessment ass)
 	{
+		
 		if(this.iterateNodeSet == null)
 		{
+			Node firstIterateQuestionNode = parentNodeSet.getNodeByNodeId(parentNodeSet.getDependencyMatrix().getToChildDependencyList(this.getNodeId()).stream().min((id1, id2) -> Integer.compare(id1, id2)).get());
+			if(questionName.equals(firstIterateQuestionNode.getNodeName()))
+			{
+				this.givenListSize = Integer.parseInt(nodeValue.toString());
+			}
 			this.iterateNodeSet = createIterateNodeSet(parentNodeSet);
 			this.iterateIE = new InferenceEngine(this.iterateNodeSet);
 			if(this.iterateIE.getAssessment() == null)
@@ -269,13 +314,30 @@ public class IterateLine extends Node {
 				this.iterateIE.setAssessment(new Assessment(this.iterateNodeSet, this.getNodeName()));
 			}
 		} 
-		this.iterateIE.feedAnswerToNode(targetNode, questionName, nodeValue, nodeValueType);
+		this.iterateIE.getAssessment().setNodeToBeAsked(targetNode);
+		this.iterateIE.feedAnswerToNode(targetNode, questionName, nodeValue, nodeValueType, this.iterateIE.getAssessment());
+		
+		HashMap<String,FactValue> iterateWorkingMemory = this.iterateIE.getAssessmentState().getWorkingMemory();
+		HashMap<String,FactValue> parentWorkingMemory = parentAst.getWorkingMemory();
+
+		transeferFactValue(iterateWorkingMemory, parentWorkingMemory);
+		
 	}
 	
+	public void transeferFactValue(HashMap<String, FactValue> workingMemory_one, HashMap<String, FactValue> workingMemory_two)
+	{
+		workingMemory_one.keySet().stream().forEach(key->{
+			FactValue tempFv = workingMemory_one.get(key);
+			if(!workingMemory_two.containsKey(key))
+			{
+				workingMemory_two.put(key, tempFv);
+			}
+		});
+	}
 	
 	public Node getIterateNextQuestion(NodeSet parentNodeSet, AssessmentState parentAst)
 	{
-		if(this.iterateNodeSet == null)
+		if(this.iterateNodeSet == null && this.givenListSize != 0)
 		{
 			this.iterateNodeSet = createIterateNodeSet(parentNodeSet);
 			this.iterateIE = new InferenceEngine(this.iterateNodeSet);
@@ -300,27 +362,6 @@ public class IterateLine extends Node {
 	    			if(!canBeSelfEvaluated(parentAst.getWorkingMemory()))
 	    			{
 	    				questionNode = this.iterateIE.getNextQuestion(this.iterateIE.getAssessment());
-	    				String nextNThInString = ordinal(findNTh(parentAst.getWorkingMemory()) + 1);
-	    				Node tempNode = null;
-	    				LineType lt = questionNode.getLineType();
-	    				
-	    				if(lt.equals(LineType.VALUE_CONCLUSION))
-					{
-	    					tempNode = new ValueConclusionLine(questionNode.getNodeName(), questionNode.getTokens());
-					}
-	    				else if(lt.equals(LineType.COMPARISON))
-	    				{
-	    					tempNode = new ComparisonLine(questionNode.getNodeName(), questionNode.getTokens());
-	    					FactValue tempNodeFv = ((ComparisonLine)tempNode).getRHS(); 
-	    					if(tempNodeFv.getType().equals(FactValueType.STRING))
-	    					{
-	    						FactValue tempFv = FactValue.parse(nextNThInString+" "+this.getVariableName()+" "+tempNodeFv);
-	    						tempNode.setValue(tempFv);
-	    					}
-	    				}
-	    				
-	    				tempNode.setNodeVariable(nextNThInString+" "+this.getVariableName()+" "+questionNode.getVariableName());
-	    				questionNode = tempNode;
 	    			}
 	    		}
 		}
@@ -352,6 +393,7 @@ public class IterateLine extends Node {
 	
 	@Override
 	public void initialisation(String parentText, Tokens tokens) {
+		this.nodeName = parentText;
 		this.numberOfTarget = tokens.tokensList.get(0);
 		this.variableName = tokens.tokensList.get(1);
 		int tokensStringListSize = tokens.tokensStringList.size();
@@ -371,11 +413,22 @@ public class IterateLine extends Node {
 
 	public boolean canBeSelfEvaluated(HashMap<String, FactValue> workingMemory) {
 		boolean canBeSelfEvaluated = false;
-				
-		if(this.givenListSize == IntStream.range(1, this.givenListSize+1).filter(item->workingMemory.get(ordinal(item)+" "+this.variableName) != null).boxed().collect(Collectors.toList()).size())
+		if(this.iterateIE != null)
 		{
-			canBeSelfEvaluated = true;
+			List<Integer> numberOfDeterminedSecondLevelNode = this.iterateIE.getNodeSet().getDependencyMatrix().getToChildDependencyList(this.nodeId)
+																						        .stream()
+																							    .filter(i -> i != this.nodeId+1)
+																							    .filter(id -> workingMemory.get(this.iterateIE.getNodeSet().getNodeIdMap().get(id)) !=null 
+																			    								  && workingMemory.get(this.iterateIE.getNodeSet().getNodeIdMap().get(id)).getValue() != null)
+																							    .collect(Collectors.toList());
+
+
+			if(this.givenListSize == numberOfDeterminedSecondLevelNode.size() && this.iterateIE.hasAllMandatoryChildAnswered(this.nodeId))
+			{
+				canBeSelfEvaluated = true;
+			}
 		}
+		
 		
 		
 		return canBeSelfEvaluated;
@@ -385,8 +438,8 @@ public class IterateLine extends Node {
 	public FactValue selfEvaluate(HashMap<String, FactValue> workingMemory, ScriptEngine nashorn) {
 		
 		int numberOfTrueChildren = numberOfTrueChildren(workingMemory);
-		int sizeOfGivenList = ((FactListValue<?>)workingMemory.get(this.givenListName)).getValue().size();
-		FactBooleanValue<?> fbv;
+		int sizeOfGivenList = this.givenListSize;
+		FactBooleanValue<?> fbv = null;
 		switch(this.numberOfTarget)
 		{
 			case "ALL":
@@ -430,14 +483,16 @@ public class IterateLine extends Node {
 				}
 				break;
 		}
-		return null;
+		return fbv;
 	}
 	
 	public int numberOfTrueChildren(HashMap<String, FactValue> workingMemory)
 	{		
-		int sizeOfGivenList = ((FactListValue<?>)workingMemory.get(this.givenListName)).getValue().size();
-		
-		return IntStream.range(1, sizeOfGivenList+1).filter(item->workingMemory.get(ordinal(item)+" "+this.variableName).getValue().toString().toLowerCase().equals("true")).boxed().collect(Collectors.toList()).size();
+		return this.iterateIE.getNodeSet().getDependencyMatrix().getToChildDependencyList(this.nodeId).stream()
+																							 .filter(i -> i != this.nodeId+1)
+																							 .filter(id -> workingMemory.get(this.iterateIE.getNodeSet().getNodeIdMap().get(id)).getValue().toString().toLowerCase().equals("true"))
+																							 .collect(Collectors.toList()).size();
+
 	}
 	
 	

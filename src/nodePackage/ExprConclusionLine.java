@@ -1,7 +1,8 @@
 package nodePackage;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -19,6 +20,7 @@ import ruleParser.Tokens;
 public class ExprConclusionLine extends Node{
 
 	private FactValue equation;
+	private DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
 	public ExprConclusionLine(String parentText, Tokens tokens) {
 		super(parentText, tokens);
@@ -39,6 +41,19 @@ public class ExprConclusionLine extends Node{
 	{
 		return this.equation;
 	}
+	public void setEquation(FactValue newEquation)
+	{
+		this.equation = newEquation;
+	}
+	
+	public DateTimeFormatter getDateTimeFormatter()
+	{
+		return this.dateFormatter;
+	}
+	public void setDateTimeFormatter(String dateTimeFormatString)
+	{
+		this.dateFormatter = DateTimeFormatter.ofPattern(dateTimeFormatString);
+	}
 	
 	@Override
 	public LineType getLineType()
@@ -54,7 +69,7 @@ public class ExprConclusionLine extends Node{
 		 * if difference in days or months is required then new 'keyword' must be introduced such as 'Diff Years', 'Diff Days', or 'Diff Months'
 		 */
 		String euqationInString = this.equation.getValue().toString();
-		Pattern pattern = Pattern.compile("[-+/*()0-9?:;,.\"](\\s*)");
+		Pattern pattern = Pattern.compile("[-+/*()?:;,.\"](\\s*)");
 		Pattern datePattern = Pattern.compile("([0-2]?[0-9]|3[0-1])/(0?[0-9]|1[0-2])/([0-9][0-9])?[0-9][0-9]|([0-9][0-9])?[0-9][0-9]/(0?[0-9]|1[0-2])/([0-2]?[0-9]|3[0-1])");
 
 		/*
@@ -77,9 +92,23 @@ public class ExprConclusionLine extends Node{
 			for(int i = 0; i < tempArrayLength ; i++)
 			{
 				tempItem = tempArray[i];
-				if(!tempItem.trim().isEmpty())
+				if(!tempItem.trim().isEmpty() && workingMemory.get(tempItem.trim()) != null)
 				{
-					tempScript = tempScript.replaceAll(tempItem.trim(), workingMemory.get(tempItem.trim()).getValue().toString().trim());
+					FactValue tempFv = workingMemory.get(tempItem.trim());
+					if(tempFv.getValue().getClass().getName().equals(LocalDate.class.getName()))
+					{
+						/*
+						 * below line is temporary solution.
+						 * Within next iteration it needs to be that this node should take dateFormatter for its constructor to determine which date format it needs
+						 */
+						String tempStr = ((LocalDate)tempFv.getValue()).format(this.dateFormatter);
+						tempScript = tempScript.replaceAll(tempItem.trim(), tempStr);
+					}
+					else
+					{
+						tempScript = tempScript.replaceAll(tempItem.trim(), workingMemory.get(tempItem.trim()).getValue().toString().trim());
+					}
+					
 				}
 			}
 		}
@@ -96,7 +125,7 @@ public class ExprConclusionLine extends Node{
 		{
 			String[] date1Array = dateStringList.get(0).trim().split("/");
 			String[] date2Array = dateStringList.get(1).trim().split("/");
-			script = "var localDate = java.time.LocalDate; var chronoUnit = java.time.temporal.ChronoUnit; var diffYears = chronoUnit.YEARS.between(localDate.of("+date1Array[0].trim()+","+date1Array[1].trim()+","+date1Array[2].trim()+"), localDate.of("+date2Array[0].trim()+","+date2Array[1].trim()+","+date2Array[2].trim()+")); diffYears;";
+			script = "var localDate = java.time.LocalDate; var chronoUnit = java.time.temporal.ChronoUnit; var diffYears = chronoUnit.YEARS.between(localDate.of("+date2Array[2].trim()+","+date2Array[1].trim()+","+date2Array[0].trim()+"), localDate.of("+date1Array[2].trim()+","+date1Array[1].trim()+","+date1Array[0].trim()+")); diffYears;";
 		}
 //		else // case of int or double calculation
 //		{

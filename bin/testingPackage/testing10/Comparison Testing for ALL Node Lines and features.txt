@@ -1,0 +1,69 @@
+person qualifies for the grant&true:false
+person's name = "troy jones"&true:false
+person's dob > 01/01/1990&true:false          
+person is eligible for a premium service&true:false
+person's drinking habit = "frequent drinker"&true:false
+person's account IS IN LIST: premium account type&true:false     
+person's nationality = "Australian"&true:false
+person's drinking habit IS "social drinker"&true:false
+person's drinking habit IS "frequent drinker"&true:false
+person's drinking habit IS "heavy drinker"&true:false
+person's nationality IS "Australian"&true:false
+number of drinks the person consumes a week > 0&true:false
+number of drinks the person consumes a week < 3&true:false
+number of drinks the person consumes a week > 3&true:false
+number of drinks the person consumes a week < 7&true:false
+number of drinks the person consumes a week > 7&true:false
+Rule one&true:false
+Rule two&true:false
+number of drinks the person consumes a week IS CALC ( number of drinks the person consumes an hour * hours of drinks a day * (5-1))&true:false
+person's citizenship status = "canceled"&true:false
+person's legally yearly period of stay in Australia <= 20&true:false 
+person's permanent residentship status = "canceled"&true:false
+citizenship testing of person's parents&true:false
+the person was born in Australia&true:false
+we have person's name and dob&true:false
+we have the person's passport&true:false
+person's name IS IN LIST: name list&true:false
+person made it to Las Vegas&true:false
+person must meet military service criteria&true:false
+number of drinks the person consumes an hour&true:false
+hours of drinks a day&true:false
+one of person's parents is Australian&true:false
+both of person's parents are Australian&true:false
+all grand parents of the person were Australian&true:false
+person's dob&true:false  
+person has an Australian passport&true:false
+person has not lost the passport&true:false
+person's name&true:false
+the person missed the flight&true:false  
+ALL service ITERATE: LIST OF service history&true:false
+person passport type = "Australian"&true:false
+person passport issued country = "Australia"&true:false
+person age >18&true:false
+a number of countries the person has travelled so far >= 40&true:false
+current location of person's passport = the place the person normally locate the passport&true:false
+person's passport is in a police station&true:false
+number of services&true:false
+iterate rules&true:false
+one&true:false
+two&true:false
+three&true:false
+four&true:false
+five&true:false
+discharge date <= 6/12/1972&true:false
+yearly period of service by 6/04/1994 >= 3&true:false
+discharge date >= 07/04/1994&true:false
+discharge date <= 30/06/2004&true:false
+enlistment date >= 22/05/1986&true:false
+yearly period of service < 3&true:false
+discharge type = "medical discharge"&true:false
+service type IS IN LIST: Special service&true:false
+enlistment date >= 07/04/1994&true:false
+enlistment date >= 01/07/1951&true:false
+service type = “Steam force”&true:false
+discharge date >= 30/06/2004&true:false
+yearly period of service by 6/04/1994 IS CALC (enlistment date - 6/04/1994)&true:false
+yearly period of service IS CALC (discharge date - enlistment date)&true:false
+enlistment date&true:false
+discharge date&true:false

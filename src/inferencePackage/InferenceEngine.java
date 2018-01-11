@@ -79,6 +79,10 @@ public class InferenceEngine {
     {
     		return this.ass;
     }
+    public ScriptEngine getScriptEngine()
+    {
+    		return this.scriptEngine;
+    }
     /*
      * this method is to extract all variableName of Nodes, and put them into a List<String>
      * it may be useful to display and ask a user to select which information they do have even before starting Inference process
@@ -195,23 +199,29 @@ public class InferenceEngine {
 	    						
 	    						parentDependencyList.parallelStream().forEachOrdered(parentId -> {
 	    							if((nodeSet.getDependencyMatrix().getDependencyType(parentId, nodeId)&DependencyType.getMandatory()) == DependencyType.getMandatory()
-	    									&& !ast.isInclusiveList(node.getNodeName()))
+	    									&& !ast.isInclusiveList(node.getNodeName())
+	    									&& !isIterateLineChild(node.getNodeId()))
 	    							{
 	    								ast.addItemToMandatoryList(node.getNodeName());
 	    							}
 	    						});
 	    					}
 	    				}
-	    				if(node.getLineType().equals(LineType.ITERATE))
+	    				if(nodeId != ass.getGoalNode().getNodeId() && node.getLineType().equals(LineType.ITERATE) && !ast.getWorkingMemory().containsKey(node.getNodeName()))
 	    				{	
-	    					String givenListName = this.ast.getWorkingMemory().get(((IterateLine)node).getGivenListName()).getValue().toString().trim();
-	    					if(!givenListName.equals(null))
+	    					FactValue givenListNameFv = this.ast.getWorkingMemory().get(((IterateLine)node).getGivenListName());
+	    					String givenListName = "";
+	    					if(givenListNameFv != null)
 	    					{
-	    						((IterateLine)node).iterateFeedAnswers(givenListName, this.nodeSet, this.ast);
+	    						givenListName = givenListNameFv.toString().trim();
+	    					}
+	    					if(givenListName.length() > 0)
+	    					{
+	    						((IterateLine)node).iterateFeedAnswers(givenListName, this.nodeSet, this.ast, ass);
 	    					}
 	    					else
 	    					{
-	    						while(this.ast.getWorkingMemory().containsKey(node.getNodeName()))
+	    						if(!this.ast.getWorkingMemory().containsKey(node.getNodeName()))
 		    					{
 		    						ass.setNodeToBeAsked(node);
 			    					int indexOfRuleToBeAsked = i;
@@ -397,6 +407,53 @@ public class InferenceEngine {
     		return hasAlreadySetType;
     }
     
+    public boolean isIterateLineChild(int nodeId)
+    {
+    		boolean isIterateLineChild = false;
+    		List<Integer> tempList = new ArrayList<>();
+    		List<Node> iterateLineList = nodeSet.getNodeMap().values().stream().filter(node->node.getLineType().equals(LineType.ITERATE)).collect(Collectors.toList());
+    		
+    		iterateLineList.forEach(iNode -> {
+    			List<Integer> iterateChildNodeList = this.nodeSet.getDependencyMatrix().getToChildDependencyList(iNode.getNodeId());
+    			if(iterateChildNodeList.contains(nodeId))
+    			{
+    				tempList.add(1);
+    			}
+    			else
+    			{
+    				isIterateLineChildAux(tempList, iterateChildNodeList, nodeId);
+    			}
+    		});
+    		
+    		if(tempList.size() > 0 )
+    		{
+    			isIterateLineChild = true;
+    		}
+    		else
+    		{
+    			if(this.getAssessmentState().getMandatoryList().contains(this.nodeSet.getNodeIdMap().get(nodeId)))
+    			{
+    				this.getAssessmentState().getMandatoryList().remove(this.nodeSet.getNodeIdMap().get(nodeId));
+    			}
+    		}
+    		
+    		return isIterateLineChild;
+    }
+    
+    public void isIterateLineChildAux(List<Integer> tempList, List<Integer> iterateChildNodeList, int nodeId)
+    {
+	    	iterateChildNodeList.forEach(id -> {
+					List<Integer> iterateChildNodeListAux = this.nodeSet.getDependencyMatrix().getToChildDependencyList(id);
+					if(iterateChildNodeList.contains(nodeId))
+					{
+						tempList.add(1);
+					}
+					else
+					{
+						isIterateLineChildAux(tempList, iterateChildNodeListAux, nodeId);
+					}
+		});
+    }
     
     /*
      * this is to check whether or not a node can be evaluated with all information in the workingMemory. If there is information for a value of node's value(FactValue) or variableName, then the node can be evaluated otherwise not.
@@ -458,10 +515,7 @@ public class InferenceEngine {
 	    			}
 	    		}
 	    	}
-	    	else if(lineType.equals(LineType.ITERATE))
-	    	{
-	    		
-	    	}
+
 	    	return canEvaluate;
     }
     
@@ -473,7 +527,7 @@ public class InferenceEngine {
      * rather than nodeVariableName because a certain nodeVariableName could be found in several nodes
      */
     @SuppressWarnings({"unchecked" })
-	public <T> void feedAnswerToNode(Node targetNode, String questionName, T nodeValue, FactValueType nodeValueType)
+	public <T> void feedAnswerToNode(Node targetNode, String questionName, T nodeValue, FactValueType nodeValueType, Assessment ass)
     {
 	    	FactValue fv = null;
 	    	
@@ -524,7 +578,7 @@ public class InferenceEngine {
 	    		fv = FactValue.parseUUID((String)nodeValue);
 	    	}
 	    	
-	    	if(fv != null && !this.ass.getNodeToBeAsked().getLineType().equals(LineType.ITERATE))
+	    	if(fv != null && !ass.getNodeToBeAsked().getLineType().equals(LineType.ITERATE))
 	    	{
 	    		ast.setFact(questionName, fv);
 			ast.addItemToSummaryList(questionName);// add currentRule into SummeryList as the rule determined
@@ -558,9 +612,13 @@ public class InferenceEngine {
 	    		backPropagating(nodeSet.findNodeIndex(targetNode.getNodeName()));
 	        
 	    	}
-	    	else if(this.ass.getNodeToBeAsked().getLineType().equals(LineType.ITERATE))
+	    	else if(ass.getNodeToBeAsked().getLineType().equals(LineType.ITERATE))
 	    	{
-    			((IterateLine)targetNode).iterateFeedAnswers(targetNode, questionName, nodeValue, nodeValueType, this.nodeSet);
+    			((IterateLine)ass.getNodeToBeAsked()).iterateFeedAnswers(targetNode, questionName, nodeValue, nodeValueType, this.nodeSet, ast, ass);
+    			if(((IterateLine)ass.getNodeToBeAsked()).canBeSelfEvaluated(ast.getWorkingMemory()))
+    			{
+    	    			backPropagating(nodeSet.findNodeIndex(ass.getNodeToBeAsked().getNodeName()));
+    			}
 	    	}
     }
     
@@ -579,9 +637,10 @@ public class InferenceEngine {
 			if(!parentDependencyList.isEmpty())
 			{
 				
-				parentDependencyList.parallelStream().forEachOrdered(parentId -> {
+				parentDependencyList.stream().forEachOrdered(parentId -> {
 					if((nodeSet.getDependencyMatrix().getDependencyType(parentId, tempNodeId)&DependencyType.getMandatory()) == DependencyType.getMandatory()
-							&& !ast.isInclusiveList(tempNode.getNodeName()))
+							&& !ast.isInclusiveList(tempNode.getNodeName())
+							&& !isIterateLineChild(tempNode.getNodeId()))
 					{
 						ast.addItemToMandatoryList(tempNode.getNodeName());
 					}
@@ -626,10 +685,7 @@ public class InferenceEngine {
     						ast.setFact(tempNode.getNodeName(), fv);
     						ast.addItemToSummaryList(tempNode.getNodeName());// add currentRule into SummeryList as the rule determined
         				}
-        				else if(lineType.equals(LineType.ITERATE))
-        				{
-        					
-        				}
+
     				}
     				
     			}
@@ -660,6 +716,7 @@ public class InferenceEngine {
 	    		    		   {
 	    		    			   ast.addItemToSummaryList(tempNode.getNodeName()); // add currentRule into SummeryList as the rule determined
 	    		    		   }
+
 	    		    	   }
 	    	    		}
     			}
@@ -917,6 +974,14 @@ public class InferenceEngine {
 	    			}
 	    		}
 	    	}
+	    	else if(LineType.ITERATE.equals(lineType))
+	    	{
+	    		if(((IterateLine)node).canBeSelfEvaluated(ast.getWorkingMemory()))
+	    		{
+	    			ast.setFact(node.getNodeName(), node.selfEvaluate(ast.getWorkingMemory(), scriptEngine));
+    				ast.addItemToSummaryList(node.getVariableName());
+	    		}
+	    	}
  	
 	    	return canDetermine;
 	}
@@ -1008,6 +1073,10 @@ public class InferenceEngine {
         if (!nodeSet.getDependencyMatrix().getToChildDependencyList(nodeId).isEmpty())
         {
             hasChildren = true;
+            nodeSet.getDependencyMatrix().getToChildDependencyList(nodeId).stream().forEach(item->{
+	            	Node nodeName = nodeSet.getNodeByNodeId(item);
+	            	addChildRuleIntoInclusiveList(nodeName);
+            });
         }
         return hasChildren;
     }
@@ -1300,22 +1369,53 @@ public class InferenceEngine {
     }
 
 
-
-    public boolean allNeedsChildDetermined(Node parentNode, List<Integer> outDependency)
+    public List<String> generateSortedSummaryList()
     {
-    	boolean allNeedsChildDetermined = false;
-    	
-    	int mandatoryAndDependencyType = DependencyType.getMandatory() | DependencyType.getAnd();
-    	List<Integer> determinedList = outDependency.stream().filter(i -> (nodeSet.getDependencyMatrix().getDependencyMatrixArray()[parentNode.getNodeId()][i] & mandatoryAndDependencyType) == mandatoryAndDependencyType
-    										&& ast.getWorkingMemory().containsKey(nodeSet.getNodeMap().get(nodeSet.getNodeIdMap().get(i)).getVariableName())).collect(Collectors.toList());
-    	
-    	if(outDependency.size() == determinedList.size())
-    	{
-    		allNeedsChildDetermined = true;
-    	}    	
-    	
-    	return allNeedsChildDetermined;
+	    	List<String> sortedSummaryList = new ArrayList<>();
+		nodeSet.getNodeSortedList().stream().forEachOrdered(node ->{
+			if(ast.getSummaryList().contains(node.getNodeName()))
+			{
+				sortedSummaryList.add(node.getNodeName());
+			}
+			if(ast.getSummaryList().contains("NOT "+node.getNodeName()))
+			{
+				sortedSummaryList.add("NOT "+node.getNodeName());
+			}
+			if(ast.getSummaryList().contains("KNOWN "+node.getNodeName()))
+			{
+				sortedSummaryList.add("KNOWN "+node.getNodeName());
+			}
+			if(ast.getSummaryList().contains("NOT KNOWN "+node.getNodeName()))
+			{
+				sortedSummaryList.add("NOT KNOWN "+node.getNodeName());
+			}
+		});
+		
+		ast.getSummaryList().stream().forEach(nodeName->{
+			if(!sortedSummaryList.contains(nodeName))
+			{
+				sortedSummaryList.add(1, nodeName);
+			}
+		});
+			
+		return sortedSummaryList;
     }
+
+//    public boolean allNeedsChildDetermined(Node parentNode, List<Integer> outDependency)
+//    {
+//	    	boolean allNeedsChildDetermined = false;
+//	    	
+//	    	int mandatoryAndDependencyType = DependencyType.getMandatory() | DependencyType.getAnd();
+//	    	List<Integer> determinedList = outDependency.stream().filter(i -> (nodeSet.getDependencyMatrix().getDependencyMatrixArray()[parentNode.getNodeId()][i] & mandatoryAndDependencyType) == mandatoryAndDependencyType
+//	    										&& ast.getWorkingMemory().containsKey(nodeSet.getNodeMap().get(nodeSet.getNodeIdMap().get(i)).getVariableName())).collect(Collectors.toList());
+//	    	
+//	    	if(outDependency.size() == determinedList.size())
+//	    	{
+//	    		allNeedsChildDetermined = true;
+//	    	}    	
+//	    	
+//	    	return allNeedsChildDetermined;
+//    }
     
 
     
