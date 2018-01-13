@@ -27,7 +27,7 @@ Add more features as follows;
 * Workflow engine with GUI based diagram editor 
 * Machine Learning type inference mechanism
 
-![alt tag](https://user-images.githubusercontent.com/21071046/34905432-7103a7e6-f8ac-11e7-9db7-a33f288e131c.png=250x)Please Note that due to the reason that there is a number of framework for GUI and server side implementation, we will try to implement Nadia engine with respective framework. The first implementation is React.js with Spring Boot, and the source is at [Nadia-R.S](https://github.com/DeanLee77/Nadia-R.S). Please email to 'suho2k12@icloud.com' if you do have any questions.
+![alt tag](https://user-images.githubusercontent.com/21071046/34905432-7103a7e6-f8ac-11e7-9db7-a33f288e131c.png =20x20)Please Note that due to the reason that there is a number of framework for GUI and server side implementation, we will try to implement Nadia engine with respective framework. The first implementation is React.js with Spring Boot, and the source is at [Nadia-R.S](https://github.com/DeanLee77/Nadia-R.S). Please email to 'suho2k12@icloud.com' if you do have any questions.
 
 ## 4. Contribution
 If you would like to contribute to this project, then please create your own branch and name the branch clearly. Once the work is done in the branch then do 'pull request' and send an email to 'suho2k12@icloud.com'.
