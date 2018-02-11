@@ -67,5 +67,5 @@ An inference engine using forward chaining searches the inference rules until it
 * 'A is true' statement is unknown
 
 ## 7. License
-Copyright (c) 2017 individual contributors.
+Copyright (c) 2017-2018 individual contributors.
 Nadia is open source project and released under AGPL 3.0 License.
