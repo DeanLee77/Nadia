@@ -16,11 +16,18 @@ public class Assessment {
 	 */
 	private Node nodeToBeAsked;
 	
+	/*
+	 * this variable is to track next node to be asked within 'IterateLine' type node.
+	 * However, better way needs to be found.
+	 */
+	private Node auxNodeToBeAsked;
+	
 	public Assessment(NodeSet ns, String goalNodeName)
 	{
 		goalNode = ns.getNodeMap().get(goalNodeName);
 		goalNodeIndex = ns.findNodeIndex(goalNodeName);
 		nodeToBeAsked = null;
+		auxNodeToBeAsked = null; 
 	}
 	
 
@@ -41,7 +48,15 @@ public class Assessment {
 	{
 		return this.nodeToBeAsked;
 	}
-	 
+	
+	public void setAuxNodeToBeAsked(Node auxNodeToBeAsked)
+	{
+		this.auxNodeToBeAsked = auxNodeToBeAsked;
+	}
+	public Node getAuxNodeToBeAsked()
+	{
+		return this.auxNodeToBeAsked;
+	}
 	
 
 }
