@@ -393,8 +393,10 @@ public class TopoSort {
         float result = 0;
         for(Node node: childNodeList)
         {
-            yesCount = recordListOfNodes.get(node.getNodeName()).getTrueCount();
-            noCount = recordListOfNodes.get(node.getNodeName()).getFalseCount();
+			Record recordOfNode = recordListOfNodes.get(node.getNodeName());
+
+            yesCount = recordOfNode!=null?recordListOfNodes.get(node.getNodeName()).getTrueCount(): 0;
+            noCount = recordOfNode!=null?recordListOfNodes.get(node.getNodeName()).getFalseCount(): 0;
             
             result = (float)yesCount/(yesCount + noCount);
             if(analysis(result, theMostPossibility, yesCount + noCount, sum))
@@ -411,7 +413,7 @@ public class TopoSort {
     
     public static Node findTheMostNegative(List<Node> childNodeList, HashMap<String, Record> recordListOfNodes)
     {
-    	Node theMostNegative = null;
+    		Node theMostNegative = null;
         int yesCount = 0;
         int noCount = 0;
         float theMostPossibility = 0;
@@ -419,8 +421,10 @@ public class TopoSort {
         float result = 0;
         for(Node node: childNodeList)
         {
-            yesCount = recordListOfNodes.get(node.getNodeName()).getTrueCount();
-            noCount = recordListOfNodes.get(node.getNodeName()).getFalseCount();
+    			Record recordOfNode = recordListOfNodes.get(node.getNodeName());
+
+            yesCount = recordOfNode!=null?recordListOfNodes.get(node.getNodeName()).getTrueCount(): 0;
+            noCount = recordOfNode!=null?recordListOfNodes.get(node.getNodeName()).getFalseCount(): 0;
 
             result = (float)noCount/(yesCount+noCount);
 

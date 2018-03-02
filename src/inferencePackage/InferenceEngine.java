@@ -939,7 +939,10 @@ public class InferenceEngine {
 	    				}
 	    				canDetermine = true;
 	    				ast.setFact(node.getVariableName(), node.selfEvaluate(ast.getWorkingMemory(), scriptEngine));
+	    				ast.setFact(node.getNodeName(), node.selfEvaluate(ast.getWorkingMemory(), scriptEngine)); //inserting same value for node's name is for the purpose of display equation
+
 	    				ast.addItemToSummaryList(node.getVariableName());
+	    				ast.addItemToSummaryList(node.getNodeName()); // inserting node's name is to find its evaluated value from the workingMemory with its name
 	    			}
 	    		}
 	    		else if(!andToChildDependencies.isEmpty() && orToChildDependencies.isEmpty())// node has only 'AND' child nodes
@@ -955,7 +958,10 @@ public class InferenceEngine {
 	    				}
 	    				canDetermine = true;
 	    				ast.setFact(node.getVariableName(), node.selfEvaluate(ast.getWorkingMemory(), scriptEngine));
+	    				ast.setFact(node.getNodeName(), node.selfEvaluate(ast.getWorkingMemory(), scriptEngine)); //inserting same value for node's name is for the purpose of display equation
+
 	    				ast.addItemToSummaryList(node.getVariableName());
+	    				ast.addItemToSummaryList(node.getNodeName()); // inserting node's name is to find its evaluated value from the workingMemory with its name
 	    			}
 	    		}
 	    		else
@@ -968,7 +974,11 @@ public class InferenceEngine {
 	    				}
 	    				canDetermine = true;
 	    				ast.setFact(node.getVariableName(), node.selfEvaluate(ast.getWorkingMemory(), scriptEngine));
+	    				ast.setFact(node.getNodeName(), node.selfEvaluate(ast.getWorkingMemory(), scriptEngine)); //inserting same value for node's name is for the purpose of display equation
+
 	    				ast.addItemToSummaryList(node.getVariableName());
+	    				ast.addItemToSummaryList(node.getNodeName()); // inserting node's name is to find its evaluated value from the workingMemory with its name
+
 	    			}
 	    		}
 	    	}
