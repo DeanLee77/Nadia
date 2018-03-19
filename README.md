@@ -30,7 +30,7 @@ Add more features as follows;
 * Please Note that due to the reason that there is a number of framework for GUI and server side implementation, we will try to implement Nadia engine with respective framework. The first implementation is React.js with Spring Boot, and the source is at [Nadia-R.S](https://github.com/DeanLee77/Nadia-R.S). Please email to 'suho2k12@icloud.com' if you do have any questions.
 
 ## 4. Contribution
-If you would like to contribute to this project, then please create your own branch and name the branch clearly. Once the work is done in the branch then do 'pull request' and send an email to 'suho2k12@icloud.com'.
+If you would like to contribute to this project, then please create your own branch and name the branch clearly. Once the work is done in the branch then do 'pull request' and send an email to ''nexst.rndlabs@gmail.com'.
 
 ## 5. Make your own Rules/Policies
 Please have a look at a file of testing rule. Within the example file, all indented rules uses 'Tab' key for indentation. The rule scanner considers of an indented rule as a child rule of previous rule in a rule text.
