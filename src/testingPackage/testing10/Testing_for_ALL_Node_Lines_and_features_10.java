@@ -29,7 +29,7 @@ public class Testing_for_ALL_Node_Lines_and_features_10 {
 		RuleSetParser isf = new RuleSetParser();		
 		RuleSetScanner rsc = new RuleSetScanner(ilr,isf);
 		rsc.scanRuleSet();
-		rsc.establishNodeSet();
+		rsc.establishNodeSet(null);
 		
 		BufferedReader br = new BufferedReader(new InputStreamReader(Testing_for_ALL_Node_Lines_and_features_10.class.getResourceAsStream("Comparison Testing for ALL Node Lines and features.txt")));
 		String line;
@@ -257,7 +257,7 @@ public class Testing_for_ALL_Node_Lines_and_features_10 {
 			Node nextQuestionNode = ie.getNextQuestion(ass);
 			HashMap<String,FactValueType> questionFvtMap = ie.findTypeOfElementToBeAsked(nextQuestionNode);
 			
-			FactValueType fvt = null;
+//			FactValueType fvt = null;
 			String answer = "";
 			
 			for(String question: ie.getQuestionsFromNodeToBeAsked(nextQuestionNode))

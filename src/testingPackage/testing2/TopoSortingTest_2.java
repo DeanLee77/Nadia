@@ -25,7 +25,7 @@ public class TopoSortingTest_2 {
 		RuleSetParser isf = new RuleSetParser();		
 		RuleSetScanner rsc = new RuleSetScanner(ilr,isf);
 		rsc.scanRuleSet();
-		rsc.establishNodeSet();
+		rsc.establishNodeSet(null);
 		List<String> nameList = new ArrayList<>();
 		BufferedReader br = new BufferedReader(new InputStreamReader(TopoSortingTest_2.class.getResourceAsStream("ToposortedNodeName.txt")));
 		String line;

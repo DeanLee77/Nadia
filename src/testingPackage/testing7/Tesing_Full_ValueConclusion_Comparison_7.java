@@ -27,7 +27,7 @@ public class Tesing_Full_ValueConclusion_Comparison_7 {
 		RuleSetParser isf = new RuleSetParser();		
 		RuleSetScanner rsc = new RuleSetScanner(ilr,isf);
 		rsc.scanRuleSet();
-		rsc.establishNodeSet();
+		rsc.establishNodeSet(null);
 		
 		BufferedReader br = new BufferedReader(new InputStreamReader(Tesing_Full_ValueConclusion_Comparison_7.class.getResourceAsStream("Comparison for Testing full ValueConclusion and Comparison.txt")));
 		String line;

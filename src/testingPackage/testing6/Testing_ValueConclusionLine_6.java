@@ -26,7 +26,7 @@ public class Testing_ValueConclusionLine_6 {
 		RuleSetParser isf = new RuleSetParser();		
 		RuleSetScanner rsc = new RuleSetScanner(ilr,isf);
 		rsc.scanRuleSet();
-		rsc.establishNodeSet();
+		rsc.establishNodeSet(null);
 		
 		BufferedReader br = new BufferedReader(new InputStreamReader(Testing_ValueConclusionLine_6.class.getResourceAsStream("Testing ValueConclusionLine Comparison.txt")));
 		String line;

@@ -1,8 +1,8 @@
 package ruleParser;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Stack;
-
 import nodePackage.*;
 import inferencePackage.*;
 
@@ -11,6 +11,8 @@ import inferencePackage.*;
 public class RuleSetScanner {
 	private IScanFeeder scanFeeder = null;
     private ILineReader lineReader = null;
+    private boolean useHistoricalData = false;
+    private HashMap<String, Record> recordMapOfNodes; 
 
     public RuleSetScanner(ILineReader reader, IScanFeeder feeder) {
           scanFeeder = feeder;
@@ -85,31 +87,31 @@ public class RuleSetScanner {
 
                } 
                // does not begin with a white space
-               else {
+               else 
+               {
                     // is a parent
-           		parentStack.clear();
-                   parent = lineTrimed;
-                   scanFeeder.handleParent(parent, lineNumber);
-                   parentStack.push(parent);
+            	   		parentStack.clear();
+	               parent = lineTrimed;
+	               scanFeeder.handleParent(parent, lineNumber);
+	               parentStack.push(parent);
                }
                previousWhitespace = currentWhitespace;
           }
     }
     
-    public void establishNodeSet()
+    public void establishNodeSet(HashMap<String, Record> recordMapOfNodes)
     {
-   	 NodeSet ns = scanFeeder.getNodeSet();
-   	 ns.setDependencyMatrix(scanFeeder.createDependencyMatrix());
-   	 List<Node> sortedList = TopoSort.bfsTopoSort(ns.getNodeMap(), ns.getNodeIdMap(), ns.getDependencyMatrix().getDependencyMatrixArray()); 
-   	 if(sortedList.size() != 0)
-   	 {
-   	   	 ns.setNodeSortedList(sortedList);
-   	 }
-   	 else
-   	 {
-   		scanFeeder.handleWarning("RuleSet needs rewriting due to it is cyclic.");
-   	 }
-   	 //   	 scanFeeder.setNodeSet(ns);
+	   	 NodeSet ns = scanFeeder.getNodeSet();
+	   	 ns.setDependencyMatrix(scanFeeder.createDependencyMatrix());
+	   	 List<Node> sortedList = TopoSort.dfsTopoSort(ns.getNodeMap(), ns.getNodeIdMap(), ns.getDependencyMatrix().getDependencyMatrixArray(), recordMapOfNodes);
+	   	 if(sortedList.size() != 0)
+	   	 {
+	   	   	 ns.setNodeSortedList(sortedList);
+	   	 }
+	   	 else
+	   	 {
+	   		scanFeeder.handleWarning("RuleSet needs rewriting due to it is cyclic.");
+	   	 }
     }
     
     public Stack<String> handlingStackPop(Stack<String>parentStack, int indentationDifference)
@@ -119,6 +121,20 @@ public class RuleSetScanner {
    		 parentStack.pop();
    	 }
    	 return parentStack;
+    }
+    
+    public void setHistoricalData()
+    {
+    		this.useHistoricalData = !this.useHistoricalData;
+    }
+    
+    public void setRecordMapOfNodes(HashMap<String, Record> recordMapOfNodes)
+    {
+    		this.recordMapOfNodes = recordMapOfNodes;
+    }
+    public HashMap<String, Record> getRecordMapOfNodes()
+    {
+    		return recordMapOfNodes;
     }
 
 

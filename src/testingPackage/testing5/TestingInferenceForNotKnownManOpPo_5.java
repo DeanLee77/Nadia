@@ -37,7 +37,7 @@ public class TestingInferenceForNotKnownManOpPo_5 {
 		RuleSetParser isf = new RuleSetParser();		
 		RuleSetScanner rsc = new RuleSetScanner(ilr,isf);
 		rsc.scanRuleSet();
-		rsc.establishNodeSet();
+		rsc.establishNodeSet(null);
 		
 		InferenceEngine ie = new InferenceEngine(isf.getNodeSet());
 		Assessment ass = new Assessment(isf.getNodeSet(), isf.getNodeSet().getNodeSortedList().get(0).getNodeName());

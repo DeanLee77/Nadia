@@ -23,7 +23,7 @@ public class TestingForReadingNotKnownMandatoryPossiblyAndOptionally_4 {
 		RuleSetParser isf = new RuleSetParser();		
 		RuleSetScanner rsc = new RuleSetScanner(ilr,isf);
 		rsc.scanRuleSet();
-		rsc.establishNodeSet();
+		rsc.establishNodeSet(null);
 		List<String> readLine = new ArrayList<>();
 		isf.getNodeSet().getNodeSortedList().stream().forEachOrdered(node ->{
 			readLine.add("nodeName: "+node.getNodeName());

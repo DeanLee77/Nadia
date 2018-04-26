@@ -41,7 +41,7 @@ public class WeddingPlanner_Inference_Test_3 {
 		RuleSetParser isf = new RuleSetParser();		
 		RuleSetScanner rsc = new RuleSetScanner(ilr,isf);
 		rsc.scanRuleSet();
-		rsc.establishNodeSet();
+		rsc.establishNodeSet(null);
 		InferenceEngine ie = new InferenceEngine(isf.getNodeSet());
 		Assessment ass = new Assessment(isf.getNodeSet(), isf.getNodeSet().getNodeSortedList().get(0).getNodeName());
 //		Scanner scan = new Scanner(System.in);

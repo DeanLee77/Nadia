@@ -28,7 +28,7 @@ public class Testing_Whole_Features_Of_ValueConclusionLine_ComparisonLine_and_Ex
 		RuleSetParser isf = new RuleSetParser();		
 		RuleSetScanner rsc = new RuleSetScanner(ilr,isf);
 		rsc.scanRuleSet();
-		rsc.establishNodeSet();
+		rsc.establishNodeSet(null);
 		
 		BufferedReader br = new BufferedReader(new InputStreamReader(Testing_Whole_Features_Of_ValueConclusionLine_ComparisonLine_and_ExprConclusionLine_9.class.getResourceAsStream("Comparison for testing whole features of ValueConclusionLine, ComparisonLine and ExprConclusionLine.txt")));
 		String line;
