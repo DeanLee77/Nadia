@@ -10,6 +10,12 @@ import java.util.stream.IntStream;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+
+import factValuePackage.FactValue;
+import nodePackage.NodeSet;
+
 import factValuePackage.*;
 import nodePackage.*;
 
@@ -45,6 +51,21 @@ public class InferenceEngine {
     public void addNodeSet(NodeSet nodeSet2)
     {
     	
+    }
+    
+    public void setNodeSet(NodeSet nodeSet)
+    {
+	    	this.nodeSet = nodeSet;
+	    	ast = newAssessmentState();
+	    	HashMap<String, FactValue> tempFactMap = nodeSet.getFactMap();
+	    	HashMap<String, FactValue> tempWorkingMemory = ast.getWorkingMemory();
+	    	
+	    if(!tempFactMap.isEmpty())
+	    	{
+	    		tempFactMap.keySet().stream().forEach(key-> tempWorkingMemory.put(key, tempFactMap.get(key))); 	
+	    	}
+	    	nodeFactList = new ArrayList<>(nodeSet.getNodeSortedList().size()*2); // contains all rules set as a fact given by a user from a ruleList
+	
     }
     
     public NodeSet getNodeSet()
@@ -1484,6 +1505,19 @@ public class InferenceEngine {
      * this is to generate Assessment Summary
      * need to modify this method to have correct summary
      */
+	public ObjectNode[] generateAssessmentSummary()
+	{ 
+		List<ObjectNode> tempSummaryList = new ArrayList<>();
+		this.getAssessmentState().getSummaryList().stream().forEachOrdered((item)->{
+			ObjectNode objectNode = new ObjectMapper().createObjectNode();
+			objectNode.put("nodeText", item);
+			objectNode.put("nodeValue", this.getAssessmentState().getWorkingMemory().get(item).getValue().toString());
+			tempSummaryList.add(objectNode);
+		});
+		
+		return tempSummaryList.stream().toArray(ObjectNode[]::new);
+    }
+	
 //    public String generateAssessmentSummary()
 //    {    		    	
 //    	StringBuilder htmlText = new StringBuilder();
