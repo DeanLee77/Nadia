@@ -291,7 +291,11 @@ public class InferenceEngine {
     		// ComparionLine type
     		else if(lineTypeOfNodeToBeAsked.equals(LineType.COMPARISON))
     		{
-			questionList.add(((ComparisonLine)nodeToBeAsked).getLHS());
+    			if(!this.ast.getWorkingMemory().containsKey(((ComparisonLine)nodeToBeAsked).getLHS()))
+    			{
+    				questionList.add(((ComparisonLine)nodeToBeAsked).getLHS());
+    			}
+
 			
     			if(!TypeAlreadySet(nodeToBeAsked.getFactValue()))
     			{
