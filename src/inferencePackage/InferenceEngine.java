@@ -245,7 +245,9 @@ public class InferenceEngine {
 		    						ass.setNodeToBeAsked(node);
 			    					int indexOfRuleToBeAsked = i;
 				  	            	System.out.println("indexOfRuleToBeAsked : "+indexOfRuleToBeAsked);
-				  	            	
+
+				  	  			ass.setAuxNodeToBeAsked(node); //this is to treat the node as IterateLine node
+
 		    						return ((IterateLine)node).getIterateNextQuestion(this.nodeSet, this.ast);
 		    					}
 	    					}	    					
@@ -256,6 +258,7 @@ public class InferenceEngine {
 	  	            		ass.setNodeToBeAsked(node);
 		  	            	int indexOfRuleToBeAsked = i;
 		  	            	System.out.println("indexOfRuleToBeAsked : "+indexOfRuleToBeAsked);
+		  	          	
 		  	            	return ass.getNodeToBeAsked();
 	  	            }
 		            else if(hasChildren(nodeId) && !ast.getWorkingMemory().containsKey(node.getVariableName()) 
@@ -265,6 +268,7 @@ public class InferenceEngine {
 		            }
 	  	       }
 	    	} 	
+	    	
 	    	return ass.getNodeToBeAsked();
     }
     
@@ -637,6 +641,7 @@ public class InferenceEngine {
 	    	}
 	    	else if(ass.getNodeToBeAsked().getLineType().equals(LineType.ITERATE))
 	    	{
+	    		targetNode = ass.getAuxNodeToBeAsked();
     			((IterateLine)ass.getNodeToBeAsked()).iterateFeedAnswers(targetNode, questionName, nodeValue, nodeValueType, this.nodeSet, ast, ass);
     			if(((IterateLine)ass.getNodeToBeAsked()).canBeSelfEvaluated(ast.getWorkingMemory()))
     			{
