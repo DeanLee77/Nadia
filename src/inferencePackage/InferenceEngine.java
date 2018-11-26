@@ -10,6 +10,8 @@ import java.util.stream.IntStream;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 
+import com.NadiaRS.InferenceEngine.nodePackage.IterateLine;
+import com.NadiaRS.InferenceEngine.nodePackage.Node;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
@@ -246,9 +248,10 @@ public class InferenceEngine {
 			    					int indexOfRuleToBeAsked = i;
 				  	            	System.out.println("indexOfRuleToBeAsked : "+indexOfRuleToBeAsked);
 
-				  	  			ass.setAuxNodeToBeAsked(node); //this is to treat the node as IterateLine node
+				  	          	Node nextQuestionFromIterateNode = ((IterateLine)node).getIterateNextQuestion(this.nodeSet, this.ast);
+				  	  			ass.setAuxNodeToBeAsked(nextQuestionFromIterateNode); //this is to treat the node as IterateLine node
 
-		    						return ((IterateLine)node).getIterateNextQuestion(this.nodeSet, this.ast);
+		    						return nextQuestionFromIterateNode;
 		    					}
 	    					}	    					
 	    				}
