@@ -10,8 +10,6 @@ import java.util.stream.IntStream;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 
-import com.NadiaRS.InferenceEngine.nodePackage.IterateLine;
-import com.NadiaRS.InferenceEngine.nodePackage.Node;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
@@ -242,7 +240,7 @@ public class InferenceEngine {
 	    					}
 	    					else
 	    					{
-	    						if(!this.ast.getWorkingMemory().containsKey(node.getNodeName()))
+	    						if(!this.ast.getWorkingMemory().containsKey(node.getNodeName()) && !this.ast.getExclusiveList().contains(node.getNodeName()))
 		    					{
 		    						ass.setNodeToBeAsked(node);
 			    					int indexOfRuleToBeAsked = i;
@@ -272,7 +270,13 @@ public class InferenceEngine {
 	  	       }
 	    	} 	
 	    	
-	    	return ass.getNodeToBeAsked();
+	    	Node nextQuestionNode = ass.getNodeToBeAsked();
+	    	if(nextQuestionNode.getLineType().equals(LineType.ITERATE))
+		{
+			ass.setAuxNodeToBeAsked(nextQuestionNode);
+		}
+	    	
+	    	return nextQuestionNode;
     }
     
     
@@ -304,7 +308,8 @@ public class InferenceEngine {
     			}
 
 			
-    			if(!TypeAlreadySet(nodeToBeAsked.getFactValue()))
+    			if(!TypeAlreadySet(nodeToBeAsked.getFactValue()) && 
+    					!this.ast.getWorkingMemory().containsKey(((ComparisonLine)nodeToBeAsked).getRHS().getValue().toString()))
     			{
     				questionList.add(nodeToBeAsked.getFactValue().getValue().toString());
     			}
@@ -709,7 +714,7 @@ public class InferenceEngine {
     					}
     					else if(lineType.equals(LineType.COMPARISON) 
     							&& ast.getWorkingMemory().containsKey(((ComparisonLine)tempNode).getLHS())
-    							&& ast.getWorkingMemory().containsKey(((ComparisonLine)tempNode).getRHS().getValue().toString())) 
+    							&& (((ComparisonLine)tempNode).getRHS().getType().equals(FactValueType.STRING)? ast.getWorkingMemory().containsKey(((ComparisonLine)tempNode).getRHS().getValue().toString()):true))  
         				{
     						FactValue fv = tempNode.selfEvaluate(ast.getWorkingMemory(), scriptEngine);
 

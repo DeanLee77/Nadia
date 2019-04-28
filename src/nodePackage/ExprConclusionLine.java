@@ -68,7 +68,7 @@ public class ExprConclusionLine extends Node{
 		 * calculation can only handle int, double(long) and difference in years between two dates at the moment.
 		 * if difference in days or months is required then new 'keyword' must be introduced such as 'Diff Years', 'Diff Days', or 'Diff Months'
 		 */
-		String euqationInString = this.equation.getValue().toString();
+		String equationInString = this.equation.getValue().toString();
 		Pattern pattern = Pattern.compile("[-+/*()?:;,.\"](\\s*)");
 		Pattern datePattern = Pattern.compile("([0-2]?[0-9]|3[0-1])/(0?[0-9]|1[0-2])/([0-9][0-9])?[0-9][0-9]|([0-9][0-9])?[0-9][0-9]/(0?[0-9]|1[0-2])/([0-2]?[0-9]|3[0-1])");
 
@@ -81,12 +81,12 @@ public class ExprConclusionLine extends Node{
 		 *  
 		 */
 		
-		String script = euqationInString;
+		String script = equationInString;
 		String tempScript = script;
 
-		if( pattern.matcher(euqationInString).find())
+		if( pattern.matcher(equationInString).find())
 		{
-			String[] tempArray = euqationInString.split(pattern.toString());
+			String[] tempArray = equationInString.split(pattern.toString());
 			int tempArrayLength = tempArray.length;
 			String tempItem;
 			for(int i = 0; i < tempArrayLength ; i++)

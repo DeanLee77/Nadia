@@ -26,7 +26,7 @@ the wedding took place
 	AND parents were consulted
 		AND the parents blessed the bride and groom
 		AND the parents liked each other
-		OR the the bride and groom didn't care for the parents blessing
+		OR the bride and groom didn't care for the parents blessing
   
 the celebrant was available
 	OR someone booked the celebrant

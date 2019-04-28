@@ -28,7 +28,6 @@ public class RuleSetScanner {
     public void scanRuleSet() {
 
           String parent = null; 
-          String iterateParent = null;
           String line = null;
           String lineTrimed;
           Stack<String> parentStack = new Stack<>();

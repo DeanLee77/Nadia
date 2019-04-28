@@ -78,7 +78,7 @@ public class TestingInferenceForNotKnownManOpPo_5 {
 				}
 				System.out.println("Answer: "+answer);
 				
-				ie.feedAnswerToNode(nextQuestionNode, question, answer, questionFvtMap.get(question));
+				ie.feedAnswerToNode(nextQuestionNode, question, answer, questionFvtMap.get(question), ass);
 				i++;
 			}
 

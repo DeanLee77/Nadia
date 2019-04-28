@@ -7,14 +7,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-
 import javax.script.ScriptEngine;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import factValuePackage.FactBooleanValue;
-import factValuePackage.FactListValue;
 import factValuePackage.FactValue;
 import factValuePackage.FactValueType;
 import inferencePackage.Assessment;
@@ -82,7 +78,7 @@ public class IterateLine extends Node {
 	    					FactValue tempNodeFv = ((ComparisonLine)tempNode).getRHS(); 
 	    					if(tempNodeFv.getType().equals(FactValueType.STRING))
 	    					{
-	    						FactValue tempFv = FactValue.parse(nextNThInString+" "+this.getVariableName()+" "+tempNodeFv);
+	    						FactValue tempFv = FactValue.parse(nextNThInString+" "+this.getVariableName()+" "+tempNodeFv.getValue());
 	    						tempNode.setValue(tempFv);
 	    					}
 	    				}
