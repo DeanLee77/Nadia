@@ -30,6 +30,12 @@ public class Assessment {
 		auxNodeToBeAsked = null; 
 	}
 	
+	public void setAssessment(NodeSet nodeSet, String goalNodeName)
+	{
+		goalNode = nodeSet.getNodeMap().get(goalNodeName);
+		goalNodeIndex = nodeSet.findNodeIndex(goalNodeName);
+		nodeToBeAsked = null; 
+	}
 
 	public Node getGoalNode()
 	{

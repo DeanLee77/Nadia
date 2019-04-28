@@ -71,7 +71,7 @@ public class WeddingPlanner_Inference_Test_3 {
 				System.out.println("Answer: "+answer);
 //				String answer = scan.nextLine();			
 				
-				ie.feedAnswerToNode(nextQuestionNode, question, answer, questionFvtMap.get(question));
+				ie.feedAnswerToNode(nextQuestionNode, question, answer, questionFvtMap.get(question), ass);
 				i++;
 			}
 

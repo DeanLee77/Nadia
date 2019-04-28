@@ -10,6 +10,12 @@ import java.util.stream.IntStream;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+
+import factValuePackage.FactValue;
+import nodePackage.NodeSet;
+
 import factValuePackage.*;
 import nodePackage.*;
 
@@ -45,6 +51,21 @@ public class InferenceEngine {
     public void addNodeSet(NodeSet nodeSet2)
     {
     	
+    }
+    
+    public void setNodeSet(NodeSet nodeSet)
+    {
+	    	this.nodeSet = nodeSet;
+	    	ast = newAssessmentState();
+	    	HashMap<String, FactValue> tempFactMap = nodeSet.getFactMap();
+	    	HashMap<String, FactValue> tempWorkingMemory = ast.getWorkingMemory();
+	    	
+	    if(!tempFactMap.isEmpty())
+	    	{
+	    		tempFactMap.keySet().stream().forEach(key-> tempWorkingMemory.put(key, tempFactMap.get(key))); 	
+	    	}
+	    	nodeFactList = new ArrayList<>(nodeSet.getNodeSortedList().size()*2); // contains all rules set as a fact given by a user from a ruleList
+	
     }
     
     public NodeSet getNodeSet()
@@ -219,13 +240,16 @@ public class InferenceEngine {
 	    					}
 	    					else
 	    					{
-	    						if(!this.ast.getWorkingMemory().containsKey(node.getNodeName()))
+	    						if(!this.ast.getWorkingMemory().containsKey(node.getNodeName()) && !this.ast.getExclusiveList().contains(node.getNodeName()))
 		    					{
 		    						ass.setNodeToBeAsked(node);
 			    					int indexOfRuleToBeAsked = i;
 				  	            	System.out.println("indexOfRuleToBeAsked : "+indexOfRuleToBeAsked);
-				  	            	
-		    						return ((IterateLine)node).getIterateNextQuestion(this.nodeSet, this.ast);
+
+				  	          	Node nextQuestionFromIterateNode = ((IterateLine)node).getIterateNextQuestion(this.nodeSet, this.ast);
+				  	  			ass.setAuxNodeToBeAsked(nextQuestionFromIterateNode); //this is to treat the node as IterateLine node
+
+		    						return nextQuestionFromIterateNode;
 		    					}
 	    					}	    					
 	    				}
@@ -235,6 +259,7 @@ public class InferenceEngine {
 	  	            		ass.setNodeToBeAsked(node);
 		  	            	int indexOfRuleToBeAsked = i;
 		  	            	System.out.println("indexOfRuleToBeAsked : "+indexOfRuleToBeAsked);
+		  	          	
 		  	            	return ass.getNodeToBeAsked();
 	  	            }
 		            else if(hasChildren(nodeId) && !ast.getWorkingMemory().containsKey(node.getVariableName()) 
@@ -244,7 +269,14 @@ public class InferenceEngine {
 		            }
 	  	       }
 	    	} 	
-	    	return ass.getNodeToBeAsked();
+	    	
+	    	Node nextQuestionNode = ass.getNodeToBeAsked();
+	    	if(nextQuestionNode.getLineType().equals(LineType.ITERATE))
+		{
+			ass.setAuxNodeToBeAsked(nextQuestionNode);
+		}
+	    	
+	    	return nextQuestionNode;
     }
     
     
@@ -270,9 +302,14 @@ public class InferenceEngine {
     		// ComparionLine type
     		else if(lineTypeOfNodeToBeAsked.equals(LineType.COMPARISON))
     		{
-			questionList.add(((ComparisonLine)nodeToBeAsked).getLHS());
+    			if(!this.ast.getWorkingMemory().containsKey(((ComparisonLine)nodeToBeAsked).getLHS()))
+    			{
+    				questionList.add(((ComparisonLine)nodeToBeAsked).getLHS());
+    			}
+
 			
-    			if(!TypeAlreadySet(nodeToBeAsked.getFactValue()))
+    			if(!TypeAlreadySet(nodeToBeAsked.getFactValue()) && 
+    					!this.ast.getWorkingMemory().containsKey(((ComparisonLine)nodeToBeAsked).getRHS().getValue().toString()))
     			{
     				questionList.add(nodeToBeAsked.getFactValue().getValue().toString());
     			}
@@ -612,6 +649,7 @@ public class InferenceEngine {
 	    	}
 	    	else if(ass.getNodeToBeAsked().getLineType().equals(LineType.ITERATE))
 	    	{
+	    		targetNode = ass.getAuxNodeToBeAsked();
     			((IterateLine)ass.getNodeToBeAsked()).iterateFeedAnswers(targetNode, questionName, nodeValue, nodeValueType, this.nodeSet, ast, ass);
     			if(((IterateLine)ass.getNodeToBeAsked()).canBeSelfEvaluated(ast.getWorkingMemory()))
     			{
@@ -676,7 +714,7 @@ public class InferenceEngine {
     					}
     					else if(lineType.equals(LineType.COMPARISON) 
     							&& ast.getWorkingMemory().containsKey(((ComparisonLine)tempNode).getLHS())
-    							&& ast.getWorkingMemory().containsKey(((ComparisonLine)tempNode).getRHS().getValue().toString())) 
+    							&& (((ComparisonLine)tempNode).getRHS().getType().equals(FactValueType.STRING)? ast.getWorkingMemory().containsKey(((ComparisonLine)tempNode).getRHS().getValue().toString()):true))  
         				{
     						FactValue fv = tempNode.selfEvaluate(ast.getWorkingMemory(), scriptEngine);
 
@@ -1484,6 +1522,19 @@ public class InferenceEngine {
      * this is to generate Assessment Summary
      * need to modify this method to have correct summary
      */
+	public ObjectNode[] generateAssessmentSummary()
+	{ 
+		List<ObjectNode> tempSummaryList = new ArrayList<>();
+		this.getAssessmentState().getSummaryList().stream().forEachOrdered((item)->{
+			ObjectNode objectNode = new ObjectMapper().createObjectNode();
+			objectNode.put("nodeText", item);
+			objectNode.put("nodeValue", this.getAssessmentState().getWorkingMemory().get(item).getValue().toString());
+			tempSummaryList.add(objectNode);
+		});
+		
+		return tempSummaryList.stream().toArray(ObjectNode[]::new);
+    }
+	
 //    public String generateAssessmentSummary()
 //    {    		    	
 //    	StringBuilder htmlText = new StringBuilder();

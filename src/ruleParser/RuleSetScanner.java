@@ -19,10 +19,15 @@ public class RuleSetScanner {
           lineReader = reader;
     }
 
+    public void setScanFeeder(IScanFeeder scanFeeder, ILineReader lineReader)
+    {
+    		this.scanFeeder = scanFeeder;
+    		this.lineReader = lineReader;
+    }
+    
     public void scanRuleSet() {
 
           String parent = null; 
-          String iterateParent = null;
           String line = null;
           String lineTrimed;
           Stack<String> parentStack = new Stack<>();
@@ -63,6 +68,12 @@ public class RuleSetScanner {
 	                	else 
 	                	{
 	                		int indentationDifference = previousWhitespace - currentWhitespace;
+	                		
+	                		if(indentationDifference == -4) // this condition is for handling inputs from ACE text editor
+	                		{
+	                			indentationDifference = -1;
+	                		}
+	                		
 	                   	if(indentationDifference == 0 || indentationDifference > 0) //current line is at same level as previous line || current line is in upper level than previous line
 	                   	{
 	                   		parentStack = handlingStackPop(parentStack, indentationDifference);
@@ -97,6 +108,21 @@ public class RuleSetScanner {
                }
                previousWhitespace = currentWhitespace;
           }
+    }
+    
+    public void establishNodeSet()
+    {
+	   	 NodeSet ns = scanFeeder.getNodeSet();
+	   	 ns.setDependencyMatrix(scanFeeder.createDependencyMatrix());
+	   	 List<Node> sortedList = TopoSort.bfsTopoSort(ns.getNodeMap(), ns.getNodeIdMap(), ns.getDependencyMatrix().getDependencyMatrixArray()); 
+	   	 if(sortedList.size() != 0)
+	   	 {
+	   	   	 ns.setNodeSortedList(sortedList);
+	   	 }
+	   	 else
+	   	 {
+	   		scanFeeder.handleWarning("RuleSet needs rewriting due to it is cyclic.");
+	   	 }
     }
     
     public void establishNodeSet(HashMap<String, Record> recordMapOfNodes)

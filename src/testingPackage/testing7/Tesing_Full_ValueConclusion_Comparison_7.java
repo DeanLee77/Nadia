@@ -198,7 +198,7 @@ public class Tesing_Full_ValueConclusion_Comparison_7 {
 				}
 				System.out.println("Answer: "+answer);
 				
-				ie.feedAnswerToNode(nextQuestionNode, question, answer, questionFvtMap.get(question));
+				ie.feedAnswerToNode(nextQuestionNode, question, answer, questionFvtMap.get(question), ass);
 				i++;
 			}
 

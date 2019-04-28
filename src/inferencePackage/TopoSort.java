@@ -12,6 +12,8 @@ import nodePackage.Node;
 import nodePackage.Record;
 
 
+
+
 public class TopoSort {
 
 	/*
@@ -262,7 +264,6 @@ public class TopoSort {
 			deepening(nodeMap, nodeIdMap, dependencyMatrix, sortedList, visitedList, id);
         }); 
 	}
-	
 	/*
 	 * this class is another version of topological sort.
 	 * the first version of topological sort used Kahn's algorithm which is based on Breadth First Search(BFS)
@@ -289,7 +290,7 @@ public class TopoSort {
     public static List<Node> dfsTopoSort(HashMap<String, Node> nodeMap, HashMap<Integer, String> nodeIdMap, int[][] dependencyMatrix, HashMap<String, Record> recordMapOfNodes)
     {
 
-    	 List<Node> sortedList = new ArrayList<>();
+    	 	List<Node> sortedList = new ArrayList<>();
 
          if(recordMapOfNodes == null || recordMapOfNodes.isEmpty())
          {
@@ -356,7 +357,8 @@ public class TopoSort {
     		                	 * Therefore, looking for more likely 'TRUE' rule would be the shortest one rather than
     		                	 * looking for more likely 'FALSE' rule in terms of processing time
     		                	 */
-    		                	Node theMostPositive = findTheMostPositive(childRuleList, recordMapOfNodes);
+    	                		Node theMostPositive = findTheMostPositive(childRuleList, recordMapOfNodes, dependencyMatrixAsList);
+//    		                	Node theMostPositive = findTheMostPositive(childRuleList, recordMapOfNodes);
     	                    if(!visitedNodeList.contains(theMostPositive))
     	                    {
     	                    		visitedNodeList.add(theMostPositive);
@@ -377,7 +379,8 @@ public class TopoSort {
     		                	 */	
     	                		while(!childRuleList.isEmpty())
     	                		{
-    	                    		Node theMostNegative = findTheMostNegative(childRuleList, recordMapOfNodes);
+    	                    		Node theMostNegative = findTheMostNegative(childRuleList, recordMapOfNodes, dependencyMatrixAsList);
+//    	                    		Node theMostNegative = findTheMostNegative(childRuleList, recordMapOfNodes);
     	                    		if(!visitedNodeList.contains(theMostNegative))
     	                    		{
     	                    			visitedNodeList.add(theMostNegative);
@@ -393,6 +396,49 @@ public class TopoSort {
         return sortedList;
     }
     
+    public static Node findTheMostPositive(List<Node> childNodeList, HashMap<String, Record> recordListOfNodes, List<Integer> dependencyMatrixAsList)
+    {
+    		Node theMostPositive = null;
+        int yesCount = 0;
+        int noCount = 0;
+        float theMostPossibility = 0;
+        int sum = 0;
+        float result = 0;
+        
+        for(Node node: childNodeList)
+        {
+        		String prefix = "";
+        		int dependencyType = dependencyMatrixAsList.get(node.getNodeId());
+        		if((dependencyType & DependencyType.getKnown()) == DependencyType.getKnown())
+        		{
+        			prefix = "known ";
+        		}
+        		else if((dependencyType & DependencyType.getNot()) == DependencyType.getNot())
+        		{
+        			prefix = "not ";
+        		}
+        		else if((dependencyType & (DependencyType.getNot()| DependencyType.getKnown())) == (DependencyType.getNot()| DependencyType.getKnown()))
+        		{
+        			prefix = "not known ";
+        		}
+        		
+        		Record recordOfNode = recordListOfNodes.get(prefix+node.getNodeName());
+            yesCount = recordOfNode != null?recordOfNode.getTrueCount(): 0;
+            noCount = recordOfNode != null? recordOfNode.getFalseCount(): 0;
+            int yesPlusNoCount = (yesCount+noCount)==0?-1:(yesCount+noCount);
+
+            result = (float)yesCount/yesPlusNoCount;
+            if(analysis(result, theMostPossibility, yesPlusNoCount, sum))
+            {
+                theMostPossibility = result;
+                sum =  yesCount + noCount;
+                theMostPositive = node;
+            }
+        }
+        childNodeList.remove(theMostPositive);
+        return theMostPositive;
+    }
+    
     public static Node findTheMostPositive(List<Node> childNodeList, HashMap<String, Record> recordListOfNodes)
     {
     		Node theMostPositive = null;
@@ -405,8 +451,8 @@ public class TopoSort {
         for(Node node: childNodeList)
         {
         		Record recordOfNode = recordListOfNodes.get(node.getNodeName());
-            yesCount = recordOfNode != null?recordListOfNodes.get(node.getNodeName()).getTrueCount(): 0;
-            noCount = recordOfNode != null? recordListOfNodes.get(node.getNodeName()).getFalseCount(): 0;
+            yesCount = recordOfNode != null?recordOfNode.getTrueCount(): 0;
+            noCount = recordOfNode != null? recordOfNode.getFalseCount(): 0;
             int yesPlusNoCount = (yesCount+noCount)==0?-1:(yesCount+noCount);
 
             result = (float)yesCount/yesPlusNoCount;
@@ -422,6 +468,52 @@ public class TopoSort {
         
     }
     
+    public static Node findTheMostNegative(List<Node> childNodeList, HashMap<String, Record> recordListOfNodes, List<Integer> dependencyMatrixAsList)
+    {
+    		Node theMostNegative = null;
+        int yesCount = 0;
+        int noCount = 0;
+        float theMostPossibility = 0;
+        int sum = 0;
+        float result = 0;
+       		
+        for(Node node: childNodeList)
+        {
+	        	String prefix = "";
+	    		int dependencyType = dependencyMatrixAsList.get(node.getNodeId());
+	    		if((dependencyType & DependencyType.getKnown()) == DependencyType.getKnown())
+	    		{
+	    			prefix = "known ";
+	    		}
+	    		else if((dependencyType & DependencyType.getNot()) == DependencyType.getNot())
+	    		{
+	    			prefix = "not ";
+	    		}
+	    		else if((dependencyType & (DependencyType.getNot()| DependencyType.getKnown())) == (DependencyType.getNot()| DependencyType.getKnown()))
+	    		{
+	    			prefix = "not known ";
+	    		}
+	    		
+        		Record recordOfNode = recordListOfNodes.get(prefix+node.getNodeName());
+            yesCount = recordOfNode!= null?recordOfNode.getTrueCount(): 0;
+            noCount = recordOfNode!= null?recordOfNode.getFalseCount(): 0;
+            
+            int yesPlusNoCount = (yesCount+noCount)==0?-1:(yesCount+noCount);
+            result = (float)noCount/yesPlusNoCount;
+
+            if(analysis(result, theMostPossibility, yesPlusNoCount, sum))
+            {
+                theMostPossibility = result;
+                sum =  yesPlusNoCount==-1?yesPlusNoCount:yesCount + noCount;
+                theMostNegative = node;                
+            }
+            
+            
+        }
+        childNodeList.remove(theMostNegative);
+        return theMostNegative;
+    }
+    
     public static Node findTheMostNegative(List<Node> childNodeList, HashMap<String, Record> recordListOfNodes)
     {
     		Node theMostNegative = null;
@@ -435,8 +527,8 @@ public class TopoSort {
         {
         		
         		Record recordOfNode = recordListOfNodes.get(node.getNodeName());
-            yesCount = recordOfNode!= null?recordListOfNodes.get(node.getNodeName()).getTrueCount(): 0;
-            noCount = recordOfNode!= null?recordListOfNodes.get(node.getNodeName()).getFalseCount(): 0;
+            yesCount = recordOfNode!= null?recordOfNode.getTrueCount(): 0;
+            noCount = recordOfNode!= null?recordOfNode.getFalseCount(): 0;
             
             int yesPlusNoCount = (yesCount+noCount)==0?-1:(yesCount+noCount);
             result = (float)noCount/yesPlusNoCount;
@@ -444,7 +536,7 @@ public class TopoSort {
             if(analysis(result, theMostPossibility, yesPlusNoCount, sum))
             {
                 theMostPossibility = result;
-                sum =  yesCount + noCount;
+                sum =  yesPlusNoCount==-1?yesPlusNoCount:yesCount + noCount;
                 theMostNegative = node;                
             }
             
@@ -472,7 +564,7 @@ public class TopoSort {
         {
         	 	highlyPossible = true;
         }
-        else if(result >= theMostPossibility && result == 0 && yesCountNoCount == -1 && sum == 0 )
+        else if(result >= theMostPossibility && result == 0 && yesCountNoCount == -1 && sum <= 0 && sum != -1  )
         {
             highlyPossible = true;
         }
@@ -480,7 +572,7 @@ public class TopoSort {
         return highlyPossible;
     }
     
-       
+    
 
 }
 

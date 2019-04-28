@@ -44,6 +44,21 @@ import nodePackage.*;
 public class RuleSetParser implements IScanFeeder {
 
 //	enum LineType {META, VALUE_CONCLUSION, EXPR_CONCLUSION, COMPARISON, WARNING}
+	/*
+	 * patterns are as follows;
+	 * U : upper case
+	 * L : lower case
+	 * M : mixed case
+	 * No: number
+	 * Da: date
+	 * Ha: hash
+	 * Url: url
+	 * Id: UUID
+	 * C : CALC (this is a keyword)
+	 * De: decimal
+	 * Q : quotation mark
+	 * 
+	 */
 	
 	final Pattern META_PATTERN_MATCHER = Pattern.compile("(^U)([MLU]*)([(No)(Da)ML(De)(Ha)(U(rl)?)(Id)]*$)");
 	final Pattern VALUE_MATCHER = Pattern.compile("(^[LM]+)(U)?([MLQ(No)(Da)(De)(Ha)(Url)(Id)]*$)(?!C)");

@@ -125,7 +125,7 @@ public class Testing_ValueConclusionLine_6 {
 				}
 				System.out.println("Answer: "+answer);
 				
-				ie.feedAnswerToNode(nextQuestionNode, question, answer, questionFvtMap.get(question));
+				ie.feedAnswerToNode(nextQuestionNode, question, answer, questionFvtMap.get(question), ass);
 				i++;
 			}
 

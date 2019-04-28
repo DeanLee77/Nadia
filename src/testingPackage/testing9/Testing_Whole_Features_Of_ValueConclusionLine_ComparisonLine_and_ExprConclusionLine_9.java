@@ -213,13 +213,14 @@ public class Testing_Whole_Features_Of_ValueConclusionLine_ComparisonLine_and_Ex
 		}
 		
 		InferenceEngine ie = new InferenceEngine(isf.getNodeSet());
-		ie.setAssessment(new Assessment(isf.getNodeSet(), isf.getNodeSet().getNodeSortedList().get(0).getNodeName()));
+		Assessment ass = new Assessment(isf.getNodeSet(), isf.getNodeSet().getNodeSortedList().get(0).getNodeName());
+		
 		int i = 0;
 
 		while(ie.getAssessmentState().getWorkingMemory().get(isf.getNodeSet().getNodeSortedList().get(0).getNodeName())==null || !ie.getAssessmentState().allMandatoryNodeDetermined())
 		{
 			
-			Node nextQuestionNode = ie.getNextQuestion(ie.getAssessment());
+			Node nextQuestionNode = ie.getNextQuestion(ass);
 			HashMap<String,FactValueType> questionFvtMap = ie.findTypeOfElementToBeAsked(nextQuestionNode);
 			
 			FactValueType fvt = null;
@@ -320,7 +321,7 @@ public class Testing_Whole_Features_Of_ValueConclusionLine_ComparisonLine_and_Ex
 				}
 				System.out.println("Answer: "+answer);
 				
-				ie.feedAnswerToNode(nextQuestionNode, question, answer, questionFvtMap.get(question));
+				ie.feedAnswerToNode(nextQuestionNode, question, answer, questionFvtMap.get(question), ass);
 				i++;
 			}
 			
@@ -333,6 +334,7 @@ public class Testing_Whole_Features_Of_ValueConclusionLine_ComparisonLine_and_Ex
 			{
 				((FactListValue<?>)workingMemory.get(node)).getValue().stream().forEach(item-> System.out.println(node+" : "+item));
 			}
+			else
 			{
 				System.out.println(node+" : "+workingMemory.get(node).getValue().toString());
 			}
