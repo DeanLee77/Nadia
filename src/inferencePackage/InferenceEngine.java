@@ -110,11 +110,15 @@ public class InferenceEngine {
     {
 	    	List<String> variableNameList = new ArrayList<>();
 	    	nodeSet.getNodeMap().values().stream().forEachOrdered(node -> {
-	    		variableNameList.add(node.getVariableName());
-	    		FactValueType nodeFactValueType = node.getFactValue().getType();
-	    		if(nodeFactValueType.equals(FactValueType.BOOLEAN) || nodeFactValueType.equals(FactValueType.STRING))
+	    		if(nodeSet.getDependencyMatrix().getToChildDependencyList(node.getNodeId()).isEmpty())
 	    		{
-	    			variableNameList.add(node.getFactValue().getValue().toString());
+	    			variableNameList.add(node.getVariableName());
+		    		FactValueType nodeFactValueType = node.getFactValue().getType();
+		    		
+		    		if(!(nodeFactValueType.equals(FactValueType.BOOLEAN) || !nodeFactValueType.equals(FactValueType.DEFI_STRING)))
+		    		{
+		    			variableNameList.add(node.getFactValue().getValue().toString());
+		    		}
 	    		}
     		});
 	    	
@@ -1598,7 +1602,7 @@ public class InferenceEngine {
 //    }
     
     /*
-     * this is to find a condition with a list of given keyword
+     * this is to find a condition in a rule set with a given keyword string, that may contains multiple keywords
      */
     public List<String> findCondition(String keyword)
     {
