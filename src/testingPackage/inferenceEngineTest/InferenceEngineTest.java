@@ -33,7 +33,7 @@ public class InferenceEngineTest {
 		InferenceEngine ie = new InferenceEngine(isf.getNodeSet());
 		Assessment ass = new Assessment(isf.getNodeSet(), isf.getNodeSet().getNodeSortedList().get(0).getNodeName());
 		
-		ie.getListOfVariableNameAndValueOfNodes().stream().forEach(str -> System.out.println(str));
+//		ie.getListOfVariableNameAndValueOfNodes().stream().forEach(str -> System.out.println(str));
 		
 		BufferedReader br = new BufferedReader(new InputStreamReader(InferenceEngineTest.class.getResourceAsStream("leaf node set.txt")));
 		
@@ -69,11 +69,35 @@ public class InferenceEngineTest {
 		}
 		br.close();
 		
+		List<Node> sortedNodeList = ie.getNodeSet().getNodeSortedList();
+		HashMap<String, FactValue> workingMemory = ie.getAssessmentState().getWorkingMemory();
+		
+		ie.getAssessmentState().getInclusiveList().add(sortedNodeList.get(0).getNodeName());
+		sortedNodeList.stream().forEach(node->{
+			ie.addChildRuleIntoInclusiveList(node);
+		});
+		
 		ie.backPropagating(ie.getNodeSet().getNodeSortedList().size()-1);
 		Node nextQuestion = ie.getNextQuestion(ass);
 		if(nextQuestion == null)
 		{
 			System.out.println("the rule set has been concluded");
+			System.out.println("Goal Rule: ");
+			System.out.println(sortedNodeList.get(0).getNodeName());
+			System.out.println("Conclusion: ");
+			System.out.println(workingMemory.get(sortedNodeList.get(0).getNodeName()).getValue().toString());
+			
+			sortedNodeList.stream().forEach(rule ->{
+				
+				for(String question: ie.getQuestionsFromNodeToBeAsked(rule))
+				{
+					if(workingMemory.containsKey(question)) {
+						System.out.println("Question: " + question);
+						System.out.println("Result  : "+workingMemory.get(question).getValue().toString());
+					}
+				}
+			});;
+
 		}
 		else
 		{

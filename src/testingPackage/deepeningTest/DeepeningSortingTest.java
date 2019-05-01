@@ -33,7 +33,6 @@ public class DeepeningSortingTest {
 		InferenceEngine ie = new InferenceEngine(isf.getNodeSet());
 		Assessment ass = new Assessment(isf.getNodeSet(), isf.getNodeSet().getNodeSortedList().get(0).getNodeName());
 		
-		ie.getListOfVariableNameAndValueOfNodes().stream().forEach(str -> System.out.println(str));
 		
 		Node theMostParent = ie.getNodeSet().getNodeSortedList().get(0);
 		List<Integer> firstChildListOfTheMostParent = ie.getNodeSet().getDependencyMatrix().getToChildDependencyList(theMostParent.getNodeId());
