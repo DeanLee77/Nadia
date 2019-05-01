@@ -1,0 +1,79 @@
+questionFvt:STRING
+Question:person's name
+Answer:John Smith
+
+questionFvt:DATE
+Question:person's dob
+Answer:11/12/1994
+
+questionFvt:STRING
+Question:person's account
+Answer:HAHAHOHO
+
+questionFvt:BOOLEAN
+Question:both of person's parents are Australian
+Answer:true
+
+questionFvt:INTEGER
+Question:a number of countries the person has travelled so far
+Answer:12
+
+questionFvt:STRING
+Question:person's citizenship status
+Answer:canceled
+
+questionFvt:INTEGER
+Question:person's legally yearly period of stay in Australia
+Answer:19
+
+questionFvt:STRING
+Question:person's permanent residentship status
+Answer:resident
+
+questionFvt:BOOLEAN
+Question:the person was born in Australia
+Answer:true
+
+questionFvt:INTEGER
+Question:number of drinks the person consumes an hour
+Answer:10
+
+questionFvt:INTEGER
+Question:hours of drinks a day
+Answer:9
+
+questionFvt:BOOLEAN
+Question:one of person's parents is Australian
+Answer:true
+
+questionFvt:BOOLEAN
+Question:all grand parents of the person were Australian
+Answer:true
+
+questionFvt:BOOLEAN
+Question:the person missed the flight
+Answer:false
+
+questionFvt:STRING
+Question:person passport type
+Answer:Australian
+
+questionFvt:STRING
+Question:person passport issued country
+Answer:Australia
+
+questionFvt:INTEGER
+Question:person age
+Answer:18
+
+questionFvt:STRING
+Question:current location of person's passport
+Answer:there
+
+questionFvt:STRING
+Question:the place the person normally locate the passport
+Answer:here
+
+questionFvt:BOOLEAN
+Question:person's passport is in a police station
+Answer:false
