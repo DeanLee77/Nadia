@@ -10,7 +10,7 @@ another link is [ Introduction of NADIA Policy / Business rules Engine from NExS
 # ***Relevant NADIA project list***
 [NADIA Java REST](https://github.com/NExST-RnDLabs/NadiaRS) <br/>
 [NADIA C sharp](https://github.com/DeanLee77/NADIA-C.Sharp)<br/>
-[NADIA Python](https://github.com/DeanLee77/NADIA-Python/)
+[NADIA Python (In Progress)](https://github.com/DeanLee77/NADIA-Python/)
 
 ## 1. Introduction
 This project is building a Rules(Policies)/Inference Engine with ease of use and maintain rules/policies. It aims to be:
