@@ -27,7 +27,7 @@ we have the person's passport
 		AND person passport type = "Australian"
 		AND person passport issued country = "Australia"
 		AND person age >18
-		AND a number of countries the person has travelled so far >= 40
+		AND a number of countries the person has traveled so far >= 40
 	AND MANDATORY person has not lost the passport
 		OR current location of person's passport = the place the person normally locate the passport
 		OR NOT person's passport is in a police station
