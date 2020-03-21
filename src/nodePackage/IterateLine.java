@@ -72,17 +72,17 @@ public class IterateLine extends Node {
 					{
 	    					tempNode = new ValueConclusionLine(nextNThInString+" "+this.getVariableName()+" "+tempChildNode.getNodeName(), tempChildNode.getTokens());
 					}
-	    				else if(lt.equals(LineType.COMPARISON))
-	    				{
-	    					tempNode = new ComparisonLine(nextNThInString+" "+this.getVariableName()+" "+tempChildNode.getNodeName(), tempChildNode.getTokens());
-	    					FactValue tempNodeFv = ((ComparisonLine)tempNode).getRHS(); 
-	    					if(tempNodeFv.getType().equals(FactValueType.STRING))
-	    					{
-	    						FactValue tempFv = FactValue.parse(nextNThInString+" "+this.getVariableName()+" "+tempNodeFv.getValue());
-	    						tempNode.setValue(tempFv);
-	    					}
-	    				}
-	    				else if(lt.equals(LineType.EXPR_CONCLUSION))
+    				else if(lt.equals(LineType.COMPARISON))
+    				{
+    					tempNode = new ComparisonLine(nextNThInString+" "+this.getVariableName()+" "+tempChildNode.getNodeName(), tempChildNode.getTokens());
+    					FactValue tempNodeFv = ((ComparisonLine)tempNode).getRHS(); 
+    					if(tempNodeFv.getType().equals(FactValueType.STRING))
+    					{
+    						FactValue tempFv = FactValue.parse(nextNThInString+" "+this.getVariableName()+" "+tempNodeFv.getValue());
+    						tempNode.setValue(tempFv);
+    					}
+    				}
+    				else if(lt.equals(LineType.EXPR_CONCLUSION))
 					{
 						tempNode = new ExprConclusionLine(nextNThInString+" "+this.getVariableName()+" "+tempChildNode.getNodeName(), tempChildNode.getTokens());
 					}
