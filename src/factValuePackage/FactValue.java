@@ -55,6 +55,10 @@ public abstract class FactValue {
 		return new FactUUIDValue(uuid);
 	}
 
+	public static FactRuleSetValue parseRuleSetName(String ruleSetName)
+	{
+		return new FactRuleSetValue(ruleSetName);
+	}
 	
 	public abstract FactValueType getType() ;
 	public abstract <T> void setDefaultValue(T str);

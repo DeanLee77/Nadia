@@ -6,7 +6,7 @@ ULU
 
 this line is for UUID ffa4788a-a33f-11e7-abc4-cec278b6b50a
 LUId
-		
+	
 FIXED service start date IS 1/1/1988
 ULUDa
 
@@ -32,6 +32,9 @@ AND NOT person’s name = “troy jones”
 ULOQ
 
 AND the person’s dob > 01/01/1990
+ULODa
+
+AND the person’s dob >= 01/01/1990
 ULODa
           
 AND the person is currently studying

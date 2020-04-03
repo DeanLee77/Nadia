@@ -5,12 +5,16 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
+import factValuePackage.FactValue;
 import ruleParser.Tokenizer;
 import ruleParser.Tokens;
 
 public class TokenizerTesting_1 {
 
 	public static void main(String[] args) throws IOException {
+		
+		FactValue fv = FactValue.parse(true);
+		System.out.println("fv.getType(): "+fv.getType());
 		// TODO Auto-generated method stub
 		String fileName = "Tokenizer_Testing.txt";
 

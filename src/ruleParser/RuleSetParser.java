@@ -65,6 +65,7 @@ public class RuleSetParser implements IScanFeeder {
 	final Pattern EXPRESSION_CONCLUSION_MATCHER = Pattern.compile("(^[LM(Da)]+)(U)(C)");
 	final Pattern COMPARISON_MATCHER = Pattern.compile("(^[MLU(Da)]+)(O)([MLUQ(No)(Da)(De)(Ha)(Url)(Id)]*$)");
 	final Pattern ITERATE_MATCHER = Pattern.compile("(^[MLU(No)(Da)]+)(I)([MLU]+$)");
+	final Pattern RULE_SET_MATCHER = Pattern.compile("^([RMLU]+)(O)([MLUQ(No)(Da)(De)(Ha)(Url)(Id)]*S)]");
 	final Pattern WARNING_MATCHER = Pattern.compile("WARNING");
 	LineType matchTypes[] = LineType.values();
 	NodeSet nodeSet = new NodeSet();
