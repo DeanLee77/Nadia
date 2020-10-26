@@ -25,13 +25,13 @@ import testingUtilPackage.NodeObject_For_Inference_Test;
 public class Testing_for_ALL_Node_Lines_and_features_10 {
 	public static void main(String[]args) throws IOException {
 		RuleSetReader ilr = new RuleSetReader();
-		ilr.setStreamSource(Testing_for_ALL_Node_Lines_and_features_10.class.getResourceAsStream("Testing for ALL Node Lines and features.txt"));
+		ilr.setStreamSource(Testing_for_ALL_Node_Lines_and_features_10.class.getResourceAsStream("Testing 11.txt"));
 		RuleSetParser isf = new RuleSetParser();		
 		RuleSetScanner rsc = new RuleSetScanner(ilr,isf);
 		rsc.scanRuleSet();
 		rsc.establishNodeSet(null);
 		
-		BufferedReader br = new BufferedReader(new InputStreamReader(Testing_for_ALL_Node_Lines_and_features_10.class.getResourceAsStream("Comparison Testing for ALL Node Lines and features.txt")));
+		BufferedReader br = new BufferedReader(new InputStreamReader(Testing_for_ALL_Node_Lines_and_features_10.class.getResourceAsStream("Comparison Testing 11.txt")));
 		String line;
 		List<String> nodeListMock = new ArrayList<>();
 		String[] tempArray;

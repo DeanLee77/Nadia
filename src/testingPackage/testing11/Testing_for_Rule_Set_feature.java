@@ -20,7 +20,7 @@ public class Testing_for_Rule_Set_feature {
 	public static void main(String[] args)
 	{
 		RuleSetReader ilr = new RuleSetReader();
-		ilr.setStreamSource(Testing_for_Rule_Set_feature.class.getResourceAsStream("carol rule test.txt"));
+		ilr.setStreamSource(Testing_for_Rule_Set_feature.class.getResourceAsStream("Testing 11.txt"));
 		RuleSetParser isf = new RuleSetParser();		
 		RuleSetScanner rsc = new RuleSetScanner(ilr,isf);
 		rsc.scanRuleSet();

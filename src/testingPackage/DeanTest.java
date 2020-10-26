@@ -3,12 +3,10 @@ package testingPackage;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
@@ -29,7 +27,8 @@ import ruleParser.Tokens;
 public class DeanTest {
 
 	public static void main(String[] args) {
-		
+        int[] numberArray = new int[] { 23, 89, 45, 1, 77, 5, 19, 52, 61 };
+        List<Integer> intList = Arrays.stream(numberArray).boxed().collect(Collectors.toList());
 		List<Node> lst = new ArrayList<>();
 		
 		lst.add(new ValueConclusionLine("haha",Tokenizer.getTokens("haha")));

@@ -94,3 +94,9 @@ LDe
 
 Australian law was initiated date IS 19/11/1900
 MUDa
+
+Variable = RULE SET: ruleSet
+MORLM
+
+RULE SET: RuleSet = "variable"
+RMOQ

@@ -43,7 +43,7 @@ public class MetadataLine extends Node{
 		switch(this.metaType)
 		{
 			case FIXED:
-				metaPattern = Pattern.compile("^(FIXED)(.*)(\\s[AS|IS]\\s*.*)");
+				metaPattern = Pattern.compile("^(FIXED)(.*)(\\s(AS|IS)\\s+.*)");
 				matcher = metaPattern.matcher(parentText);
 				if(matcher.find())	
 				{

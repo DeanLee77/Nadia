@@ -23,10 +23,10 @@ public static Tokens getTokens(String text)
 	Pattern mixedMatch = Pattern.compile("^(\\p{Upper}[\\p{Lower}-'\\’,\\.\\s]+)+");		
 	Pattern operatorPattern = Pattern.compile("^([<>=]+)");
 	Pattern calculationPattern = Pattern.compile("^(\\()([\\s+|([\\d]+)(?!/.)|\\w|\\W]*)(\\))");
-	Pattern numberPattern = Pattern.compile("^(\\d+)(?!/|\\.|\\d)+");
+	Pattern numberPattern = Pattern.compile("^(\\d+)(?!\\w|\\-|/|\\.|\\d)+");
 	Pattern decimalNumberPattern = Pattern.compile("^([\\d]+\\.\\d+)(?!\\d)");
 	Pattern datePattern = Pattern.compile("^([0-2]?[0-9]|3[0-1])/(0?[0-9]|1[0-2])/([0-9][0-9])?[0-9][0-9]|^([0-9][0-9])?[0-9][0-9]/(0?[0-9]|1[0-2])/([0-2]?[0-9]|3[0-1])");
-	Pattern urlPattern = Pattern.compile( "^(ht|f)tps?\\:(\\p{Graph}|\\p{XDigit}|\\p{Space})*$");
+	Pattern urlPattern = Pattern.compile( "^(ht|f)tp[s*]?\\:(\\p{Graph}|\\p{XDigit}|\\p{Space})*$");
 	Pattern uuidPattern = Pattern.compile("^[0-9a-f]{8}-([0-9a-f]{4}-){3}[0-9a-f]{12}");
 	Pattern hashPattern = Pattern.compile("^([-]?)([0-9a-f]{10,}$)(?!\\-)*");
 	Pattern quotedPattern = Pattern.compile("^([\"\\“])(.*)([\"\\”])(\\.)*");
@@ -34,8 +34,8 @@ public static Tokens getTokens(String text)
 	 * the order of Pattern in the array of 'matchPatterns' is extremely important because some patterns won't work if other patterns are invoked earlier than them
 	 * especially 'I' pattern. 'I' pattern must come before 'U' pattern, 'Url' pattern must come before 'L' pattern with current patterns.
 	 */
-	Pattern matchPatterns[] = {spaceMatch, quotedPattern, ruleSetPattern, iteratePattern, mixedMatch, upperMatch, urlPattern, operatorPattern, calculationPattern, hashPattern, numberPattern, decimalNumberPattern, datePattern, uuidPattern, lowerMatch};
-	String tokenType[] = {"S", "Q", "R", "I", "M", "U", "Url", "O", "C", "Ha", "No", "De", "Da", "Id", "L"};
+	Pattern matchPatterns[] = {spaceMatch, quotedPattern, ruleSetPattern, iteratePattern, mixedMatch, upperMatch, urlPattern, operatorPattern, calculationPattern, numberPattern, hashPattern, decimalNumberPattern, datePattern, uuidPattern, lowerMatch};
+	String tokenType[] = {"S", "Q", "R", "I", "M", "U", "Url", "O", "C", "No", "Ha", "De", "Da", "Id", "L"};
 	int textLength = text.length();
 	
 	while(textLength!=0) {

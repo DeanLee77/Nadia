@@ -26,43 +26,49 @@ public class RuleSetLine extends Node{
 	@Override
 	public void initialisation(String childText, Tokens tokens) {
 		/*
-		 * this line pattern is as (^[RML]+)(O)([MLNoDaDeHaUrlId]*$)
+		 * this line pattern is as (^[RML]+)(O)([RMLNoDaDeHaUrlId]*$)
 		 */
 		
 		this.nodeName = childText;		
 		/*
-		 * In JavaScript engine '=' operator means assigning a value, hence if the operator is '=' then it needs to be replaced with '=='. 
+		 * If 'R' pattern is placed before 'O' pattern then this rule must be about comparison in according to writing rules convention, and
+		 * in JavaScript engine '=' operator means assigning a value, hence if the operator is '=' then it needs to be replaced with '=='.
+		 * However, if 'R' pattern is placed after 'O' pattern, and this 'O' pattern is '=' then this rule is to assign a return value from
+		 * a specified rule set to a variable.
+		 *
+		 * If the rule pattern does NOT have 'O' pattern then the rule line is about to check if the rule set returns 'true' or 'false'
+		 *
+		 * E.g)
+		 * RULE SET: a specified rule set = 'valueToBeCompared'    <------ comparison between a return value from a rule set and a certain value
+		 * a variable = RULE SET: a specified rule set             <------ assigning a return value from a specified rule set to a certain variable
+		 * RULE SET: this rule returns true                        <------ during selfEvaluation(), the evaluated value would be either 'true' or 'false'
 		 */
-		int operatorIndex = tokens.tokensStringList.indexOf("O");
-		this.operator = tokens.tokensList.get(operatorIndex).matches("=")?"==":tokens.tokensList.get(operatorIndex);
 		
-		if(operator.equals("=="))
+
+		if(assigningReturnValue) // this RuleSetLine is to assign the its return value to a variable of a RuleSetLine.
 		{
-			
-		}
-		else
-		{
-			this.variableName = childText.split(this.operator)[0].trim();
-		}
-		
-		if(assigningReturnValue) // this RuleSetLine is for comparison
-		{
-			Pattern ruleSetPattern = Pattern.compile("^(.*)([<>=]*)(RULE SET:)(.[^<>=]*)([<>=]*)(.*)");
+			Pattern ruleSetPattern = Pattern.compile("^(.*)([<>=]+)(RULE SET:)(.*)");
 			Matcher matcher = ruleSetPattern.matcher(childText);
 			
 			if(matcher.find() == true)
 			{	
-				this.variableName = matcher.group(4).trim();
+				this.variableName = matcher.group(1).trim();
 			}
 		}
-		else // this RuleSetLine is to assign the its return value to a variable of a RuleSetLine.
+		else // this RuleSetLine is for comparison, or it is just statement.
 		{
-			Pattern ruleSetPattern = Pattern.compile("^(.*)([<>=]*)(RULE SET:)(.[^<>=]*)([<>=]*)(.*)");
+			int operatorIndex = tokens.tokensStringList.indexOf("O");
+			Pattern ruleSetPattern = Pattern.compile("^(RULE SET:)(.+)([<>=]*)(.*)");
 			Matcher matcher = ruleSetPattern.matcher(childText);
-			
+
 			if(matcher.find() == true)
-			{	
-				this.variableName = matcher.group(2).trim();
+			{
+				this.variableName = matcher.group(2).trim(); // variableName is a name of a rule set
+
+				if(operatorIndex != -1)
+				{
+					this.operator = tokens.tokensList.get(operatorIndex).matches("=")?"==":tokens.tokensList.get(operatorIndex);
+				}
 			}
 		}
 //		this.lhs = variableName;
@@ -91,8 +97,8 @@ public class RuleSetLine extends Node{
 	{
 		//if 'tokens.tokenString' starts with 'R' then the RuleSetLine is for comparison
 		//if 'tokens.tokenString' does NOT start with 'R' then the RuleSetLine is to assign the its return value to a variable of a RuleSetLine.
- 
-		return !(tokens.tokensString.charAt(0) == 'R');
+		int operatorIndex = tokens.tokensStringList.indexOf("O");
+		return !((tokens.tokensString.charAt(0) == 'R') && (operatorIndex != -1));
 	}
 }
 

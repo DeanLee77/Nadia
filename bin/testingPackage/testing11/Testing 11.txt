@@ -1,0 +1,25 @@
+
+INPUT number of drinks the person consumes an hour AS NUMBER
+INPUT hours of drinks a day AS NUMBER 
+
+
+
+person is eligible for a premium service
+	AND person's drinking habit = "frequent drinker"
+
+
+person's drinking habit IS "social drinker"
+	AND number of drinks the person consumes a week > 0
+	AND number of drinks the person consumes a week < 3
+
+person's drinking habit IS "frequent drinker"  
+	AND number of drinks the person consumes a week > 3
+	AND number of drinks the person consumes a week < 7
+
+person's drinking habit IS "heavy drinker" 
+	AND number of drinks the person consumes a week > 7 
+
+
+number of drinks the person consumes a week IS CALC ( number of drinks the person consumes an hour ? 5-1: number of drinks the person consumes an hour * hours of drinks a day )
+	NEEDS number of drinks the person consumes an hour
+	WANTS hours of drinks a day

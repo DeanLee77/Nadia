@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Stack;
 import nodePackage.*;
 import inferencePackage.*;
-
+import nodePackage.Record;
 
 
 public class RuleSetScanner {
@@ -60,19 +60,19 @@ public class RuleSetScanner {
            	   {
                		currentWhitespace = line.length()-lineTrimed.length(); // calculating indentation level
 
-	                	if (lineTrimed.isEmpty()) // is it a blank line? 
-	                	{
-	                      // blank line - no parent
-	                      parent = null;
-	                	} 
-	                	else 
-	                	{
-	                		int indentationDifference = previousWhitespace - currentWhitespace;
-	                		
-	                		if(indentationDifference == -4) // this condition is for handling inputs from ACE text editor
-	                		{
-	                			indentationDifference = -1;
-	                		}
+                	if (lineTrimed.isEmpty()) // is it a blank line? 
+                	{
+                      // blank line - no parent
+                      parent = null;
+                	} 
+                	else 
+                	{
+                		int indentationDifference = previousWhitespace - currentWhitespace;
+                		
+                		if(indentationDifference == -4) // this condition is for handling inputs from ACE text editor
+                		{
+                			indentationDifference = -1;
+                		}
 	                		
 	                   	if(indentationDifference == 0 || indentationDifference > 0) //current line is at same level as previous line || current line is in upper level than previous line
 	                   	{
