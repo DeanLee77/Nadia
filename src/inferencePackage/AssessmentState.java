@@ -163,12 +163,14 @@ public class AssessmentState {
 
 			if(tempFv.getType().equals(FactValueType.LIST))
 			{
-				((FactListValue<?>)tempFv).getValue().add(tempFv);
+				((FactListValue<?>)tempFv).getValue().add(value);
 			}
 			else
 			{
 				FactListValue<?> flv = FactValue.parse(new ArrayList<FactValue>());
-				flv.getValue().add(tempFv);
+				flv.addFactValueToListValue(tempFv);
+				flv.addFactValueToListValue(value);
+				workingMemory.put(nodeVariableName, value);
 			}
 		}
 		else
