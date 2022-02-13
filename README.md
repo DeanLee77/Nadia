@@ -96,5 +96,5 @@ An inference engine using forward chaining searches the inference rules until it
 * 'statement A' is false with given information of 'statement B' and 'statement C', however it could be changed based on conclusion  of 'statement B' because 'statement B' is unknown.
 
 ## 7. License
-Copyright (c) 2017-2020 individual contributors.
+Copyright (c) 2017-2022 individual contributors.
 Nadia is open source project and released under AGPL 3.0 License.
