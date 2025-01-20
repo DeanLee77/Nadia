@@ -1,16 +1,16 @@
 
-# **Nadia** Rule/Inference Engine
+# **PALOS** Rule/Inference Engine
 Much simpler and easy Rules Engine not only to use but also maintain 'Rules/Policy' for businesses
 <br/>
 <br/>
-Video is also avaiable at [NADIA Policy / Business rules Engine from NExST.R&DLabs](https://youtu.be/xyWjscJ3LxI) <br/>
+Video is also avaiable at [PALOS Policy / Business rules Engine from NExST.R&DLabs](https://youtu.be/xyWjscJ3LxI) <br/>
 or <br/>
-another link is [ Introduction of NADIA Policy / Business rules Engine from NExST.R&DLabs.](https://youtu.be/O-itMgYHRvc)
+another link is [ Introduction of PALOS Policy / Business rules Engine from NExST.R&DLabs.](https://youtu.be/O-itMgYHRvc)
 
-# ***Relevant NADIA project list***
-[NADIA Java REST](https://github.com/NExST-RnDLabs/NadiaRS) <br/>
-[NADIA C sharp](https://github.com/DeanLee77/NADIA-C.Sharp)<br/>
-[NADIA C/C++ (In Progress)](https://github.com/DeanLee77/NADIA-CPP)
+# ***Relevant PALOS project list***
+[PALOS Java REST](https://github.com/NExST-RnDLabs/NadiaRS) <br/>
+[PALOS C sharp](https://github.com/DeanLee77/NADIA-C.Sharp)<br/>
+[PALOS C/C++ (In Progress)](https://github.com/DeanLee77/NADIA-CPP)
 
 
 ## 1. Introduction
@@ -38,7 +38,7 @@ Add more features as follows;
 * Workflow engine with GUI based diagram editor 
 * Machine Learning type inference mechanism
 
-* Please Note that due to the reason that there is a number of framework for GUI and server side implementation, we will try to implement Nadia engine with respective framework. The first implementation is React.js with Spring Boot, and the source is at [Nadia-R.S](https://github.com/DeanLee77/Nadia-R.S). Please email to 'nexst.rndlabs@gmail.com' if you do have any questions.
+* Please Note that due to the reason that there is a number of framework for GUI and server side implementation, we will try to implement PALOS engine with respective framework. The first implementation is React.js with Spring Boot, and the source is at [PALOS-R.S](https://github.com/DeanLee77/Nadia-R.S). Please email to 'nexst.rndlabs@gmail.com' if you do have any questions.
 
 ## 4. Contribution
 If you would like to contribute to this project, then please create your own branch and name the branch clearly. Once the work is done in the branch then do 'pull request' and send an email to 'nexst.rndlabs@gmail.com'.
@@ -47,7 +47,7 @@ If you would like to contribute to this project, then please create your own bra
 Please have a look at a file of testing rule. Within the example file, all indented rules uses 'Tab' key for indentation. The rule scanner considers of an indented rule as a child rule of previous rule in a rule text.
 
 ## Note:
-If you need a commercial or coustomised version of Nadia engine, then please contact on 'nexst.rndlabs@gmail.com'.
+If you need a commercial or coustomised version of PALOS engine, then please contact on 'nexst.rndlabs@gmail.com'.
 
 ## 6. How does it work
 There are a number of key components as follows;
@@ -96,4 +96,4 @@ An inference engine using forward chaining searches the inference rules until it
 
 ## 7. License
 Copyright (c) 2017-2025 individual contributors.
-Nadia is open source project and released under AGPL 3.0 License.
+PALOS is open source project and released under AGPL 3.0 License.
